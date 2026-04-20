@@ -1,0 +1,20 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Core_Layer.Entities;
+
+namespace Entity_Layer
+{
+    public class UserAddress:BaseEntity
+    {
+        public required string Title { get; set; }
+        public required string Country { get; set; }
+        public required string City { get; set; }
+        public string? District { get; set; }
+        public required string FullAddress { get; set; }
+        public Guid AppUserId { get; set; }
+        public required AppUser AppUser { get; set; }
+    }
+}
