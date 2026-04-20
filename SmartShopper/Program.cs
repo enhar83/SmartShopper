@@ -1,4 +1,6 @@
+using Core_Layer.IRepositories;
 using Data_Access_Layer.DbContext;
+using Data_Access_Layer.Repositories;
 using Entity_Layer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +21,11 @@ builder.Services.AddIdentity<AppUser, AppRole>(options =>
 })
     .AddEntityFrameworkStores<AppDbContext>() 
     .AddDefaultTokenProviders();
+
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 var app = builder.Build();
 

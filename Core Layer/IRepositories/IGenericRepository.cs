@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Core_Layer.Entities;
+using Entity_Layer.Common;
 
 namespace Core_Layer.IRepositories
 {

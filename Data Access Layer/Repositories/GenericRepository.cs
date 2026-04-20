@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
-using Core_Layer.Entities;
+using Entity_Layer.Common;
 using Core_Layer.IRepositories;
 using Data_Access_Layer.DbContext;
 using Microsoft.EntityFrameworkCore;
