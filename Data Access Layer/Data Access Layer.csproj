@@ -21,8 +21,4 @@
     <ProjectReference Include="..\Entity Layer\Entity Layer.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositories\" />
-  </ItemGroup>
-
 </Project>

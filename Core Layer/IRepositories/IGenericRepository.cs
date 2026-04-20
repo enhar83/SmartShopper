@@ -16,6 +16,6 @@ namespace Core_Layer.IRepositories
         Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
         Task AddAsync(T entity);
         void Update(T entity);
-        Task Remove(T entity);
+        void Remove(T entity);
     }
 }
