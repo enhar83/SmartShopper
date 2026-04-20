@@ -8,6 +8,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="12.0.1" />
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Core Layer\Core Layer.csproj" />
     <ProjectReference Include="..\Data Access Layer\Data Access Layer.csproj" />
     <ProjectReference Include="..\Entity Layer\Entity Layer.csproj" />
