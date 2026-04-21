@@ -20,7 +20,7 @@
                 </nav>
             </div>
             <div class="ms-auto">
-                <button type="button" class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                <button type="button" class="btn btn-primary px-4" onclick="openCategoryModal()">
                     <i class='bx bx-plus-circle'></i> Add New Category
                 </button>
             </div>
@@ -79,7 +79,7 @@
                                         </td>
                                         <td>
                                             <div class="d-flex order-actions">
-                                                <a href="/Admin/Category/EditCategory/@item.Id" class="text-primary bg-light-primary border-0"><i class='bx bxs-edit'></i></a>
+                                                <a href="javascript:;" onclick="openCategoryModal('@item.Id')" class="text-primary bg-light-primary border-0"><i class='bx bxs-edit'></i></a>
                                                 <a href="javascript:;" class="ms-3 text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
                                             </div>
                                         </td>
@@ -107,26 +107,29 @@
     </div>
 </div>
 
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-top border-0 border-4 border-primary">
             <div class="modal-header">
-                <h5 class="modal-title text-primary"><i class="bx bxs-category me-1 font-22"></i>Add New Category</h5>
+                <h5 class="modal-title text-primary" id="modalHeader"><i class="bx bxs-category me-1 font-22"></i>Category Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="addCategoryForm">
+            <form id="categoryForm">
+                @* Hidden field for Update operation *@
+                <input type="hidden" name="Id" id="categoryId" />
+
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label fw-bold">Category Name</label>
                             <div class="input-group">
                                 <span class="input-group-text bg-transparent"><i class='bx bxs-tag'></i></span>
-                                <input name="Name" type="text" class="form-control border-start-0" placeholder="e.g. Electronics" required>
+                                <input name="Name" id="categoryName" type="text" class="form-control border-start-0" placeholder="e.g. Electronics" required>
                             </div>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Description</label>
-                            <textarea name="Description" class="form-control" rows="4" placeholder="Brief description..." required></textarea>
+                            <textarea name="Description" id="categoryDescription" class="form-control" rows="4" placeholder="Brief description..." required></textarea>
                         </div>
                         <div class="col-12">
                             <div class="form-check form-switch">
@@ -138,7 +141,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Category</button>
+                    <button type="submit" id="saveButton" class="btn btn-primary px-4 shadow-sm">Save Category</button>
                 </div>
             </form>
         </div>
@@ -148,22 +151,23 @@
 @section Scripts {
     <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
     <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        var saveMode = "Add"; // Default mode
+
         $(document).ready(function() {
-            // Initialize DataTable
             $('#example').DataTable();
 
-            // AJAX Form Submission
-            $("#addCategoryForm").on("submit", function (e) {
+            $("#categoryForm").on("submit", function (e) {
                 e.preventDefault();
-
                 var formData = $(this).serialize();
 
+                // Dynamic URL selection based on mode
+                var targetUrl = saveMode === "Add" ? '/Admin/Category/AddCategory' : '/Admin/Category/UpdateCategory';
+
                 $.ajax({
-                    url: '/Admin/Category/AddCategory',
+                    url: targetUrl,
                     type: 'POST',
                     data: formData,
                     success: function (response) {
@@ -175,21 +179,55 @@
                                 timer: 1500,
                                 showConfirmButton: false
                             }).then(() => {
-                                location.reload(); // Refresh to see the new data
+                                location.reload();
                             });
                         } else {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Error',
-                                html: response.message // Display validation or logic errors
+                                html: response.message
                             });
                         }
                     },
                     error: function() {
-                        Swal.fire('Error', 'Something went wrong on the server.', 'error');
+                        Swal.fire('Error', 'Server communication failure.', 'error');
                     }
                 });
             });
         });
+
+        // Dynamic Modal Management
+        function openCategoryModal(id = null) {
+            $("#categoryForm")[0].reset(); // Formu temizle
+            $("#categoryId").val("");
+
+            if (id) {
+                // UPDATE MODE
+                saveMode = "Update";
+                $("#modalHeader").html("<i class='bx bxs-edit me-1 font-22'></i>Update Category");
+                $("#saveButton").text("Update Changes");
+
+                // Get current data from server
+                $.ajax({
+                    url: '/Admin/Category/GetCategory?id=' + id,
+                    type: 'GET',
+                    success: function (data) {
+                        // Data mapping
+                        $("#categoryId").val(data.id);
+                        $("#categoryName").val(data.name);
+                        $("#categoryDescription").val(data.description);
+                        $("#hasGenderSwitch").prop("checked", data.hasGender);
+
+                        $('#categoryModal').modal('show');
+                    }
+                });
+            } else {
+                // ADD MODE
+                saveMode = "Add";
+                $("#modalHeader").html("<i class='bx bxs-category me-1 font-22'></i>Add New Category");
+                $("#saveButton").text("Save Category");
+                $('#categoryModal').modal('show');
+            }
+        }
     </script>
 }

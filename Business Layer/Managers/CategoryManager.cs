@@ -48,5 +48,35 @@ namespace Business_Layer.Managers
 
             return _mapper.Map<List<CategoryListDto>>(category);
         }
+
+        public async Task<CategoryListDto> TGetByIdAsync(Guid id)
+        {
+            var category = await _categoryRepository.GetByIdAsync(id);
+            if (category == null)
+                throw new LogicException(nameof(CategoryListDto.Id), "The category not found");
+
+            return _mapper.Map<CategoryListDto>(category); 
+        }
+
+        public async Task TUpdateCategoryAsync(UpdateCategoryDto updateCategoryDto)
+        {
+            var category = await _categoryRepository.GetByIdAsync(updateCategoryDto.Id);
+            if (category == null)
+                throw new LogicException(nameof(updateCategoryDto.Id), "The category not found.");
+
+            var isOtherCategoryExists = await _categoryRepository.AnyAsync(c=>c.Id !=  updateCategoryDto.Id && c.Name==updateCategoryDto.Name);
+            if (isOtherCategoryExists)
+                throw new LogicException(nameof(updateCategoryDto.Name), "This category name is already exists.");
+
+            _mapper.Map<Category>(category);
+            category.Name = updateCategoryDto.Name;
+            category.Description = updateCategoryDto.Description;
+            category.IsDeleted = updateCategoryDto.IsDeleted;
+            category.HasGender = updateCategoryDto.HasGender;
+            category.UpdatedDate = DateTime.Now;
+
+            _categoryRepository.Update(category);
+            await _uow.SaveAsync();
+        }
     }
 }

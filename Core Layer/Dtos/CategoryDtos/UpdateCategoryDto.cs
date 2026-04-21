@@ -12,5 +12,6 @@ namespace Core_Layer.Dtos.CategoryDtos
         public required string Name { get; set; }
         public required string Description { get; set; }
         public bool HasGender { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }
