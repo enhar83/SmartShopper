@@ -14,7 +14,6 @@ namespace Core_Layer.Dtos.ProductDtos
         public decimal Price { get; set; }
         public int Stock { get; set; }
         public GenderType? Gender { get; set; }
-        public List<ProductImage>? ProductImages { get; set; }
         public Guid SubCategoryId { get; set; }
     }
 }

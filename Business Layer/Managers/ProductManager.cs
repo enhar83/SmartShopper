@@ -42,6 +42,7 @@ namespace Business_Layer.Managers
                 throw new LogicException(nameof(addProductDto.Name), "This product name is already exists.");
 
             var product = _mapper.Map<Product>(addProductDto);
+            product.CreatedDate = DateTime.Now;
             product.IsDeleted = false;
 
             await _productRepository.AddAsync(product);

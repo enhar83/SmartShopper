@@ -16,7 +16,7 @@ namespace Entity_Layer
         public GenderType? Gender { get; set; }
         public List<ProductImage>? ProductImages { get; set; }
         public Guid SubCategoryId { get; set; }
-        public required SubCategory SubCategory { get; set; }
+        public SubCategory? SubCategory { get; set; }
     }
 }
 

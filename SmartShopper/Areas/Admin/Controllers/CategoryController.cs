@@ -76,5 +76,18 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = "An error occurred during update." });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetActiveCategories()
+        {
+            var categories = await _categoryService.TGetAllCategories();
+            var result = categories.Where(x => !x.IsDeleted).Select(x => new {
+                id = x.Id,
+                name = x.Name,
+                hasGender = x.HasGender
+            }).ToList();
+
+            return Json(result);
+        }
     }
 }

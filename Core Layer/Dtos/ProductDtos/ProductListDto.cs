@@ -17,5 +17,8 @@ namespace Core_Layer.Dtos.ProductDtos
         public GenderType? Gender { get; set; }
         public List<ProductImage>? ProductImages { get; set; }
         public Guid SubCategoryId { get; set; }
+        public DateTime CreatedDate { get; set; }
+        public DateTime UpdatedDate { get; set; }
+        public bool IsDelete { get; set; }
     }
 }
