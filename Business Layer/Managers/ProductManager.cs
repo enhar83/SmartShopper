@@ -11,6 +11,7 @@ using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Data_Access_Layer.Repositories;
 using Entity_Layer;
+using Microsoft.EntityFrameworkCore;
 
 namespace Business_Layer.Managers
 {
@@ -25,6 +26,13 @@ namespace Business_Layer.Managers
             _productRepository = productRepository;
             _uow = uow;
             _mapper = mapper;
+        }
+
+        public async Task<List<ProductListDto>> TGetProductListAsync()
+        {
+            var products = await _productRepository.GetAll().ToListAsync();
+
+            return _mapper.Map<List<ProductListDto>>(products);
         }
 
         public async Task TAddProductAsync(AddProductDto addProductDto)

@@ -10,5 +10,6 @@ namespace Core_Layer.IServices
     public interface IProductService
     {
         Task TAddProductAsync(AddProductDto addProductDto);
+        Task<List<ProductListDto>> TGetProductListAsync();
     }
 }

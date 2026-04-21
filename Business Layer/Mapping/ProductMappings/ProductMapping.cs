@@ -15,6 +15,7 @@ namespace Business_Layer.Mapping.ProductMappings
         public ProductMapping() 
         {
             CreateMap<AddProductDto, Product>().ReverseMap();
+            CreateMap<Product, ProductListDto>().ReverseMap();
         }
     }
 }
