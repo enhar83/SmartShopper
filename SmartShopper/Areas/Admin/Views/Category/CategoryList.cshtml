@@ -3,7 +3,7 @@
 @model List<CategoryListDto>
 
 @{
-    ViewData["Title"] = "Category List";
+    ViewData["Title"] = "Category Management";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
@@ -15,7 +15,7 @@
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb mb-0 p-0">
                         <li class="breadcrumb-item"><a href="/Admin/Dashboard"><i class="bx bx-home-alt"></i></a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Category List</li>
+                        <li class="breadcrumb-item active" aria-current="page">Category & SubCategory List</li>
                     </ol>
                 </nav>
             </div>
@@ -43,8 +43,7 @@
                                     <th>Has Gender</th>
                                     <th>Status</th>
                                     <th>Created Date</th>
-                                    <th>Updated Date</th>
-                                    <th>Actions</th>
+                                    <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -55,46 +54,26 @@
                                 {
                                     <tr>
                                         <td>@count</td>
-                                        <td>@item.Name</td>
+                                        <td><strong>@item.Name</strong></td>
                                         <td>@item.Description</td>
                                         <td>
-                                            @if (item.HasGender)
-                                            {
-                                                <span class="badge bg-success">Yes</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-secondary">No</span>
-                                            }
+                                            <span class="badge @(item.HasGender ? "bg-success" : "bg-secondary")">@(item.HasGender ? "Yes" : "No")</span>
                                         </td>
                                         <td>
-                                            @if (item.IsDeleted)
-                                            {
-                                                <span class="badge bg-light-danger text-danger w-100"><i class='bx bx-radio-circle-marked'></i> Passive</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="badge bg-light-success text-success w-100"><i class='bx bx-check-double'></i> Active</span>
-                                            }
+                                            <span class="badge @(item.IsDeleted ? "bg-light-danger text-danger" : "bg-light-success text-success") w-100">
+                                                @(item.IsDeleted ? "Passive" : "Active")
+                                            </span>
                                         </td>
                                         <td>@item.CreatedDate.ToShortDateString()</td>
                                         <td>
-                                            @if (item.UpdatedDate.HasValue)
-                                            {
-                                                <span class="text-dark">@item.UpdatedDate.Value.ToShortDateString()</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted italic small">Not updated yet</span>
-                                            }
-                                        </td>
-                                        <td>
-                                            <div class="d-flex order-actions">
-                                                <a href="javascript:;" onclick="openSubCategoryModal('@item.Id', '@item.Name')" class="text-success bg-light-success border-0 me-2" title="Add SubCategory">
-                                                    <i class='bx bx-list-plus'></i>
+                                            <div class="d-flex order-actions justify-content-center">
+                                                <a href="javascript:;" onclick="manageSubCategories('@item.Id', '@item.Name')" class="text-success bg-light-success border-0 me-2">
+                                                    <i class='bx bx-list-ul'></i>
                                                 </a>
-                                                <a href="javascript:;" onclick="openCategoryModal('@item.Id')" class="text-primary bg-light-primary border-0"><i class='bx bxs-edit'></i></a>
-                                                <a href="javascript:;" class="ms-3 text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
+                                                <a href="javascript:;" onclick="openCategoryModal('@item.Id')" class="text-primary bg-light-primary border-0 me-2">
+                                                    <i class='bx bxs-edit'></i>
+                                                </a>
+                                                <a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
                                             </div>
                                         </td>
                                     </tr>
@@ -102,18 +81,6 @@
                                 }
                             </tbody>
                         </table>
-                    }
-                    else
-                    {
-                        <div class="alert alert-info border-0 bg-info alert-dismissible fade show py-2">
-                            <div class="d-flex align-items-center">
-                                <div class="font-35 text-white"><i class='bx bx-info-circle'></i></div>
-                                <div class="ms-3">
-                                    <h6 class="mb-0 text-white">Information</h6>
-                                    <div class="text-white">No categories found. Click "Add New Category" to start.</div>
-                                </div>
-                            </div>
-                        </div>
                     }
                 </div>
             </div>
@@ -125,7 +92,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-top border-0 border-4 border-primary">
             <div class="modal-header">
-                <h5 class="modal-title text-primary" id="modalHeader"><i class="bx bxs-category me-1 font-22"></i>Category Details</h5>
+                <h5 class="modal-title text-primary" id="modalHeader">Category Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="categoryForm">
@@ -134,35 +101,65 @@
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label fw-bold">Category Name</label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-transparent"><i class='bx bxs-tag'></i></span>
-                                <input name="Name" id="categoryName" type="text" class="form-control border-start-0" placeholder="e.g. Electronics" required>
-                            </div>
+                            <input name="Name" id="categoryName" type="text" class="form-control" required>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Description</label>
-                            <textarea name="Description" id="categoryDescription" class="form-control" rows="4" placeholder="Brief description..." required></textarea>
+                            <textarea name="Description" id="categoryDescription" class="form-control" rows="3" required></textarea>
                         </div>
                         <div class="col-md-6">
                             <div class="form-check form-switch mt-2">
                                 <input name="HasGender" class="form-check-input" type="checkbox" id="hasGenderSwitch" value="true">
-                                <label class="form-check-label" for="hasGenderSwitch">Includes gender specification?</label>
+                                <label class="form-check-label">Has Gender?</label>
                             </div>
                         </div>
-
                         <div class="col-md-6" id="isDeletedContainer" style="display:none;">
                             <div class="form-check form-switch mt-2">
                                 <input name="IsDeleted" class="form-check-input" type="checkbox" id="isDeletedSwitch" value="true">
-                                <label class="form-check-label text-danger fw-bold" for="isDeletedSwitch">Is Category Deleted/Passive?</label>
+                                <label class="form-check-label text-danger">Is Passive?</label>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" id="saveButton" class="btn btn-primary px-4 shadow-sm">Save Category</button>
+                    <button type="submit" id="saveButton" class="btn btn-primary px-4">Save</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="subCategoryManagerModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-top border-0 border-4 border-success">
+            <div class="modal-header">
+                <h5 class="modal-title text-success"><i class="bx bx-list-ul me-1"></i> SubCategories of <span id="parentNameDisplay" class="fw-bold"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <table class="table table-sm table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>SubCategory Name</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="subCategoryListBody"></tbody>
+                </table>
+                <hr />
+                <form id="quickAddSubForm" class="row g-2 align-items-end mt-2">
+                    <input type="hidden" name="CategoryId" id="hiddenParentId" />
+                    <div class="col-8">
+                        <label class="form-label fw-bold small">Add New SubCategory</label>
+                        <input name="Name" type="text" class="form-control form-control-sm" placeholder="e.g. Smartphones" required>
+                    </div>
+                    <div class="col-4">
+                        <button type="submit" class="btn btn-success btn-sm w-100 shadow-sm"><i class='bx bx-plus'></i> Add</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -176,35 +173,41 @@
         var saveMode = "Add";
 
         $(document).ready(function() {
-            $('#categoryDataTable').DataTable({
-                "pageLength": 10,
-                "lengthMenu": [1, 10, 25, 50, 100],
-                "language": {
-                    "search": "Filter categories:",
-                    "paginate": { "previous": "Prev", "next": "Next" }
-                }
-            });
+            $('#categoryDataTable').DataTable({ "pageLength": 10 });
 
+            // Ana Kategori Formu
             $("#categoryForm").on("submit", function (e) {
                 e.preventDefault();
-                var formData = $(this).serialize();
-                var targetUrl = saveMode === "Add" ? '/Admin/Category/AddCategory' : '/Admin/Category/UpdateCategory';
-
+                var url = saveMode === "Add" ? '/Admin/Category/AddCategory' : '/Admin/Category/UpdateCategory';
                 $.ajax({
-                    url: targetUrl,
+                    url: url,
                     type: 'POST',
-                    data: formData,
-                    success: function (response) {
-                        if (response.success) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success!',
-                                text: response.message,
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => { location.reload(); });
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({ icon: 'success', title: res.message, timer: 1500, showConfirmButton: false }).then(() => location.reload());
                         } else {
-                            Swal.fire({ icon: 'error', title: 'Error', html: response.message });
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    }
+                });
+            });
+
+            // Alt Kategori Hızlı Ekleme
+            $("#quickAddSubForm").on("submit", function (e) {
+                e.preventDefault();
+                var parentId = $("#hiddenParentId").val();
+                $.ajax({
+                    url: '/Admin/SubCategory/AddSubCategory',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            $("#quickAddSubForm")[0].reset();
+                            loadSubCategories(parentId);
+                            Swal.fire({ icon: 'success', title: 'Added!', timer: 800, showConfirmButton: false });
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
                         }
                     }
                 });
@@ -214,32 +217,59 @@
         function openCategoryModal(id = null) {
             $("#categoryForm")[0].reset();
             $("#categoryId").val("");
-            $("#isDeletedContainer").hide(); // Varsayılan olarak IsDeleted kısmını gizle
+            $("#isDeletedContainer").hide();
 
             if (id) {
                 saveMode = "Update";
-                $("#modalHeader").html("<i class='bx bxs-edit me-1 font-22'></i>Update Category");
-                $("#saveButton").text("Update Changes");
-                $("#isDeletedContainer").show(); // Update modunda görünür yap
-
-                $.ajax({
-                    url: '/Admin/Category/GetCategory?id=' + id,
-                    type: 'GET',
-                    success: function (data) {
-                        $("#categoryId").val(data.id);
-                        $("#categoryName").val(data.name);
-                        $("#categoryDescription").val(data.description);
-                        $("#hasGenderSwitch").prop("checked", data.hasGender);
-                        $("#isDeletedSwitch").prop("checked", data.isDeleted); // IsDeleted durumunu doldur
-                        $('#categoryModal').modal('show');
-                    }
+                $("#modalHeader").text("Update Category");
+                $("#isDeletedContainer").show();
+                $.get('/Admin/Category/GetCategory?id=' + id, function (data) {
+                    $("#categoryId").val(data.id);
+                    $("#categoryName").val(data.name);
+                    $("#categoryDescription").val(data.description);
+                    $("#hasGenderSwitch").prop("checked", data.hasGender);
+                    $("#isDeletedSwitch").prop("checked", data.isDeleted);
+                    $('#categoryModal').modal('show');
                 });
             } else {
                 saveMode = "Add";
-                $("#modalHeader").html("<i class='bx bxs-category me-1 font-22'></i>Add New Category");
-                $("#saveButton").text("Save Category");
+                $("#modalHeader").text("Add New Category");
                 $('#categoryModal').modal('show');
             }
+        }
+
+        function manageSubCategories(categoryId, categoryName) {
+            $("#parentNameDisplay").text(categoryName);
+            $("#hiddenParentId").val(categoryId);
+            loadSubCategories(categoryId);
+            $('#subCategoryManagerModal').modal('show');
+        }
+
+        function loadSubCategories(categoryId) {
+            // Kritik: Parametre ismini parentId olarak gönderiyoruz
+            $.get('/Admin/SubCategory/GetSubCategoriesByParent?parentId=' + categoryId, function (data) {
+                var html = "";
+                // Data null veya boş dizi kontrolü
+                if (!data || data.length === 0) {
+                    html = "<tr><td colspan='3' class='text-center text-muted py-3'>No subcategories found.</td></tr>";
+                } else {
+                    data.forEach(sub => {
+                        // CamelCase ve PascalCase uyumu için kontrol
+                        var subName = sub.name || sub.Name;
+                        var subId = sub.id || sub.Id;
+                        var isDeleted = sub.isDeleted !== undefined ? sub.isDeleted : sub.IsDeleted;
+
+                        html += `<tr>
+                                    <td>${subName}</td>
+                                    <td><span class="badge ${isDeleted ? 'bg-danger' : 'bg-success'}">${isDeleted ? 'Passive' : 'Active'}</span></td>
+                                    <td class="text-end">
+                                        <a href="javascript:;" onclick="deleteSub('${subId}', '${categoryId}')" class="text-danger"><i class='bx bxs-trash'></i></a>
+                                    </td>
+                                 </tr>`;
+                    });
+                }
+                $("#subCategoryListBody").html(html);
+            });
         }
     </script>
 }

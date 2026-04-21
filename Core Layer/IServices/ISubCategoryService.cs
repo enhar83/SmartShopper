@@ -10,5 +10,6 @@ namespace Core_Layer.IServices
     public interface ISubCategoryService
     {
         Task TAddSubCategoryAsync(AddSubCategoryDto addSubCategoryDto);
+        Task<List<SubCategoryListDto>> TGetAllSubCategoriesByParentAsync(Guid id);
     }
 }

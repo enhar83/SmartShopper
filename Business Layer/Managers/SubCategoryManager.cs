@@ -11,6 +11,7 @@ using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Data_Access_Layer.Repositories;
 using Entity_Layer;
+using Microsoft.EntityFrameworkCore;
 
 namespace Business_Layer.Managers
 {
@@ -38,6 +39,13 @@ namespace Business_Layer.Managers
 
             await _subCategoryRepository.AddAsync(subCategory);
             await _uow.SaveAsync();
+        }
+
+        public async Task<List<SubCategoryListDto>> TGetAllSubCategoriesByParentAsync(Guid parentId)
+        {
+            var subCategories = await _subCategoryRepository.Where(s=>s.CategoryId == parentId).ToListAsync();
+
+            return _mapper.Map<List<SubCategoryListDto>>(subCategories);
         }
     }
 }

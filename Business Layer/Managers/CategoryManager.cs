@@ -44,9 +44,9 @@ namespace Business_Layer.Managers
 
         public async Task<List<CategoryListDto>> TGetAllCategories()
         {
-            var category = await _categoryRepository.GetAll().ToListAsync();
+            var categories = await _categoryRepository.GetAll().ToListAsync();
 
-            return _mapper.Map<List<CategoryListDto>>(category);
+            return _mapper.Map<List<CategoryListDto>>(categories);
         }
 
         public async Task<CategoryListDto> TGetByIdAsync(Guid id)
