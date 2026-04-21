@@ -66,5 +66,14 @@ namespace Business_Layer.Managers
             _productRepository.Update(productToUpdate);
             await _uow.SaveAsync();
         }
+
+        public async Task<ProductListDto> TGetByIdAsync(Guid id)
+        {
+            var product = await _productRepository.GetByIdAsync(id);
+            if (product == null)
+                throw new LogicException(nameof(ProductListDto.Id), "The product not found");
+
+            return _mapper.Map<ProductListDto>(product);
+        }
     }
 }

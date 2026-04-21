@@ -84,8 +84,12 @@
                                         <td>@item.CreatedDate.ToShortDateString()</td>
                                         <td class="text-center">
                                             <div class="d-flex order-actions justify-content-center">
-                                                <a href="javascript:;" class="text-primary bg-light-primary border-0 me-2"><i class='bx bxs-edit'></i></a>
-                                                <a href="javascript:;" class="text-danger bg-light-danger border-0"><i class='bx bxs-trash'></i></a>
+                                                <a href="javascript:;" onclick="editProduct('@item.Id')" class="text-primary bg-light-primary border-0 me-2" title="Edit">
+                                                    <i class='bx bxs-edit'></i>
+                                                </a>
+                                                <a href="javascript:;" class="text-danger bg-light-danger border-0" title="Delete">
+                                                    <i class='bx bxs-trash'></i>
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -104,19 +108,20 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-top border-0 border-4 border-primary">
             <div class="modal-header">
-                <h5 class="modal-title text-primary"><i class="bx bxs-box me-1"></i>Product Details</h5>
+                <h5 class="modal-title text-primary" id="modalHeaderTitle"><i class="bx bxs-box me-1"></i>Product Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="productForm">
+                <input type="hidden" name="Id" id="productId" />
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <div class="col-12">
                             <label class="form-label fw-bold">Product Name</label>
-                            <input name="Name" type="text" class="form-control" placeholder="e.g. Cotton T-Shirt" required>
+                            <input name="Name" id="productName" type="text" class="form-control" required>
                         </div>
                         <div class="col-12">
                             <label class="form-label fw-bold">Description</label>
-                            <textarea name="Description" class="form-control" rows="2" required></textarea>
+                            <textarea name="Description" id="productDescription" class="form-control" rows="2" required></textarea>
                         </div>
 
                         <div class="col-md-6">
@@ -152,18 +157,18 @@
                             <label class="form-label fw-bold">Price</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
-                                <input name="Price" type="number" step="0.01" class="form-control" placeholder="0.00" required>
+                                <input name="Price" id="productPrice" type="number" step="0.01" class="form-control" required>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold">Inventory Stock</label>
-                            <input name="Stock" type="number" class="form-control" placeholder="0" required>
+                            <label class="form-label fw-bold">Stock</label>
+                            <input name="Stock" id="productStock" type="number" class="form-control" required>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Product</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Changes</button>
                 </div>
             </form>
         </div>
@@ -176,48 +181,29 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        var allCategories = []; // HasGender kontrolü için bellek
+        var allCategories = [];
+        var saveMode = "Add";
 
         $(document).ready(function() {
             $('#productDataTable').DataTable({ "pageLength": 10 });
 
-            // --- CASCADING LOGIC: Ana Kategori Değişimi ---
+            // Cascading Logic
             $("#mainCategorySelect").on("change", function() {
                 var selectedId = $(this).val();
-
                 if (!selectedId) {
                     resetCascading();
                     return;
                 }
-
-                // 1. Gender Kontrolü
-                var selectedCat = allCategories.find(x => x.id == selectedId);
-                if (selectedCat && selectedCat.hasGender) {
-                    $("#genderContainer").fadeIn();
-                    $("#genderSelect").attr("required", true);
-                } else {
-                    $("#genderContainer").fadeOut();
-                    $("#genderSelect").removeAttr("required").val("");
-                }
-
-                // 2. Alt Kategorileri Yükle
-                $.get('/Admin/SubCategory/GetSubCategoriesByParent?parentId=' + selectedId, function (subs) {
-                    var $subSelect = $("#subCategorySelect");
-                    $subSelect.empty().append('<option value="">-- Choose Sub --</option>').prop("disabled", false);
-
-                    subs.forEach(sub => {
-                        if (!sub.isDeleted) {
-                            $subSelect.append(`<option value="${sub.id}">${sub.name || sub.Name}</option>`);
-                        }
-                    });
-                });
+                handleGenderVisibility(selectedId);
+                loadSubCategoriesByParent(selectedId);
             });
 
-            // --- FORM SUBMIT ---
+            // Form Submit
             $("#productForm").on("submit", function (e) {
                 e.preventDefault();
+                var url = saveMode === "Add" ? '/Admin/Product/AddProduct' : '/Admin/Product/UpdateProduct';
                 $.ajax({
-                    url: '/Admin/Product/AddProduct',
+                    url: url,
                     type: 'POST',
                     data: $(this).serialize(),
                     success: function (res) {
@@ -232,27 +218,84 @@
         });
 
         function openProductModal() {
+            saveMode = "Add";
             $("#productForm")[0].reset();
+            $("#productId").val("");
+            $("#modalHeaderTitle").text("Add New Product");
             resetCascading();
             loadMainCategories();
             $('#productModal').modal('show');
         }
 
-        function loadMainCategories() {
-            $.get('/Admin/Category/GetActiveCategories', function (data) {
-                allCategories = data;
-                var $select = $("#mainCategorySelect");
-                $select.empty().append('<option value="">-- Select Category --</option>');
-                data.forEach(cat => {
-                    $select.append(`<option value="${cat.id}">${cat.name}</option>`);
+        function editProduct(id) {
+            saveMode = "Update";
+            $("#productForm")[0].reset();
+            $("#modalHeaderTitle").text("Update Product");
+
+            $.get('/Admin/Category/GetActiveCategories', function (categories) {
+                allCategories = categories;
+                fillMainCategoryDropdown(categories);
+
+                $.get('/Admin/Product/GetProduct?id=' + id, function (product) {
+                    $("#productId").val(product.id || product.Id);
+                    $("#productName").val(product.name || product.Name);
+                    $("#productDescription").val(product.description || product.Description);
+                    $("#productPrice").val(product.price || product.Price);
+                    $("#productStock").val(product.stock || product.Stock);
+
+                    var subId = product.subCategoryId || product.SubCategoryId;
+
+                    $.get('/Admin/SubCategory/GetSubCategoryParentId?subId=' + subId, function (parentId) {
+                        $("#mainCategorySelect").val(parentId);
+                        handleGenderVisibility(parentId);
+                        loadSubCategoriesByParent(parentId, subId);
+                    });
+
+                    var gender = product.gender !== null ? product.gender : "";
+                    $("#genderSelect").val(gender);
+                    $('#productModal').modal('show');
                 });
             });
         }
 
+        function loadMainCategories() {
+            $.get('/Admin/Category/GetActiveCategories', function (data) {
+                allCategories = data;
+                fillMainCategoryDropdown(data);
+            });
+        }
+
+        function fillMainCategoryDropdown(data) {
+            var $select = $("#mainCategorySelect");
+            $select.empty().append('<option value="">-- Select Category --</option>');
+            data.forEach(cat => $select.append(`<option value="${cat.id}">${cat.name}</option>`));
+        }
+
+        function loadSubCategoriesByParent(parentId, selectedSubId = null) {
+            $.get('/Admin/SubCategory/GetSubCategoriesByParent?parentId=' + parentId, function (subs) {
+                var $subSelect = $("#subCategorySelect");
+                $subSelect.empty().append('<option value="">-- Choose Sub --</option>').prop("disabled", false);
+                subs.forEach(sub => {
+                    if (!sub.isDeleted) $subSelect.append(`<option value="${sub.id}">${sub.name || sub.Name}</option>`);
+                });
+                if (selectedSubId) $subSelect.val(selectedSubId);
+            });
+        }
+
+        function handleGenderVisibility(categoryId) {
+            var selectedCat = allCategories.find(x => x.id == categoryId);
+            if (selectedCat && selectedCat.hasGender) {
+                $("#genderContainer").fadeIn();
+                $("#genderSelect").attr("required", true);
+            } else {
+                $("#genderContainer").fadeOut();
+                $("#genderSelect").removeAttr("required").val("");
+            }
+        }
+
         function resetCascading() {
-            $("#subCategorySelect").prop("disabled", true).empty().append('<option value="">-- Choose SubCategory --</option>');
+            $("#subCategorySelect").prop("disabled", true).empty().append('<option value="">-- Choose Sub --</option>');
             $("#genderContainer").hide();
-            $("#genderSelect").removeAttr("required");
         }
     </script>
 }

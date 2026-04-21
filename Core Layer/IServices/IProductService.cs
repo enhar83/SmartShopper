@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core_Layer.Dtos.CategoryDtos;
 using Core_Layer.Dtos.ProductDtos;
 
 namespace Core_Layer.IServices
 {
     public interface IProductService
     {
+        Task<ProductListDto> TGetByIdAsync(Guid id);
         Task TAddProductAsync(AddProductDto addProductDto);
         Task<List<ProductListDto>> TGetProductListAsync();
         Task TUpdateProductAsync(UpdateProductDto updateProductDto);
