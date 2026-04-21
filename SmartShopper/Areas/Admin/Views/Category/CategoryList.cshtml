@@ -39,10 +39,10 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Name</th>
-                                    <th>Description</th>
                                     <th>Has Gender</th>
                                     <th>Status</th>
                                     <th>Created Date</th>
+                                    <th>Updated Date</th> @* Yeni Sütun *@
                                     <th class="text-center">Actions</th>
                                 </tr>
                             </thead>
@@ -55,7 +55,6 @@
                                     <tr>
                                         <td>@count</td>
                                         <td><strong>@item.Name</strong></td>
-                                        <td>@item.Description</td>
                                         <td>
                                             <span class="badge @(item.HasGender ? "bg-success" : "bg-secondary")">@(item.HasGender ? "Yes" : "No")</span>
                                         </td>
@@ -66,8 +65,19 @@
                                         </td>
                                         <td>@item.CreatedDate.ToShortDateString()</td>
                                         <td>
+                                            @* Null Kontrolü *@
+                                            @if (item.UpdatedDate.HasValue)
+                                            {
+                                                <span class="text-dark">@item.UpdatedDate.Value.ToShortDateString()</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small italic">Not updated yet</span>
+                                            }
+                                        </td>
+                                        <td>
                                             <div class="d-flex order-actions justify-content-center">
-                                                <a href="javascript:;" onclick="manageSubCategories('@item.Id', '@item.Name')" class="text-success bg-light-success border-0 me-2">
+                                                <a href="javascript:;" onclick="manageSubCategories('@item.Id', '@item.Name')" class="text-success bg-light-success border-0 me-2" title="SubCategories">
                                                     <i class='bx bx-list-ul'></i>
                                                 </a>
                                                 <a href="javascript:;" onclick="openCategoryModal('@item.Id')" class="text-primary bg-light-primary border-0 me-2">
@@ -131,7 +141,8 @@
 </div>
 
 <div class="modal fade" id="subCategoryManagerModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        @* Genişliği XL yaptık sütun sığması için *@
         <div class="modal-content border-top border-0 border-4 border-success">
             <div class="modal-header">
                 <h5 class="modal-title text-success"><i class="bx bx-list-ul me-1"></i> SubCategories of <span id="parentNameDisplay" class="fw-bold"></span></h5>
@@ -143,6 +154,8 @@
                         <tr>
                             <th>SubCategory Name</th>
                             <th>Status</th>
+                            <th>Created Date</th>
+                            <th>Updated Date</th> @* Yeni Sütun *@
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -175,7 +188,6 @@
         $(document).ready(function() {
             $('#categoryDataTable').DataTable({ "pageLength": 10 });
 
-            // Ana Kategori Formu
             $("#categoryForm").on("submit", function (e) {
                 e.preventDefault();
                 var url = saveMode === "Add" ? '/Admin/Category/AddCategory' : '/Admin/Category/UpdateCategory';
@@ -193,7 +205,6 @@
                 });
             });
 
-            // Alt Kategori Hızlı Ekleme
             $("#quickAddSubForm").on("submit", function (e) {
                 e.preventDefault();
                 var parentId = $("#hiddenParentId").val();
@@ -246,22 +257,26 @@
         }
 
         function loadSubCategories(categoryId) {
-            // Kritik: Parametre ismini parentId olarak gönderiyoruz
             $.get('/Admin/SubCategory/GetSubCategoriesByParent?parentId=' + categoryId, function (data) {
                 var html = "";
-                // Data null veya boş dizi kontrolü
                 if (!data || data.length === 0) {
-                    html = "<tr><td colspan='3' class='text-center text-muted py-3'>No subcategories found.</td></tr>";
+                    html = "<tr><td colspan='5' class='text-center text-muted py-3'>No subcategories found.</td></tr>";
                 } else {
                     data.forEach(sub => {
-                        // CamelCase ve PascalCase uyumu için kontrol
                         var subName = sub.name || sub.Name;
                         var subId = sub.id || sub.Id;
                         var isDeleted = sub.isDeleted !== undefined ? sub.isDeleted : sub.IsDeleted;
 
+                        // Tarih formatlama
+                        var createdDate = new Date(sub.createdDate || sub.CreatedDate).toLocaleDateString();
+                        var updatedDateRaw = sub.updatedDate || sub.UpdatedDate;
+                        var updatedDate = updatedDateRaw ? new Date(updatedDateRaw).toLocaleDateString() : "<span class='text-muted small italic'>Not updated yet</span>";
+
                         html += `<tr>
                                     <td>${subName}</td>
                                     <td><span class="badge ${isDeleted ? 'bg-danger' : 'bg-success'}">${isDeleted ? 'Passive' : 'Active'}</span></td>
+                                    <td>${createdDate}</td>
+                                    <td>${updatedDate}</td>
                                     <td class="text-end">
                                         <a href="javascript:;" onclick="deleteSub('${subId}', '${categoryId}')" class="text-danger"><i class='bx bxs-trash'></i></a>
                                     </td>
