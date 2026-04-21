@@ -37,8 +37,6 @@ namespace Data_Access_Layer.DbContext
                 entity.Property(u => u.Surname).HasMaxLength(50).IsRequired();
                 entity.Property(u => u.ImageUrl).HasMaxLength(500);
 
-                //kodun hiçbir yerinde .Where(x=>!x.IsDeleted) yazmaya gerek kalmaz. EF Core tüm SELECT sorgularına bu şartı otomatik olarak ekler.
-                entity.HasQueryFilter(u => !u.IsDeleted);
             });
 
             //product
@@ -49,7 +47,6 @@ namespace Data_Access_Layer.DbContext
 
                 entity.Property(p => p.Price).HasPrecision(18, 2); //virgülden sonra iki basamak getirmesini sağlar.
 
-                entity.HasQueryFilter(p => !p.IsDeleted);
             });
 
             //category
@@ -57,13 +54,11 @@ namespace Data_Access_Layer.DbContext
             {
                 entity.Property(c => c.Name).HasMaxLength(100).IsRequired();
                 entity.Property(c => c.Description).HasMaxLength(500);
-                entity.HasQueryFilter(c => !c.IsDeleted);
             });
 
             builder.Entity<SubCategory>(entity =>
             {
                 entity.Property(sc => sc.Name).HasMaxLength(100).IsRequired();
-                entity.HasQueryFilter(sc => !sc.IsDeleted);
             });
 
             //order ve orderitem

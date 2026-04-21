@@ -44,7 +44,6 @@ namespace SmartShopper.Areas.Admin.Controllers
             }
         }
 
-        [HttpGet]
         public async Task<IActionResult> GetCategory(Guid id)
         {
             var category = await _categoryService.TGetByIdAsync(id);
