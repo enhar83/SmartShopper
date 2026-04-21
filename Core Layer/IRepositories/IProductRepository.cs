@@ -9,5 +9,6 @@ namespace Core_Layer.IRepositories
 {
     public interface IProductRepository: IGenericRepository<Product>
     {
+
     }
 }
