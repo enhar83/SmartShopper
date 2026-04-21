@@ -7,7 +7,7 @@ using Entity_Layer.Common;
 
 namespace Entity_Layer
 {
-    public class ProductImage:BaseEntity
+    public class ProductImage: BaseEntity
     {
         public required string ImageUrl { get; set; }
         public Guid ProductId { get; set; }
