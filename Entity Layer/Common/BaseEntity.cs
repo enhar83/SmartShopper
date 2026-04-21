@@ -8,7 +8,7 @@ namespace Entity_Layer.Common
 {
     public abstract class BaseEntity : IEntity
     {
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public DateTime? UpdatedDate { get; set; }
         public bool IsDeleted { get; set; } = false;

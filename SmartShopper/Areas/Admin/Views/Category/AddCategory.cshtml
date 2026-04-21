@@ -1,0 +1,89 @@
+﻿@using Core_Layer.Dtos
+@model AddCategoryDto
+
+@{
+    ViewData["Title"] = "Add New Category";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-xl-9 mx-auto">
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="breadcrumb-title pe-3">Product Management</div>
+            <div class="ps-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 p-0">
+                        <li class="breadcrumb-item"><a href="/Admin/Dashboard"><i class="bx bx-home-alt"></i></a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Add New Category</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <h6 class="mb-0 text-uppercase">Category Definition Form</h6>
+        <hr />
+
+        <div class="card border-top border-0 border-4 border-primary shadow-sm">
+            <div class="card-body p-5">
+                <div class="card-title d-flex align-items-center">
+                    <div><i class="bx bxs-category me-1 font-22 text-primary"></i></div>
+                    <h5 class="mb-0 text-primary">Category Details</h5>
+                </div>
+                <hr>
+
+                @* Senior Note: Added 'id' to form for debugging and ensured Area is specified *@
+                <form id="addCategoryForm" asp-action="AddCategory" asp-controller="Category" asp-area="Admin" method="post" class="row g-3">
+
+                    @* This displays errors from LogicException or generic failures *@
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="col-md-12">
+                        <label asp-for="Name" class="form-label fw-bold">Category Name</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-transparent"><i class='bx bxs-tag'></i></span>
+                            <input asp-for="Name" type="text" class="form-control border-start-0" placeholder="e.g. Electronics, Fashion..." required />
+                        </div>
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Description" class="form-label fw-bold">Description</label>
+                        <textarea asp-for="Description" class="form-control" rows="4" placeholder="Brief info about the category..."></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-12">
+                        <div class="form-check form-switch">
+                            <input asp-for="HasGender" class="form-check-input" type="checkbox">
+                            <label class="form-check-label" asp-for="HasGender">Does this category include gender specification?</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12 mt-4 text-end">
+                        <a href="/Admin/Category/CategoryList" class="btn btn-light px-5 me-2">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                            <i class='bx bx-save me-1'></i> Save Category
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @* Senior Tip: Standard validation scripts *@
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    @* Manual Debug Script: If button still fails, this will tell us why in the Console (F12) *@
+    <script>
+        $(document).ready(function() {
+            console.log("Validation scripts loaded.");
+            $("#addCategoryForm").on("submit", function() {
+                console.log("Form is being submitted...");
+            });
+        });
+    </script>
+}

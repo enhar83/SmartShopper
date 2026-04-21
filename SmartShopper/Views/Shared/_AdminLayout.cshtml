@@ -919,7 +919,11 @@
 		</header>
 		<!--end header -->
 
-		@RenderBody()
+		<div class="page-wrapper">
+			<div class="page-content">
+				@RenderBody()
+			</div>
+		</div>
 
 		<!--start overlay-->
 		<div class="overlay toggle-icon"></div>
@@ -1133,6 +1137,8 @@
 			RenderAllTodos();
 		}
 	</script>
+
+	@await RenderSectionAsync("Scripts", required: false)
 </body>
 
 </html>

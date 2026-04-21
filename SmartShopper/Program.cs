@@ -1,7 +1,13 @@
+using Business_Layer.Managers;
+using Business_Layer.Mapping.CategoryMappings;
+using Business_Layer.Validators.CategoryValidators;
 using Core_Layer.IRepositories;
+using Core_Layer.IServices;
 using Data_Access_Layer.DbContext;
 using Data_Access_Layer.Repositories;
 using Entity_Layer;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +40,15 @@ builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IOrderItemRepository, OrderItemRepository>();
 builder.Services.AddScoped<IUserAddressRepository, UserAddressRepository>();
 builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
+
+
+builder.Services.AddScoped<ICategoryService, CategoryManager>();
+
+builder.Services.AddAutoMapper(typeof(CategoryMapping));
+builder.Services.AddValidatorsFromAssemblyContaining<AddCategoryValidator>();
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
 
 var app = builder.Build();
 

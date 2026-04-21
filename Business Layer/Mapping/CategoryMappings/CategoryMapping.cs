@@ -13,6 +13,7 @@ namespace Business_Layer.Mapping.CategoryMappings
     {
         public CategoryMapping() 
         {
+            CreateMap<Category, CategoryListDto>().ReverseMap();
             CreateMap<AddCategoryDto, Category>().ReverseMap();
         }
     }
