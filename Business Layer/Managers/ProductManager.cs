@@ -12,6 +12,7 @@ using Core_Layer.IServices;
 using Data_Access_Layer.Repositories;
 using Entity_Layer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 
 namespace Business_Layer.Managers
 {
@@ -46,6 +47,23 @@ namespace Business_Layer.Managers
             product.IsDeleted = false;
 
             await _productRepository.AddAsync(product);
+            await _uow.SaveAsync();
+        }
+
+        public async Task TUpdateProductAsync(UpdateProductDto updateProductDto)
+        {
+            var productToUpdate = await _productRepository.GetByIdAsync(updateProductDto.Id);
+            if (productToUpdate == null)
+                throw new LogicException(nameof(updateProductDto.Id), "The product not found.");
+
+            var anyExists = await _productRepository.AnyAsync(p=>p.Id != updateProductDto.Id && p.Name == updateProductDto.Name);
+            if (anyExists)
+                throw new LogicException(nameof(updateProductDto.Name), "This product name is already exists.");
+
+            _mapper.Map(updateProductDto,productToUpdate);
+            productToUpdate.UpdatedDate = DateTime.Now;
+
+            _productRepository.Update(productToUpdate);
             await _uow.SaveAsync();
         }
     }

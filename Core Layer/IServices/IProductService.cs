@@ -11,5 +11,6 @@ namespace Core_Layer.IServices
     {
         Task TAddProductAsync(AddProductDto addProductDto);
         Task<List<ProductListDto>> TGetProductListAsync();
+        Task TUpdateProductAsync(UpdateProductDto updateProductDto);
     }
 }

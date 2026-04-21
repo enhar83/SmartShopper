@@ -68,11 +68,7 @@ namespace Business_Layer.Managers
             if (isOtherCategoryExists)
                 throw new LogicException(nameof(updateCategoryDto.Name), "This category name is already exists.");
 
-            _mapper.Map<Category>(category);
-            category.Name = updateCategoryDto.Name;
-            category.Description = updateCategoryDto.Description;
-            category.IsDeleted = updateCategoryDto.IsDeleted;
-            category.HasGender = updateCategoryDto.HasGender;
+            _mapper.Map(updateCategoryDto,category);
             category.UpdatedDate = DateTime.Now;
 
             _categoryRepository.Update(category);
