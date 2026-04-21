@@ -8,9 +8,9 @@ using FluentValidation;
 
 namespace Business_Layer.Validators.CategoryValidators
 {
-    public class AddCategoryValidator:AbstractValidator<AddCategoryDto>
+    public class UpdateCategoryValidator:AbstractValidator<UpdateCategoryDto>
     {
-        public AddCategoryValidator()
+        public UpdateCategoryValidator() 
         {
             RuleFor(c => c.Name)
                 .NotEmpty().WithMessage("Category name is mandatory.")

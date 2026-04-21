@@ -1,4 +1,5 @@
 ﻿@using Core_Layer.Dtos
+@using Core_Layer.Dtos.CategoryDtos
 @model List<CategoryListDto>
 
 @{
@@ -41,6 +42,7 @@
                                     <th>Description</th>
                                     <th>Has Gender</th>
                                     <th>Created Date</th>
+                                    <th>Updated Date</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -65,6 +67,16 @@
                                             }
                                         </td>
                                         <td>@item.CreatedDate.ToShortDateString()</td>
+                                        <td>
+                                            @if (item.UpdatedDate.HasValue)
+                                            {
+                                                <span class="text-dark">@item.UpdatedDate.Value.ToShortDateString()</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted italic small">Not updated yet</span>
+                                            }
+                                        </td>
                                         <td>
                                             <div class="d-flex order-actions">
                                                 <a href="/Admin/Category/EditCategory/@item.Id" class="text-primary bg-light-primary border-0"><i class='bx bxs-edit'></i></a>

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core_Layer.Dtos
+namespace Core_Layer.Dtos.CategoryDtos
 {
     public class AddCategoryDto
     {

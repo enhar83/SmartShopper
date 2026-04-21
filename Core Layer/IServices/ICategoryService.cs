@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Core_Layer.Dtos;
+using Core_Layer.Dtos.CategoryDtos;
 
 namespace Core_Layer.IServices
 {

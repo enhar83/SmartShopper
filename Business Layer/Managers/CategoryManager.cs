@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Core_Layer.Dtos;
+using Core_Layer.Dtos.CategoryDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;

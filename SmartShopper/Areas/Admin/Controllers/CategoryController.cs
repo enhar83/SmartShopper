@@ -1,4 +1,4 @@
-﻿using Core_Layer.Dtos;
+﻿using Core_Layer.Dtos.CategoryDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IServices;
 using Microsoft.AspNetCore.Mvc;

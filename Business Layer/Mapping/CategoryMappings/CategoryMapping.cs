@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
-using Core_Layer.Dtos;
+using Core_Layer.Dtos.CategoryDtos;
 using Entity_Layer;
 
 namespace Business_Layer.Mapping.CategoryMappings
@@ -15,6 +15,7 @@ namespace Business_Layer.Mapping.CategoryMappings
         {
             CreateMap<Category, CategoryListDto>().ReverseMap();
             CreateMap<AddCategoryDto, Category>().ReverseMap();
+            CreateMap<UpdateCategoryDto, Category>().ReverseMap();
         }
     }
 }
