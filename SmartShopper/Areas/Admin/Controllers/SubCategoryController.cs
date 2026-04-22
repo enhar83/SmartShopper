@@ -48,5 +48,41 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = "An unexpected error occurred while saving." });
             }
         }
+
+        public async Task<IActionResult> GetCategory(Guid id)
+        {
+            var category = await _subCategoryService.TGetByIdAsync(id);
+            if (category == null)
+                return NotFound(new { success = false, message = "Subcategory not found." });
+
+            return Json(category);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateSubCategory(UpdateSubCategoryDto updateSubCategoryDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage);
+                return Json(new { success = false, message = string.Join("<br>", errors) });
+            }
+
+            try
+            {
+                await _subCategoryService.TUpdateSubCategoryAsync(updateSubCategoryDto);
+                return Json(new { success = true, message = "Subcategory updated successfully!" });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            // SubCategoryController.cs içinde geçici olarak:
+            catch (Exception ex)
+            {
+                // InnerException genellikle asıl veritabanı hatasını (örn: 'CreatedDate cannot be null') söyler
+                var innerError = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+                return Json(new { success = false, message = "Database Error: " + innerError });
+            }
+        }
     }
 }
