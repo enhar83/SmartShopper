@@ -45,6 +45,7 @@ builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryManager>();
 builder.Services.AddScoped<IProductService, ProductManager>();
+builder.Services.AddScoped<IProductImageService, ProductImageManager>();
 
 builder.Services.AddAutoMapper(typeof(CategoryMapping));
 builder.Services.AddValidatorsFromAssemblyContaining<AddCategoryValidator>();

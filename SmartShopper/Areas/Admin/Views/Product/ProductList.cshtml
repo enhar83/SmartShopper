@@ -57,24 +57,12 @@
                                         <td><strong>@item.Name</strong></td>
                                         <td>@item.Price.ToString("C2")</td>
                                         <td>
-                                            @if (item.Stock <= 5)
-                                            {
-                                                <span class="badge bg-light-warning text-warning">Low: @item.Stock</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-dark">@item.Stock</span>
-                                            }
+                                            <span class="badge @(item.Stock <= 5 ? "bg-light-warning text-warning" : "text-dark")">
+                                                @item.Stock
+                                            </span>
                                         </td>
                                         <td>
-                                            @if (item.Gender.HasValue)
-                                            {
-                                                <span class="badge bg-info">@item.Gender.Value.ToString()</span>
-                                            }
-                                            else
-                                            {
-                                                <span class="text-muted small">N/A</span>
-                                            }
+                                            <span class="badge bg-info">@(item.Gender?.ToString() ?? "N/A")</span>
                                         </td>
                                         <td>
                                             <span class="badge @(item.IsDelete ? "bg-light-danger text-danger" : "bg-light-success text-success") w-100">
@@ -84,6 +72,9 @@
                                         <td>@item.CreatedDate.ToShortDateString()</td>
                                         <td class="text-center">
                                             <div class="d-flex order-actions justify-content-center">
+                                                <a href="javascript:;" onclick="openImageModal('@item.Id', '@item.Name')" class="text-success bg-light-success border-0 me-2" title="Manage Images">
+                                                    <i class='bx bx-images'></i>
+                                                </a>
                                                 <a href="javascript:;" onclick="editProduct('@item.Id')" class="text-primary bg-light-primary border-0 me-2" title="Edit">
                                                     <i class='bx bxs-edit'></i>
                                                 </a>
@@ -123,42 +114,31 @@
                             <label class="form-label fw-bold">Description</label>
                             <textarea name="Description" id="productDescription" class="form-control" rows="2" required></textarea>
                         </div>
-
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-primary">1. Main Category</label>
+                            <label class="form-label fw-bold text-primary">Main Category</label>
                             <select id="mainCategorySelect" class="form-select border-primary">
                                 <option value="">-- Select Category --</option>
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label fw-bold text-success">2. SubCategory</label>
+                            <label class="form-label fw-bold text-success">SubCategory</label>
                             <select name="SubCategoryId" id="subCategorySelect" class="form-select border-success" disabled required>
                                 <option value="">-- Choose Sub --</option>
                             </select>
                         </div>
-
                         <div class="col-12" id="genderContainer" style="display:none;">
-                            <div class="card bg-light-info border-0 shadow-none mb-0">
-                                <div class="card-body p-3">
-                                    <label class="form-label fw-bold">3. Target Gender</label>
-                                    <select name="Gender" id="genderSelect" class="form-select">
-                                        <option value="">-- Select Gender --</option>
-                                        <option value="0">Children</option>
-                                        <option value="1">Male</option>
-                                        <option value="2">Female</option>
-                                        <option value="3">Unisex</option>
-                                    </select>
-                                    <small class="text-info">* Required for this category.</small>
-                                </div>
-                            </div>
+                            <label class="form-label fw-bold">Target Gender</label>
+                            <select name="Gender" id="genderSelect" class="form-select">
+                                <option value="">-- Select Gender --</option>
+                                <option value="0">Children</option>
+                                <option value="1">Male</option>
+                                <option value="2">Female</option>
+                                <option value="3">Unisex</option>
+                            </select>
                         </div>
-
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Price</label>
-                            <div class="input-group">
-                                <span class="input-group-text">$</span>
-                                <input name="Price" id="productPrice" type="number" step="0.01" class="form-control" required>
-                            </div>
+                            <input name="Price" id="productPrice" type="number" step="0.01" class="form-control" required>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label fw-bold">Stock</label>
@@ -168,9 +148,48 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Changes</button>
+                    <button type="submit" class="btn btn-primary px-4 shadow-sm">Save Product</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-top border-0 border-4 border-success">
+            <div class="modal-header">
+                <h5 class="modal-title text-success"><i class="bx bx-images me-1"></i>Gallery: <span id="imageModalProductName"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="imageUploadForm" enctype="multipart/form-data">
+                    <input type="hidden" name="ProductId" id="imageModalProductId" />
+                    <div class="card bg-light-success border-0 shadow-none mb-4">
+                        <div class="card-body p-3">
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-7">
+                                    <label class="form-label fw-bold small">Choose Image</label>
+                                    <input type="file" name="Photo" class="form-control form-control-sm" accept="image/*" required>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label fw-bold small">Set Main?</label>
+                                    <div class="form-check form-switch mt-1">
+                                        <input class="form-check-input" type="checkbox" name="IsMain" value="true">
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-success w-100">Save</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+                <h6 class="mb-3 text-uppercase small fw-bold text-success">Product Photos</h6>
+                <div class="row g-3" id="imageGalleryContainer">
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -190,33 +209,99 @@
             // Cascading Logic
             $("#mainCategorySelect").on("change", function() {
                 var selectedId = $(this).val();
-                if (!selectedId) {
-                    resetCascading();
-                    return;
-                }
+                if (!selectedId) { resetCascading(); return; }
                 handleGenderVisibility(selectedId);
                 loadSubCategoriesByParent(selectedId);
             });
 
-            // Form Submit
+            // Product Save AJAX
             $("#productForm").on("submit", function (e) {
                 e.preventDefault();
                 var url = saveMode === "Add" ? '/Admin/Product/AddProduct' : '/Admin/Product/UpdateProduct';
                 $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: $(this).serialize(),
+                    url: url, type: 'POST', data: $(this).serialize(),
                     success: function (res) {
                         if (res.success) {
-                            Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false }).then(() => location.reload());
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Error', html: res.message });
-                        }
+                            Swal.fire({ icon: 'success', title: 'Success', timer: 1000, showConfirmButton: false }).then(() => location.reload());
+                        } else { Swal.fire('Error', res.message, 'error'); }
+                    }
+                });
+            });
+
+            // Image Upload AJAX
+            $("#imageUploadForm").on("submit", function (e) {
+                e.preventDefault();
+                var productId = $("#imageModalProductId").val();
+                var formData = new FormData(this);
+
+                $.ajax({
+                    url: '/Admin/ProductImage/AddProductImage',
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,
+                    processData: false,
+                    success: function (res) {
+                        if (res.success) {
+                            Swal.fire({ icon: 'success', title: 'Uploaded!', timer: 800, showConfirmButton: false });
+                            $("#imageUploadForm")[0].reset();
+                            loadProductImages(productId);
+                        } else { Swal.fire('Error', res.message, 'error'); }
                     }
                 });
             });
         });
 
+        // IMAGE MODAL LOGIC
+        function openImageModal(id, name) {
+            $("#imageModalProductId").val(id);
+            $("#imageModalProductName").text(name);
+            $("#imageUploadForm")[0].reset();
+            loadProductImages(id);
+            $("#imageModal").modal("show");
+        }
+
+        function loadProductImages(productId) {
+            // DİKKAT: Controller tarafındaki metodun adı ProductImageList olsa bile
+            // biz JS'te rotayı buna göre düzenledik veya Controller'da ismi değiştirdik.
+            // En sağlamı Controller'daki ismi GetProductImages yapmak.
+            $.get('/Admin/ProductImage/GetProductImages?productId=' + productId, function (res) {
+                var html = "";
+                if (!res || res.length === 0) {
+                    html = `
+                        <div class="col-12 text-center py-5">
+                            <i class='bx bx-image-add text-muted mb-2' style="font-size: 3rem;"></i>
+                            <p class="text-muted">No images found for this product.</p>
+                        </div>`;
+                } else {
+                    res.forEach(img => {
+                        // Büyük/Küçük harf duyarlılığı için kontrol
+                        var url = img.imageUrl || img.ImageUrl;
+                        var isMain = (img.isMain !== undefined) ? img.isMain : img.IsMain;
+
+                        // URL'in başında '/' olduğundan emin ol
+                        if (url && !url.startsWith('/')) { url = '/' + url; }
+
+                        html += `
+                            <div class="col-md-4 col-sm-6">
+                                <div class="card shadow-none border mb-0 overflow-hidden position-relative">
+                                    ${isMain ? '<span class="badge bg-success position-absolute top-0 end-0 m-2" style="z-index:5;">Main</span>' : ''}
+                                    <div style="height: 140px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                        <img src="${url}" class="img-fluid" style="max-height: 100%; object-fit: contain;" onerror="this.src='/adminassets/images/no-image.png'">
+                                    </div>
+                                    <div class="card-footer bg-light p-2 text-center">
+                                        <button class="btn btn-sm btn-outline-danger border-0" title="Delete"><i class="bx bx-trash"></i></button>
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                }
+                $("#imageGalleryContainer").html(html);
+            }).fail(function() {
+                $("#imageGalleryContainer").html('<div class="text-danger text-center py-3">Error loading images!</div>');
+            });
+        }
+
+        // PRODUCT MODAL LOGIC
         function openProductModal() {
             saveMode = "Add";
             $("#productForm")[0].reset();
@@ -231,28 +316,22 @@
             saveMode = "Update";
             $("#productForm")[0].reset();
             $("#modalHeaderTitle").text("Update Product");
-
             $.get('/Admin/Category/GetActiveCategories', function (categories) {
                 allCategories = categories;
                 fillMainCategoryDropdown(categories);
-
                 $.get('/Admin/Product/GetProduct?id=' + id, function (product) {
                     $("#productId").val(product.id || product.Id);
                     $("#productName").val(product.name || product.Name);
                     $("#productDescription").val(product.description || product.Description);
                     $("#productPrice").val(product.price || product.Price);
                     $("#productStock").val(product.stock || product.Stock);
-
                     var subId = product.subCategoryId || product.SubCategoryId;
-
                     $.get('/Admin/SubCategory/GetSubCategoryParentId?subId=' + subId, function (parentId) {
                         $("#mainCategorySelect").val(parentId);
                         handleGenderVisibility(parentId);
                         loadSubCategoriesByParent(parentId, subId);
                     });
-
-                    var gender = product.gender !== null ? product.gender : "";
-                    $("#genderSelect").val(gender);
+                    $("#genderSelect").val(product.gender !== null ? product.gender : "");
                     $('#productModal').modal('show');
                 });
             });

@@ -16,6 +16,8 @@ namespace Business_Layer.Mapping.ProductImageMappings
             CreateMap<AddProductImageDto, ProductImage>()
                 .ForMember(dest => dest.ImageUrl, opt => opt.Ignore()) 
                 .ReverseMap();
+
+            CreateMap<ProductImage, ProductImageListDto>().ReverseMap();
         }
     }
 }
