@@ -10,14 +10,6 @@
     <div class="col-xl-12 mx-auto">
         <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
             <div class="breadcrumb-title pe-3">Product Management</div>
-            <div class="ps-3">
-                <nav aria-label="breadcrumb">
-                    <ol class="breadcrumb mb-0 p-0">
-                        <li class="breadcrumb-item"><a href="/Admin/Dashboard"><i class="bx bx-home-alt"></i></a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Product Inventory</li>
-                    </ol>
-                </nav>
-            </div>
             <div class="ms-auto">
                 <button type="button" class="btn btn-primary px-4" onclick="openProductModal()">
                     <i class='bx bx-plus-circle'></i> Add New Product
@@ -159,7 +151,7 @@
     <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content border-top border-0 border-4 border-success">
             <div class="modal-header">
-                <h5 class="modal-title text-success"><i class="bx bx-images me-1"></i>Gallery: <span id="imageModalProductName"></span></h5>
+                <h5 class="modal-title text-success"><i class="bx bx-images me-1"></i>Gallery: <span id="imageModalProductName" class="fw-bold"></span></h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -214,7 +206,7 @@
                 loadSubCategoriesByParent(selectedId);
             });
 
-            // Product Save AJAX
+            // Product Save
             $("#productForm").on("submit", function (e) {
                 e.preventDefault();
                 var url = saveMode === "Add" ? '/Admin/Product/AddProduct' : '/Admin/Product/UpdateProduct';
@@ -228,7 +220,7 @@
                 });
             });
 
-            // Image Upload AJAX
+            // Image Upload
             $("#imageUploadForm").on("submit", function (e) {
                 e.preventDefault();
                 var productId = $("#imageModalProductId").val();
@@ -251,7 +243,7 @@
             });
         });
 
-        // IMAGE MODAL LOGIC
+        // IMAGE MANAGEMENT
         function openImageModal(id, name) {
             $("#imageModalProductId").val(id);
             $("#imageModalProductName").text(name);
@@ -261,9 +253,6 @@
         }
 
         function loadProductImages(productId) {
-            // DİKKAT: Controller tarafındaki metodun adı ProductImageList olsa bile
-            // biz JS'te rotayı buna göre düzenledik veya Controller'da ismi değiştirdik.
-            // En sağlamı Controller'daki ismi GetProductImages yapmak.
             $.get('/Admin/ProductImage/GetProductImages?productId=' + productId, function (res) {
                 var html = "";
                 if (!res || res.length === 0) {
@@ -274,11 +263,8 @@
                         </div>`;
                 } else {
                     res.forEach(img => {
-                        // Büyük/Küçük harf duyarlılığı için kontrol
                         var url = img.imageUrl || img.ImageUrl;
                         var isMain = (img.isMain !== undefined) ? img.isMain : img.IsMain;
-
-                        // URL'in başında '/' olduğundan emin ol
                         if (url && !url.startsWith('/')) { url = '/' + url; }
 
                         html += `
@@ -289,7 +275,9 @@
                                         <img src="${url}" class="img-fluid" style="max-height: 100%; object-fit: contain;" onerror="this.src='/adminassets/images/no-image.png'">
                                     </div>
                                     <div class="card-footer bg-light p-2 text-center">
-                                        <button class="btn btn-sm btn-outline-danger border-0" title="Delete"><i class="bx bx-trash"></i></button>
+                                        <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteProductImage('${img.id || img.Id}', '${productId}')" title="Delete">
+                                            <i class="bx bx-trash"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>`;
@@ -301,7 +289,34 @@
             });
         }
 
-        // PRODUCT MODAL LOGIC
+        // IMAGE DELETE
+        function deleteProductImage(imageId, productId) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "This image will be permanently deleted!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/ProductImage/DeleteProductImage',
+                        type: 'POST',
+                        data: { id: imageId },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1000, showConfirmButton: false });
+                                loadProductImages(productId);
+                            } else { Swal.fire('Error!', res.message, 'error'); }
+                        }
+                    });
+                }
+            });
+        }
+
+        // PRODUCT DETAILS LOGIC
         function openProductModal() {
             saveMode = "Add";
             $("#productForm")[0].reset();

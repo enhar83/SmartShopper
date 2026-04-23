@@ -11,5 +11,6 @@ namespace Core_Layer.IServices
     {
         Task TAddProductImageAsync(AddProductImageDto addProductImageDto);
         Task<List<ProductImageListDto>> TGetProductImagesByProductIdAsync(Guid productId);
+        Task TDeleteProductImageAsync(Guid id);
     }
 }

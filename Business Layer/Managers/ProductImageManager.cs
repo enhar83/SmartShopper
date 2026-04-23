@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.ProductImagesDtos;
+using Core_Layer.Exceptions;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Entity_Layer;
@@ -56,6 +57,20 @@ namespace Business_Layer.Managers
             productImage.ImageUrl = "/images/products/" + imageName; //dbye dosyanın sunucudaki fiziksel yolunu değil web yolu kaydolur. Böylece tarayıcıdan yazıldığında da resim görülebilir.
 
             await _productImageRepository.AddAsync(productImage);
+            await _uow.SaveAsync();
+        }
+
+        public async Task TDeleteProductImageAsync(Guid id)
+        {
+            var productImage = await _productImageRepository.GetByIdAsync(id);
+            if (productImage == null)
+                throw new LogicException("Id", "The product image not found.");
+
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", productImage.ImageUrl.TrimStart('/'));
+            if (System.IO.File.Exists(filePath))
+                System.IO.File.Delete(filePath);
+
+            _productImageRepository.Remove(productImage);
             await _uow.SaveAsync();
         }
 

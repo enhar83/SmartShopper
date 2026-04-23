@@ -42,5 +42,19 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = "An error occurred during upload: " + ex.Message });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteProductImage(Guid id)
+        {
+            try
+            {
+                await _productImageService.TDeleteProductImageAsync(id);
+                return Json(new { success = true, message = "Image has been deleted successfully." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "An error occurred: " + ex.Message });
+            }
+        }
     }
 }
