@@ -15,6 +15,10 @@ namespace Business_Layer.Mapping.AuthMappings
         public AuthMapping() 
         {
             CreateMap<RegisterDto, AppUser>().ReverseMap();
+
+            CreateMap<AppUser,UserListDto>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name + " " + src.Surname))
+                .ReverseMap();
         }
     }
 }
