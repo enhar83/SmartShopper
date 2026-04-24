@@ -9,6 +9,7 @@ using Core_Layer.Exceptions;
 using Core_Layer.IServices;
 using Entity_Layer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Business_Layer.Managers
 {
@@ -23,7 +24,18 @@ namespace Business_Layer.Managers
             _mapper = mapper;
         }
 
-        public async Task<IdentityResult> RegisterAsync(RegisterDto registerDto)
+        public async Task<List<UserListDto>> TGetUserListAsync()
+        {
+            var users = await _userManager.Users
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
+
+            var userListDto = _mapper.Map<List<UserListDto>>(users);
+
+            return userListDto;
+        }
+
+        public async Task<IdentityResult> TRegisterAsync(RegisterDto registerDto)
         {
             var existingUserName = await _userManager.FindByNameAsync(registerDto.UserName);
             if (existingUserName != null)

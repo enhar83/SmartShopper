@@ -10,6 +10,7 @@ namespace Core_Layer.IServices
 {
     public interface IAuthService
     {
-        Task<IdentityResult> RegisterAsync(RegisterDto registerDto);
+        Task<IdentityResult> TRegisterAsync(RegisterDto registerDto);
+        Task<List<UserListDto>> TGetUserListAsync();
     }
 }

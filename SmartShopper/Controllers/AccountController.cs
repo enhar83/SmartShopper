@@ -25,7 +25,7 @@ namespace SmartShopper.Controllers
             if (!ModelState.IsValid) 
                 return View(registerDto);
 
-            var result = await _authService.RegisterAsync(registerDto);
+            var result = await _authService.TRegisterAsync(registerDto);
             if (result.Succeeded)
             {
                 TempData["SuccessRegisterMessage"] = "Registration successful. You can now log in.";
