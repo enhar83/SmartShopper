@@ -19,6 +19,8 @@ namespace Business_Layer.Mapping.AuthMappings
             CreateMap<AppUser,UserListDto>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name + " " + src.Surname))
                 .ReverseMap();
+
+            CreateMap<ConfirmUserEmailDto, AppUser>().ReverseMap();
         }
     }
 }

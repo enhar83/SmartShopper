@@ -13,6 +13,7 @@ namespace Entity_Layer
         public required string Surname { get; set; }
         public string? ImageUrl { get; set; }
         public bool IsDeleted { get; set; }
+        public int? ActivationCode { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public ICollection<UserAddress>? Addresses { get; set; } 
 
