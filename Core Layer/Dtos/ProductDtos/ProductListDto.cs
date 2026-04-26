@@ -19,6 +19,6 @@ namespace Core_Layer.Dtos.ProductDtos
         public Guid SubCategoryId { get; set; }
         public DateTime CreatedDate { get; set; }
         public DateTime UpdatedDate { get; set; }
-        public bool IsDelete { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

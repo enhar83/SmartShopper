@@ -13,6 +13,7 @@ namespace Core_Layer.Dtos.ProductDtos
         public required string Description { get; set; }
         public decimal Price { get; set; }
         public int Stock { get; set; }
+        public bool IsDeleted { get; set; }
         public GenderType? Gender { get; set; }
         public Guid SubCategoryId { get; set; }
     }

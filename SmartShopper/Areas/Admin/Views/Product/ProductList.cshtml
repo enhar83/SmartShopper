@@ -57,8 +57,8 @@
                                             <span class="badge bg-info">@(item.Gender?.ToString() ?? "N/A")</span>
                                         </td>
                                         <td>
-                                            <span class="badge @(item.IsDelete ? "bg-light-danger text-danger" : "bg-light-success text-success") w-100">
-                                                @(item.IsDelete ? "Passive" : "Active")
+                                            <span class="badge @(item.IsDeleted ? "bg-light-danger text-danger" : "bg-light-success text-success") w-100">
+                                                @(item.IsDeleted ? "Passive" : "Active")
                                             </span>
                                         </td>
                                         <td>@item.CreatedDate.ToShortDateString()</td>
@@ -136,6 +136,15 @@
                             <label class="form-label fw-bold">Stock</label>
                             <input name="Stock" id="productStock" type="number" class="form-control" required>
                         </div>
+
+                        <div class="col-md-6" id="isDeletedContainer" style="display:none;">
+                            <label class="form-label fw-bold">Status</label>
+                            <div class="form-check form-switch mt-1">
+                                <input class="form-check-input" type="checkbox" id="isDeletedSwitch">
+                                <label class="form-check-label text-danger">Is Passive?</label>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -206,12 +215,30 @@
                 loadSubCategoriesByParent(selectedId);
             });
 
-            // Product Save
+            // Product Save - GÜNCELLENMİŞ KESİN ÇÖZÜM
             $("#productForm").on("submit", function (e) {
                 e.preventDefault();
                 var url = saveMode === "Add" ? '/Admin/Product/AddProduct' : '/Admin/Product/UpdateProduct';
+
+                // 1. Formdaki tüm inputları bir diziye alıyoruz
+                var formData = $(this).serializeArray();
+
+                // 2. Eğer ürün güncelleniyorsa, IsDeleted değerini "zorla" ekliyoruz
+                if (saveMode === "Update") {
+                    var isPassive = $("#isDeletedSwitch").is(":checked"); // true veya false döner
+
+                    // Çakışma olmaması adına eski IsDeleted verisi varsa temizliyoruz
+                    formData = formData.filter(function(item) { return item.name !== "IsDeleted"; });
+
+                    // Gerçek sonucu ekliyoruz
+                    formData.push({ name: "IsDeleted", value: isPassive });
+                }
+
+                // 3. Veriyi API'ye yolluyoruz
                 $.ajax({
-                    url: url, type: 'POST', data: $(this).serialize(),
+                    url: url,
+                    type: 'POST',
+                    data: $.param(formData), // Diziyi tekrar form formatına çevirir
                     success: function (res) {
                         if (res.success) {
                             Swal.fire({ icon: 'success', title: 'Success', timer: 1000, showConfirmButton: false }).then(() => location.reload());
@@ -322,6 +349,10 @@
             $("#productForm")[0].reset();
             $("#productId").val("");
             $("#modalHeaderTitle").text("Add New Product");
+
+            $("#isDeletedContainer").hide();
+            $("#isDeletedSwitch").prop("checked", false);
+
             resetCascading();
             loadMainCategories();
             $('#productModal').modal('show');
@@ -331,6 +362,9 @@
             saveMode = "Update";
             $("#productForm")[0].reset();
             $("#modalHeaderTitle").text("Update Product");
+
+            $("#isDeletedContainer").show();
+
             $.get('/Admin/Category/GetActiveCategories', function (categories) {
                 allCategories = categories;
                 fillMainCategoryDropdown(categories);
@@ -340,6 +374,11 @@
                     $("#productDescription").val(product.description || product.Description);
                     $("#productPrice").val(product.price || product.Price);
                     $("#productStock").val(product.stock || product.Stock);
+
+                    // Switch değerini atama
+                    var isDeletedVal = (product.isDeleted !== undefined) ? product.isDeleted : product.IsDeleted;
+                    $("#isDeletedSwitch").prop("checked", isDeletedVal);
+
                     var subId = product.subCategoryId || product.SubCategoryId;
                     $.get('/Admin/SubCategory/GetSubCategoryParentId?subId=' + subId, function (parentId) {
                         $("#mainCategorySelect").val(parentId);

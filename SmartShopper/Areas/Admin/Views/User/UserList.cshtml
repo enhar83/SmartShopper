@@ -31,6 +31,7 @@
                                 <th>Full Name</th>
                                 <th>Username</th>
                                 <th>Email</th>
+                                <th class="text-center">Registration Date</th>
                                 <th class="text-center">Email Confirmed</th>
                                 <th class="text-center">Status</th>
                                 <th class="text-center">Actions</th>
@@ -50,6 +51,8 @@
                                     </td>
                                     <td>@user.UserName</td>
                                     <td>@user.Email</td>
+
+                                    <td class="text-center">@user.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
 
                                     <td class="text-center">
                                         @if (user.EmailConfirmed)
@@ -105,7 +108,7 @@
                 "pageLength": 10,
                 "language": {
                     "emptyTable": "No users found"
-                }
+                },
             });
         });
     </script>

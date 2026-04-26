@@ -11,6 +11,7 @@ namespace Core_Layer.Dtos.AuthDtos
         public required string FullName { get; set; }
         public required string UserName { get; set; }
         public required string Email { get; set; }
+        public DateTime CreatedDate { get; set; }
         public bool EmailConfirmed { get; set; }
         public bool IsDeleted { get; set; }
     }
