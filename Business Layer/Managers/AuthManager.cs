@@ -5,11 +5,13 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.AuthDtos;
+using Core_Layer.Dtos.JwtDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IServices;
 using Entity_Layer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using MimeKit.Encodings;
 
 namespace Business_Layer.Managers
@@ -19,13 +21,15 @@ namespace Business_Layer.Managers
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailActivationService _emailActivationService;
+        private readonly IJwtService _jwtService;
         private readonly IMapper _mapper;
 
-        public AuthManager(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailActivationService emailActivationService, IMapper mapper)
+        public AuthManager(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailActivationService emailActivationService, IJwtService jwtService, IMapper mapper)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailActivationService = emailActivationService;
+            _jwtService = jwtService;
             _mapper = mapper;
         }
 
@@ -60,7 +64,7 @@ namespace Business_Layer.Managers
             return userListDto;
         }
 
-        public async Task<bool> TLoginAsync(LoginDto loginDto)
+        public async Task<JwtDto> TLoginAsync(LoginDto loginDto)
         {
             var user = await _userManager.FindByEmailAsync(loginDto.UsernameOrEmail)
                        ?? await _userManager.FindByNameAsync(loginDto.UsernameOrEmail);
@@ -68,11 +72,31 @@ namespace Business_Layer.Managers
             if (user == null)
                 throw new LogicException("UsernameOrEmail", "Invalid username/email or password");
 
+            if (user.IsDeleted)
+                throw new LogicException("Email", "Your account is inactive, please contact your administrator.");
+
             if (!user.EmailConfirmed)
                 throw new LogicException("EmailNotConfirmed", "Please verify your email.");
 
-            var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, isPersistent: false, lockoutOnFailure: true);
-            return result.Succeeded;
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginDto.Password, lockoutOnFailure: true);
+
+            if (result.IsLockedOut)
+                throw new LogicException("Auth", "Your account is locked due to too many failed attempts. Please try again later.");
+
+            if (result.Succeeded)
+            {
+                var userDto = _mapper.Map<JwtDto>(user);
+
+                var roles = await _userManager.GetRolesAsync(user);
+                userDto.Roles = roles.ToList();
+
+                var generatedToken = await _jwtService.TCreateToken(user); 
+                userDto.Token = generatedToken;
+
+                return userDto;
+            }
+
+            throw new LogicException("Auth", "Invalid username/email or password.");
         }
 
         public async Task<IdentityResult> TRegisterAsync(RegisterDto registerDto)

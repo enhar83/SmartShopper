@@ -88,6 +88,20 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key)),
         ClockSkew = TimeSpan.Zero
     };
+
+    opt.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            // Request içindeki "JwtToken" isimli cookie'yi oku
+            var token = context.Request.Cookies["JwtToken"];
+            if (!string.IsNullOrEmpty(token))
+            {
+                context.Token = token;
+            }
+            return Task.CompletedTask;
+        }
+    };
 });
 
 var app = builder.Build();
