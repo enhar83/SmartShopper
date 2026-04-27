@@ -1,0 +1,78 @@
+﻿@using Core_Layer.Dtos.AuthDtos
+@model LoginDto
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="login-area pb-120">
+    <div class="container">
+        <div class="row">
+            <div class="col-xl-8 col-lg-10 col-md-12 col-sm-12 col-12 offset-xl-2 offset-lg-1 px-xl-0">
+                <div class="login-form-area border-light-gray2 pl-90 pr-90 pt-90 pb-95">
+
+                    @if (TempData["SuccessEmailConfirmedMessage"] != null)
+                    {
+                        <div class="alert alert-success border-0 shadow-sm mb-4">
+                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessEmailConfirmedMessage"]
+                        </div>
+                    }
+
+                    <h3 class="mb-30 text-center">Login From Here</h3>
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3 text-center small"></div>
+
+                    <form asp-action="Login" method="post">
+                        <div class="login-form">
+
+                            <label class="mt-25">Username or Email Address <span class="secondary-color">**</span></label>
+                            <div class="email">
+                                <input asp-for="UsernameOrEmail"
+                                       type="text"
+                                       class="form-control rounded-0 border-light-gray2 pl-20"
+                                       placeholder="Enter Username or Email address">
+                                <span asp-validation-for="UsernameOrEmail" class="text-danger small"></span>
+                            </div>
+
+                            <label class="mt-25">Password <span class="secondary-color">**</span></label>
+                            <div class="password">
+                                <input asp-for="Password"
+                                       type="password"
+                                       class="form-control rounded-0 border-light-gray2 pl-20"
+                                       placeholder="Enter password">
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+
+                            <div class="forget-pass d-sm-flex align-items-center justify-content-between pt-20 pb-20">
+                                <div class="save-info d-flex mb-15">
+                                    <input class="p-0 mr-2" type="checkbox" id="remember">
+                                    <label for="remember" class="mb-0"> Remember me! </label>
+                                </div>
+                                <p class="mb-15">
+                                    <a class="secondary-color" href="#">Lost your password? </a>
+                                </p>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="sub-btn d-inline-block text-center text-white theme-bg transition text-uppercase width100 border-0">
+                            Login now
+                        </button>
+
+                        <div class="or text-center mt-30 mb-30">
+                            <span class="d-block position-relative">or</span>
+                        </div>
+
+                        <a asp-action="Register" class="sub-btn d-inline-block text-center text-white theme-bg transition text-uppercase width100">
+                            register now
+                        </a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

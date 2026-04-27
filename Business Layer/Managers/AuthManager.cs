@@ -69,7 +69,7 @@ namespace Business_Layer.Managers
                 throw new LogicException("UsernameOrEmail", "Invalid username/email or password");
 
             if (!user.EmailConfirmed)
-                throw new LogicException("UsernameOrEmail", "Please verfiy your email.");
+                throw new LogicException("EmailNotConfirmed", "Please verify your email.");
 
             var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, isPersistent: false, lockoutOnFailure: true);
             return result.Succeeded;

@@ -55,6 +55,56 @@ namespace SmartShopper.Controllers
         }
 
         [HttpGet]
+        public IActionResult Login()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginDto loginDto)
+        {
+            if (!ModelState.IsValid)
+                return View(loginDto);
+
+            try
+            {
+                var result = await _authService.TLoginAsync(loginDto);
+
+                if (result)
+                    return RedirectToAction("Index", "Home");
+
+                ModelState.AddModelError("", "Invalid username/email or password.");
+            }
+            catch (LogicException ex)
+            {
+                if (ex.PropertyName == "EmailNotConfirmed")
+                {
+                    try
+                    {
+                        await _authService.TResendVerificationCodeAsync(loginDto.UsernameOrEmail);
+                        TempData["SuccessRegisterMessage"] = "Your email is not verified. A new code has been sent to your inbox.";
+                    }
+                    catch
+                    {
+
+                        TempData["SuccessRegisterMessage"] = "Your email is not verified. Please request a new code.";
+                    }
+
+                    TempData["UserEmail"] = loginDto.UsernameOrEmail;
+                    return RedirectToAction("VerifyEmail");
+                }
+
+                ModelState.AddModelError(ex.PropertyName ?? "", ex.Message);
+            }
+            catch (Exception)
+            {
+                ModelState.AddModelError("", "An unexpected error occurred. Please try again.");
+            }
+
+            return View(loginDto);
+        }
+
+        [HttpGet]
         public IActionResult VerifyEmail()
         {
             var email = TempData["UserEmail"]?.ToString();
