@@ -51,9 +51,7 @@
                                     </td>
                                     <td>@user.UserName</td>
                                     <td>@user.Email</td>
-
                                     <td class="text-center">@user.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
-
                                     <td class="text-center">
                                         @if (user.EmailConfirmed)
                                         {
@@ -68,7 +66,6 @@
                                             </div>
                                         }
                                     </td>
-
                                     <td class="text-center">
                                         @if (!user.IsDeleted)
                                         {
@@ -79,11 +76,15 @@
                                             <span class="text-danger h4"><i class='bx bxs-error-alt'></i></span>
                                         }
                                     </td>
-
                                     <td class="text-center">
                                         <div class="d-flex order-actions justify-content-center">
                                             <a href="javascript:;" class="text-primary bg-light-primary border-0 me-2" title="Details"><i class='bx bx-show'></i></a>
-                                            <a href="javascript:;" class="text-warning bg-light-warning border-0 me-2" title="Permissions"><i class='bx bx-lock-alt'></i></a>
+
+                                            <a href="javascript:;" class="text-warning bg-light-warning border-0 me-2"
+                                               onclick="openAssignRoleModal('@user.Id', '@user.FullName')" title="Assign Roles">
+                                                <i class='bx bx-lock-alt'></i>
+                                            </a>
+
                                             <a href="javascript:;" class="text-danger bg-light-danger border-0" title="Block"><i class='bx bx-block'></i></a>
                                         </div>
                                     </td>
@@ -98,18 +99,106 @@
     </div>
 </div>
 
+<div class="modal fade" id="assignRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-top border-0 border-4 border-warning">
+            <div class="modal-header">
+                <h5 class="modal-title text-warning"><i class='bx bx-shield-quarter me-1'></i> Manage Roles: <span id="assignRoleFullName" class="fw-bold"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="assignRoleForm">
+                <input type="hidden" name="userId" id="assignRoleUserId" />
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">Select the roles you want to assign to this user. Uncheck to remove a role.</p>
+                    <div id="roleCheckboxArea" class="row">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="btnAssignRoleSave" class="btn btn-warning px-4">Save Permissions</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
     <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function() {
             $('#userDataTable').DataTable({
                 "pageLength": 10,
-                "language": {
-                    "emptyTable": "No users found"
-                },
+                "language": { "emptyTable": "No users found" },
+            });
+
+            $("#assignRoleForm").on("submit", function (e) {
+                e.preventDefault();
+                const $btn = $("#btnAssignRoleSave");
+                $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+                $.ajax({
+                    url: '/Admin/Role/AssignRole',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            $("#assignRoleModal").modal('hide');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Updated!',
+                                text: res.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'An unexpected error occurred.', 'error');
+                    },
+                    complete: function() {
+                        $btn.prop("disabled", false).text("Save Permissions");
+                    }
+                });
             });
         });
+
+        function openAssignRoleModal(userId, fullName) {
+            $("#assignRoleUserId").val(userId);
+            $("#assignRoleFullName").text(fullName);
+            $("#roleCheckboxArea").html('<div class="col-12 text-center py-3"><div class="spinner-border text-warning"></div><p class="mt-2">Loading Roles...</p></div>');
+            $("#assignRoleModal").modal('show');
+
+            $.get('/Admin/Role/GetAssignRole?id=' + userId, function (data) {
+                let html = "";
+                if (!data || data.length === 0) {
+                    html = '<div class="col-12 text-center text-muted">No roles defined in the system.</div>';
+                } else {
+                    data.forEach((item, index) => {
+                        html += `
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check form-switch card shadow-none border p-2 h-100 d-flex align-items-center ps-5">
+                                    <input type="hidden" name="assignRoleDto[${index}].RoleName" value="${item.roleName}" />
+                                    <input type="hidden" name="assignRoleDto[${index}].RoleId" value="${item.roleId}" />
+                                    <input class="form-check-input" type="checkbox"
+                                           name="assignRoleDto[${index}].RoleExist"
+                                           value="true"
+                                           ${item.roleExist ? 'checked' : ''}
+                                           id="role_${index}"
+                                           style="margin-left: -2.5em; cursor:pointer;">
+                                    <label class="form-check-label fw-bold" for="role_${index}" style="cursor:pointer;">${item.roleName}</label>
+                                </div>
+                            </div>`;
+                    });
+                }
+                $("#roleCheckboxArea").html(html);
+            }).fail(function() {
+                $("#roleCheckboxArea").html('<div class="col-12 text-center text-danger">Failed to load roles.</div>');
+            });
+        }
     </script>
 }

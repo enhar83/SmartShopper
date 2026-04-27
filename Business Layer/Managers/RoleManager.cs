@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Business_Layer.Managers
 {
-    public class RoleManager: IRoleService
+    public class RoleManager : IRoleService
     {
         private readonly RoleManager<AppRole> _roleManager;
         private readonly UserManager<AppUser> _userManager;
@@ -24,6 +24,41 @@ namespace Business_Layer.Managers
             _roleManager = roleManager;
             _userManager = userManager;
             _mapper = mapper;
+        }
+
+        public async Task TAssignRoleAsync(Guid userId, List<AssignRoleDto> assignRoleDto)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                throw new LogicException("User", "User not found.");
+
+            foreach (var item in assignRoleDto)
+            {
+                bool isInRole = await _userManager.IsInRoleAsync(user, item.RoleName);
+
+                if (item.RoleExist && !isInRole)
+                    await _userManager.AddToRoleAsync(user, item.RoleName);
+
+                else if (!item.RoleExist && isInRole)
+                    await _userManager.RemoveFromRoleAsync(user, item.RoleName);
+            }
+        }
+
+        public async Task<List<AssignRoleDto>> TGetRolesForUserAsync(Guid userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user == null)
+                throw new LogicException("User", "User not found.");
+
+            var allRoles = _roleManager.Roles.ToList();
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            return allRoles.Select(role => new AssignRoleDto
+            {
+                RoleId = role.Id,
+                RoleName = role.Name!,
+                RoleExist = userRoles.Contains(role.Name!)
+            }).ToList();
         }
 
         public async Task<IdentityResult> TCreateRoleAsync(CreateRoleDto createRoleDto)

@@ -161,5 +161,33 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = "An unexpected error occurred during the process." });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAssignRole(Guid id)
+        {
+            var values = await _roleService.TGetRolesForUserAsync(id);
+            return Json(values);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AssignRole(Guid userId, List<AssignRoleDto> assignRoleDto)
+        {
+            try
+            {
+                if (userId == Guid.Empty)
+                    return Json(new { success = false, message = "Invalid User ID." });
+
+                await _roleService.TAssignRoleAsync(userId, assignRoleDto);
+                return Json(new { success = true, message = "Roles updated successfully." });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An error occurred while assigning roles." });
+            }
+        }
     }
 }
