@@ -132,5 +132,34 @@ namespace SmartShopper.Areas.Admin.Controllers
 
             return Json(users);
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveUserFromRole(RemoveUserFromRoleDto removeUserFromRoleDto)
+        {
+            try
+            {
+                var result = await _roleService.TRemoveUserFromRoleAsync(removeUserFromRoleDto);
+
+                if (result.Succeeded)
+                {
+                    return Json(new
+                    {
+                        success = true,
+                        message = "The user was successfully removed from the role."
+                    });
+                }
+
+                var errorMessages = string.Join("<br>", result.Errors.Select(e => e.Description));
+                return Json(new { success = false, message = errorMessages });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An unexpected error occurred during the process." });
+            }
+        }
     }
 }

@@ -62,6 +62,17 @@ namespace Business_Layer.Managers
             return rolesList;
         }
 
+        public async Task<IdentityResult> TRemoveUserFromRoleAsync(RemoveUserFromRoleDto removeUserFromRoleDto)
+        {
+            var user = await _userManager.FindByIdAsync(removeUserFromRoleDto.Id.ToString());
+
+            if (user == null)
+                throw new LogicException("User", "Kullanıcı sistemde bulunamadı.");
+
+            var result = await _userManager.RemoveFromRoleAsync(user, removeUserFromRoleDto.RoleName);
+            return result;
+        }
+
         public async Task<IdentityResult> TUpdateRoleAsync(UpdateRoleDto updateRoleDto)
         {
             var role = await _roleManager.FindByIdAsync(updateRoleDto.Id.ToString());

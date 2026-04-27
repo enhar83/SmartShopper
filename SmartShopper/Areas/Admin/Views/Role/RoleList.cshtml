@@ -94,7 +94,6 @@
             </div>
             <form id="roleForm">
                 <input type="hidden" name="Id" id="roleId" />
-
                 <div class="modal-body">
                     <div class="col-12 mb-3">
                         <label class="form-label fw-bold">Role Name</label>
@@ -107,16 +106,13 @@
                         <label class="form-label fw-bold">Description</label>
                         <textarea name="Description" id="roleDescriptionInput" class="form-control" rows="3" placeholder="What is this role for?"></textarea>
                     </div>
-
                     <div class="col-12 mb-3" id="statusContainer" style="display:none;">
                         <label class="form-label fw-bold">Role Status</label>
                         <div class="form-check form-switch mt-1">
                             <input class="form-check-input" type="checkbox" id="isDeletedSwitch" style="cursor: pointer;">
                             <label class="form-check-label text-danger" for="isDeletedSwitch">Is Passive?</label>
                         </div>
-                        <small class="text-muted">If checked, this role will be marked as passive.</small>
                     </div>
-
                     <div id="modalErrorArea" class="text-danger small px-2"></div>
                 </div>
                 <div class="modal-footer">
@@ -143,15 +139,12 @@
                                 <th>Full Name</th>
                                 <th>Username</th>
                                 <th>Email</th>
+                                <th class="text-center" style="width: 10%">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="usersInRoleListBody">
-                        </tbody>
+                        <tbody id="usersInRoleListBody"></tbody>
                     </table>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
@@ -189,8 +182,7 @@
                     success: function (res) {
                         if (res.success) {
                             $("#roleModal").modal('hide');
-                            Swal.fire({ icon: 'success', title: 'Success!', text: res.message, timer: 1500, showConfirmButton: false })
-                                .then(() => location.reload());
+                            Swal.fire({ icon: 'success', title: 'Success!', text: res.message, timer: 1500, showConfirmButton: false }).then(() => location.reload());
                         } else {
                             $("#modalErrorArea").html('<i class="bx bx-error-circle"></i> ' + res.message);
                             $btn.prop("disabled", false).text("Save Role");
@@ -206,25 +198,58 @@
 
         function showUsersInRole(roleName) {
             $("#roleNameTitle").text(roleName);
-            $("#usersInRoleListBody").html('<tr><td colspan="3" class="text-center"><div class="spinner-border spinner-border-sm text-info"></div> Loading...</td></tr>');
+            $("#usersInRoleListBody").html('<tr><td colspan="4" class="text-center"><div class="spinner-border spinner-border-sm text-info"></div> Loading...</td></tr>');
             $("#usersInRoleModal").modal('show');
 
             $.get('/Admin/Role/GetUsersInRole?roleName=' + roleName, function (data) {
                 var html = "";
                 if (!data || data.length === 0) {
-                    html = '<tr><td colspan="3" class="text-center text-muted py-3">No users found with this role.</td></tr>';
+                    html = '<tr><td colspan="4" class="text-center text-muted py-3">No users found with this role.</td></tr>';
                 } else {
                     data.forEach(user => {
                         html += `<tr>
                                     <td>${user.fullName}</td>
                                     <td>${user.userName}</td>
                                     <td>${user.email}</td>
+                                    <td class="text-center">
+                                        <button class="btn btn-sm btn-outline-danger border-0" onclick="removeUserFromRole('${user.id}', '${roleName}', '${user.fullName}')" title="Remove from Role">
+                                            <i class='bx bx-user-minus'></i>
+                                        </button>
+                                    </td>
                                  </tr>`;
                     });
                 }
                 $("#usersInRoleListBody").html(html);
             }).fail(function() {
-                $("#usersInRoleListBody").html('<tr><td colspan="3" class="text-center text-danger">Error loading data.</td></tr>');
+                $("#usersInRoleListBody").html('<tr><td colspan="4" class="text-center text-danger">Error loading data.</td></tr>');
+            });
+        }
+
+        function removeUserFromRole(id, roleName, fullName) {
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `${fullName} will be removed from '${roleName}' role!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Yes, remove!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Role/RemoveUserFromRole',
+                        type: 'POST',
+                        data: { Id: id, RoleName: roleName },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire({ icon: 'success', title: 'Removed!', text: res.message, timer: 1500, showConfirmButton: false });
+                                showUsersInRole(roleName);
+                            } else {
+                                Swal.fire('Error!', res.message, 'error');
+                            }
+                        }
+                    });
+                }
             });
         }
 
@@ -235,24 +260,19 @@
             $("#modalHeaderTitle").text("Create New Role");
             $("#modalErrorArea").empty();
             $("#statusContainer").hide();
-            $("#isDeletedSwitch").prop("checked", false);
             $("#roleModal").modal('show');
         }
 
         function editRole(id) {
             saveMode = "Update";
-            $("#modalErrorArea").empty();
             $("#modalHeaderTitle").text("Update Role");
             $("#statusContainer").show();
-
             $.get('/Admin/Role/GetRole?id=' + id, function (data) {
                 $("#roleId").val(data.id);
                 $("#roleNameInput").val(data.roleName);
                 $("#roleDescriptionInput").val(data.description);
                 $("#isDeletedSwitch").prop("checked", data.isDeleted);
                 $("#roleModal").modal('show');
-            }).fail(function() {
-                Swal.fire('Error!', 'Could not fetch role details.', 'error');
             });
         }
 
@@ -262,26 +282,18 @@
                 text: "Role '" + name + "' will be permanently deleted!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $.ajax({
-                        url: '/Admin/Role/DeleteRole',
-                        type: 'POST',
-                        data: { Id: id, RoleName: name },
-                        success: function (res) {
-                            if (res.success) {
-                                Swal.fire({ icon: 'success', title: 'Deleted!', text: res.message, timer: 1500, showConfirmButton: false })
-                                    .then(() => location.reload());
-                            } else {
-                                Swal.fire('Error!', res.message, 'error');
-                            }
+                    $.post('/Admin/Role/DeleteRole', { Id: id, RoleName: name }, function (res) {
+                        if (res.success) {
+                            Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Error!', res.message, 'error');
                         }
                     });
                 }
-            })
+            });
         }
     </script>
 }
