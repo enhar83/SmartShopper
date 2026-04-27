@@ -8,7 +8,7 @@ using FluentValidation;
 
 namespace Business_Layer.Validators.AuthValidators
 {
-    public class ConfirmUserEmailValidator:AbstractValidator<ConfirmUserEmailDto>
+    public class ConfirmUserEmailValidator : AbstractValidator<ConfirmUserEmailDto>
     {
         public ConfirmUserEmailValidator()
         {

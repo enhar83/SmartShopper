@@ -16,11 +16,13 @@ namespace Business_Layer.Managers
     public class AuthManager : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly IEmailActivationService _emailActivationService; 
         private readonly IMapper _mapper;
 
-        public AuthManager(UserManager<AppUser> userManager, IMapper mapper)
+        public AuthManager(UserManager<AppUser> userManager, IEmailActivationService emailActivationService, IMapper mapper)
         {
             _userManager = userManager;
+            _emailActivationService = emailActivationService;
             _mapper = mapper;
         }
 
@@ -51,7 +53,27 @@ namespace Business_Layer.Managers
 
             var result = await _userManager.CreateAsync(appUser, registerDto.Password);
 
+            if (result.Succeeded)
+            {
+                string code = await CreateEmailTokenAsync(appUser); //appuser nesnesi üzerinde işlem yapılacağı için direkt yollanması best practicedir. 
+                await _emailActivationService.TSendConfirmEmailAsync(appUser.Email!, code); //gelen kodu ve maili emailActivationService içerisindeki metota yollanır. 
+            }
+
             return result;
+        }
+
+        private async Task<string> CreateEmailTokenAsync(AppUser user)
+        {
+            var code = new Random().Next(100000, 999999).ToString();
+
+            user.ActivationCode = code;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                throw new Exception("An error occurred while generating the verification code.");
+
+            return code;
         }
     }
 }

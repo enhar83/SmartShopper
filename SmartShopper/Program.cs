@@ -3,6 +3,7 @@ using Business_Layer.Mapping.CategoryMappings;
 using Business_Layer.Validators.CategoryValidators;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
+using Core_Layer.Settings;
 using Data_Access_Layer.DbContext;
 using Data_Access_Layer.Repositories;
 using Entity_Layer;
@@ -48,12 +49,16 @@ builder.Services.AddScoped<ISubCategoryService, SubCategoryManager>();
 builder.Services.AddScoped<IProductService, ProductManager>();
 builder.Services.AddScoped<IProductImageService, ProductImageManager>();
 builder.Services.AddScoped<IAuthService, AuthManager>();
+builder.Services.AddScoped<IEmailActivationService, EmailActivationManager>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
+
+
+builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 
 var app = builder.Build();
 
