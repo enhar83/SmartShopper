@@ -25,15 +25,15 @@
                 <div class="table-responsive">
                     @if (Model != null && Model.Any())
                     {
-                        <table id="productDataTable" class="table table-striped table-bordered" style="width:100%">
+                        <table id="productDataTable" class="table table-striped table-bordered align-middle" style="width:100%">
                             <thead>
                                 <tr>
-                                    <th>#</th>
+                                    <th style="width: 5%">#</th>
                                     <th>Name</th>
                                     <th>Price</th>
                                     <th>Stock</th>
                                     <th>Gender</th>
-                                    <th>Status</th>
+                                    <th class="text-center">Status</th>
                                     <th>Created Date</th>
                                     <th class="text-center">Actions</th>
                                 </tr>
@@ -56,10 +56,15 @@
                                         <td>
                                             <span class="badge bg-info">@(item.Gender?.ToString() ?? "N/A")</span>
                                         </td>
-                                        <td>
-                                            <span class="badge @(item.IsDeleted ? "bg-light-danger text-danger" : "bg-light-success text-success") w-100">
-                                                @(item.IsDeleted ? "Passive" : "Active")
-                                            </span>
+                                        <td class="text-center">
+                                            @if (!item.IsDeleted)
+                                            {
+                                                <span class="text-success h4" title="Active"><i class='bx bxs-check-shield'></i></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-danger h4" title="Passive"><i class='bx bxs-error-alt'></i></span>
+                                            }
                                         </td>
                                         <td>@item.CreatedDate.ToShortDateString()</td>
                                         <td class="text-center">
@@ -67,11 +72,8 @@
                                                 <a href="javascript:;" onclick="openImageModal('@item.Id', '@item.Name')" class="text-success bg-light-success border-0 me-2" title="Manage Images">
                                                     <i class='bx bx-images'></i>
                                                 </a>
-                                                <a href="javascript:;" onclick="editProduct('@item.Id')" class="text-primary bg-light-primary border-0 me-2" title="Edit">
+                                                <a href="javascript:;" onclick="editProduct('@item.Id')" class="text-primary bg-light-primary border-0" title="Edit">
                                                     <i class='bx bxs-edit'></i>
-                                                </a>
-                                                <a href="javascript:;" class="text-danger bg-light-danger border-0" title="Delete">
-                                                    <i class='bx bxs-trash'></i>
                                                 </a>
                                             </div>
                                         </td>
@@ -138,10 +140,10 @@
                         </div>
 
                         <div class="col-md-6" id="isDeletedContainer" style="display:none;">
-                            <label class="form-label fw-bold">Status</label>
+                            <label class="form-label fw-bold">Status Management</label>
                             <div class="form-check form-switch mt-1">
                                 <input class="form-check-input" type="checkbox" id="isDeletedSwitch">
-                                <label class="form-check-label text-danger">Is Passive?</label>
+                                <label class="form-check-label text-danger fw-bold">Mark as Passive</label>
                             </div>
                         </div>
 
@@ -188,8 +190,7 @@
                 </form>
 
                 <h6 class="mb-3 text-uppercase small fw-bold text-success">Product Photos</h6>
-                <div class="row g-3" id="imageGalleryContainer">
-                </div>
+                <div class="row g-3" id="imageGalleryContainer"></div>
             </div>
         </div>
     </div>
@@ -207,7 +208,6 @@
         $(document).ready(function() {
             $('#productDataTable').DataTable({ "pageLength": 10 });
 
-            // Cascading Logic
             $("#mainCategorySelect").on("change", function() {
                 var selectedId = $(this).val();
                 if (!selectedId) { resetCascading(); return; }
@@ -215,30 +215,22 @@
                 loadSubCategoriesByParent(selectedId);
             });
 
-            // Product Save - GÜNCELLENMİŞ KESİN ÇÖZÜM
             $("#productForm").on("submit", function (e) {
                 e.preventDefault();
                 var url = saveMode === "Add" ? '/Admin/Product/AddProduct' : '/Admin/Product/UpdateProduct';
 
-                // 1. Formdaki tüm inputları bir diziye alıyoruz
                 var formData = $(this).serializeArray();
 
-                // 2. Eğer ürün güncelleniyorsa, IsDeleted değerini "zorla" ekliyoruz
                 if (saveMode === "Update") {
-                    var isPassive = $("#isDeletedSwitch").is(":checked"); // true veya false döner
-
-                    // Çakışma olmaması adına eski IsDeleted verisi varsa temizliyoruz
+                    var isPassive = $("#isDeletedSwitch").is(":checked");
                     formData = formData.filter(function(item) { return item.name !== "IsDeleted"; });
-
-                    // Gerçek sonucu ekliyoruz
                     formData.push({ name: "IsDeleted", value: isPassive });
                 }
 
-                // 3. Veriyi API'ye yolluyoruz
                 $.ajax({
                     url: url,
                     type: 'POST',
-                    data: $.param(formData), // Diziyi tekrar form formatına çevirir
+                    data: $.param(formData),
                     success: function (res) {
                         if (res.success) {
                             Swal.fire({ icon: 'success', title: 'Success', timer: 1000, showConfirmButton: false }).then(() => location.reload());
@@ -247,7 +239,6 @@
                 });
             });
 
-            // Image Upload
             $("#imageUploadForm").on("submit", function (e) {
                 e.preventDefault();
                 var productId = $("#imageModalProductId").val();
@@ -270,7 +261,6 @@
             });
         });
 
-        // IMAGE MANAGEMENT
         function openImageModal(id, name) {
             $("#imageModalProductId").val(id);
             $("#imageModalProductName").text(name);
@@ -283,49 +273,43 @@
             $.get('/Admin/ProductImage/GetProductImages?productId=' + productId, function (res) {
                 var html = "";
                 if (!res || res.length === 0) {
-                    html = `
-                        <div class="col-12 text-center py-5">
-                            <i class='bx bx-image-add text-muted mb-2' style="font-size: 3rem;"></i>
-                            <p class="text-muted">No images found for this product.</p>
-                        </div>`;
+                    html = `<div class="col-12 text-center py-5">
+                                <i class='bx bx-image-add text-muted mb-2' style="font-size: 3rem;"></i>
+                                <p class="text-muted">No images found for this product.</p>
+                            </div>`;
                 } else {
                     res.forEach(img => {
                         var url = img.imageUrl || img.ImageUrl;
                         var isMain = (img.isMain !== undefined) ? img.isMain : img.IsMain;
                         if (url && !url.startsWith('/')) { url = '/' + url; }
 
-                        html += `
-                            <div class="col-md-4 col-sm-6">
-                                <div class="card shadow-none border mb-0 overflow-hidden position-relative">
-                                    ${isMain ? '<span class="badge bg-success position-absolute top-0 end-0 m-2" style="z-index:5;">Main</span>' : ''}
-                                    <div style="height: 140px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                                        <img src="${url}" class="img-fluid" style="max-height: 100%; object-fit: contain;" onerror="this.src='/adminassets/images/no-image.png'">
+                        html += `<div class="col-md-4 col-sm-6">
+                                    <div class="card shadow-none border mb-0 overflow-hidden position-relative">
+                                        ${isMain ? '<span class="badge bg-success position-absolute top-0 end-0 m-2" style="z-index:5;">Main</span>' : ''}
+                                        <div style="height: 140px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
+                                            <img src="${url}" class="img-fluid" style="max-height: 100%; object-fit: contain;" onerror="this.src='/adminassets/images/no-image.png'">
+                                        </div>
+                                        <div class="card-footer bg-light p-2 text-center">
+                                            <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteProductImage('${img.id || img.Id}', '${productId}')" title="Delete">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div class="card-footer bg-light p-2 text-center">
-                                        <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteProductImage('${img.id || img.Id}', '${productId}')" title="Delete">
-                                            <i class="bx bx-trash"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>`;
+                                </div>`;
                     });
                 }
                 $("#imageGalleryContainer").html(html);
-            }).fail(function() {
-                $("#imageGalleryContainer").html('<div class="text-danger text-center py-3">Error loading images!</div>');
             });
         }
 
-        // IMAGE DELETE
         function deleteProductImage(imageId, productId) {
             Swal.fire({
                 title: 'Are you sure?',
-                text: "This image will be permanently deleted!",
+                text: "Image will be permanently deleted!",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonText: 'Yes, delete!'
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -343,16 +327,13 @@
             });
         }
 
-        // PRODUCT DETAILS LOGIC
         function openProductModal() {
             saveMode = "Add";
             $("#productForm")[0].reset();
             $("#productId").val("");
             $("#modalHeaderTitle").text("Add New Product");
-
             $("#isDeletedContainer").hide();
             $("#isDeletedSwitch").prop("checked", false);
-
             resetCascading();
             loadMainCategories();
             $('#productModal').modal('show');
@@ -362,7 +343,6 @@
             saveMode = "Update";
             $("#productForm")[0].reset();
             $("#modalHeaderTitle").text("Update Product");
-
             $("#isDeletedContainer").show();
 
             $.get('/Admin/Category/GetActiveCategories', function (categories) {
@@ -375,7 +355,6 @@
                     $("#productPrice").val(product.price || product.Price);
                     $("#productStock").val(product.stock || product.Stock);
 
-                    // Switch değerini atama
                     var isDeletedVal = (product.isDeleted !== undefined) ? product.isDeleted : product.IsDeleted;
                     $("#isDeletedSwitch").prop("checked", isDeletedVal);
 

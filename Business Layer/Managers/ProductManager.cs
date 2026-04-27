@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.CategoryDtos;
 using Core_Layer.Dtos.ProductDtos;
+using Core_Layer.Dtos.RoleDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Data_Access_Layer.Repositories;
 using Entity_Layer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
 
