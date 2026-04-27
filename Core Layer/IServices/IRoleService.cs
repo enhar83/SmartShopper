@@ -11,5 +11,6 @@ namespace Core_Layer.IServices
     public interface IRoleService
     {
         Task<IdentityResult> TCreateRoleAsync(CreateRoleDto createRoleDto);
+        Task<List<RoleListDto>> TGetAllRolesAsync();
     }
 }

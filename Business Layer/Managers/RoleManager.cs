@@ -9,6 +9,7 @@ using Core_Layer.Exceptions;
 using Core_Layer.IServices;
 using Entity_Layer;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Business_Layer.Managers
 {
@@ -36,6 +37,14 @@ namespace Business_Layer.Managers
 
             var result = await _roleManager.CreateAsync(role);
             return result;
+        }
+
+        public async Task<List<RoleListDto>> TGetAllRolesAsync()
+        {
+            var roles = await _roleManager.Roles.AsNoTracking().ToListAsync();
+
+            var rolesList = _mapper.Map<List<RoleListDto>>(roles);
+            return rolesList;
         }
     }
 }
