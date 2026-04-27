@@ -53,12 +53,18 @@ namespace Business_Layer.Managers
             var allRoles = _roleManager.Roles.ToList();
             var userRoles = await _userManager.GetRolesAsync(user);
 
-            return allRoles.Select(role => new AssignRoleDto
+            var assignRoleList = _mapper.Map<List<AssignRoleDto>>(allRoles, opt =>
             {
-                RoleId = role.Id,
-                RoleName = role.Name!,
-                RoleExist = userRoles.Contains(role.Name!)
-            }).ToList();
+                opt.AfterMap((src, dest) =>
+                {
+                    foreach (var item in dest)
+                    {
+                        item.RoleExist = userRoles.Contains(item.RoleName);
+                    }
+                });
+            });
+
+            return assignRoleList;
         }
 
         public async Task<IdentityResult> TCreateRoleAsync(CreateRoleDto createRoleDto)

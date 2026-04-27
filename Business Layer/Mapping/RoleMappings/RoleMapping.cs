@@ -9,7 +9,7 @@ using Entity_Layer;
 
 namespace Business_Layer.Mapping.RoleMappings
 {
-    public class RoleMapping: Profile
+    public class RoleMapping : Profile
     {
         public RoleMapping()
         {
@@ -28,6 +28,11 @@ namespace Business_Layer.Mapping.RoleMappings
             CreateMap<AppUser, UsersInRoleDto>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name + " " + src.Surname))
                 .ReverseMap();
+
+            CreateMap<AppRole, AssignRoleDto>()
+                .ForMember(dest => dest.RoleId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.RoleName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.RoleExist, opt => opt.Ignore());
         }
     }
 }
