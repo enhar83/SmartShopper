@@ -85,5 +85,22 @@ namespace SmartShopper.Controllers
             ViewBag.Email = confirmUserEmailDto.Email;
             return View(confirmUserEmailDto);
         }
+
+        public async Task<IActionResult> ResendCodeAjax(string email)
+        {
+            try
+            {
+                await _authService.TResendVerificationCodeAsync(email);
+                return Json(new { success = true, message = "A new verification code has been sent to your email." });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An unexpected error occurred." });
+            }
+        }
     }
 }

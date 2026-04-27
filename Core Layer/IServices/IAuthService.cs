@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Core_Layer.Dtos.AuthDtos;
+using Core_Layer.Exceptions;
 using Microsoft.AspNetCore.Identity;
 
 namespace Core_Layer.IServices
@@ -13,5 +14,6 @@ namespace Core_Layer.IServices
         Task<IdentityResult> TRegisterAsync(RegisterDto registerDto);
         Task<bool> TConfirmEmailAsync(ConfirmUserEmailDto confirmUserEmailDto);
         Task<List<UserListDto>> TGetUserListAsync();
+        Task TResendVerificationCodeAsync(string email);
     }
 }

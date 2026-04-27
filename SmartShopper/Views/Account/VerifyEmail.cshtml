@@ -19,44 +19,49 @@
                 </div>
             }
 
-            <div class="card border-0 shadow-lg rounded-4">
+            <div id="ajaxAlertArea"></div>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-primary py-3 border-0">
+                    <h5 class="text-white text-center mb-0 tracking-wider">SECURE VERIFICATION</h5>
+                </div>
                 <div class="card-body p-5">
                     <div class="text-center mb-4">
-                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
-                            <i class="bi bi-shield-lock-fill fs-1"></i>
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 70px; height: 70px;">
+                            <i class="bi bi-envelope-open-fill fs-2"></i>
                         </div>
-                        <h2 class="fw-bold">Security Check</h2>
+                        <h3 class="fw-bold">Check Your Inbox</h3>
                         <p class="text-muted">
-                            We have sent a 6-digit verification code to <br />
-                            <span class="text-dark fw-semibold">@ViewBag.Email</span>
+                            We've sent a 6-digit code to:<br />
+                            <span class="text-primary fw-semibold">@ViewBag.Email</span>
                         </p>
                     </div>
 
                     @if (!ViewData.ModelState.IsValid)
                     {
-                        <div class="alert alert-danger border-0 shadow-sm small">
-                            <div asp-validation-summary="All"></div>
+                        <div class="alert alert-danger border-0 shadow-sm mb-4">
+                            <div asp-validation-summary="All" class="small"></div>
                         </div>
                     }
 
-                    <form asp-action="VerifyEmail" method="post" class="needs-validation">
+                    <form asp-action="VerifyEmail" method="post">
                         <input type="hidden" asp-for="Email" value="@ViewBag.Email" />
 
                         <div class="mb-4">
-                            <label asp-for="ActivationCode" class="form-label small fw-bold text-uppercase text-muted tracking-wider">Verification Code</label>
+                            <label asp-for="ActivationCode" class="form-label small fw-bold text-muted text-uppercase">Verification Code</label>
                             <input asp-for="ActivationCode"
                                    type="text"
-                                   class="form-control form-control-lg text-center fw-bold letter-spacing-lg"
-                                   placeholder="&bull;&bull;&bull;&bull;&bull;&bull;"
+                                   class="form-control form-control-lg text-center fw-bold verification-input"
+                                   placeholder="000000"
                                    maxlength="6"
                                    required
                                    autocomplete="off" />
                             <span asp-validation-for="ActivationCode" class="text-danger small"></span>
                         </div>
 
-                        <div class="d-grid mb-3">
-                            <button type="submit" class="btn btn-primary btn-lg rounded-3 shadow-sm py-3">
-                                <i class="bi bi-patch-check-fill me-2"></i>Verify My Account
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-3 py-3 shadow-sm">
+                                <i class="bi bi-shield-check me-2"></i>Verify Account
                             </button>
                         </div>
                     </form>
@@ -64,42 +69,98 @@
                     <div class="text-center mt-4 pt-3 border-top">
                         <p class="small text-muted mb-0">
                             Didn't receive the code?
-                            <a href="#" class="text-primary fw-bold text-decoration-none">Resend Code</a>
+                            <a href="javascript:void(0)" id="btnResendCode" class="text-primary fw-bold text-decoration-none">
+                                Resend Code
+                            </a>
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="text-center mt-4">
-                <a asp-action="Register" class="text-muted small text-decoration-none">
+                <a asp-action="Register" class="text-muted small text-decoration-none hover-primary">
                     <i class="bi bi-arrow-left me-1"></i>Back to Registration
                 </a>
             </div>
-
         </div>
     </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#btnResendCode").click(function (e) {
+                e.preventDefault();
+
+                var userEmail = "@ViewBag.Email";
+                var $btn = $(this);
+                var $alertArea = $("#ajaxAlertArea");
+
+                $btn.addClass("text-muted").css("pointer-events", "none").text("Sending...");
+
+                $.ajax({
+                    url: '/Account/ResendCodeAjax',
+                    type: 'GET',
+                    data: { email: userEmail },
+                    success: function (response) {
+                        if (response.success) {
+                            $alertArea.html(`
+                                <div class="alert alert-info border-0 shadow-sm mb-4 animate__animated animate__fadeIn">
+                                    <i class="bi bi-info-circle-fill me-2"></i>${response.message}
+                                </div>
+                            `);
+                            setTimeout(function() {
+                                $btn.removeClass("text-muted").css("pointer-events", "auto").text("Resend Code");
+                            }, 60000);
+                        } else {
+                            $alertArea.html(`
+                                <div class="alert alert-warning border-0 shadow-sm mb-4">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>${response.message}
+                                </div>
+                            `);
+                            $btn.removeClass("text-muted").css("pointer-events", "auto").text("Resend Code");
+                        }
+                    },
+                    error: function () {
+                        $alertArea.html(`
+                            <div class="alert alert-danger border-0 shadow-sm mb-4">
+                                <i class="bi bi-x-circle-fill me-2"></i>Something went wrong. Please try again.
+                            </div>
+                        `);
+                        $btn.removeClass("text-muted").css("pointer-events", "auto").text("Resend Code");
+                    }
+                });
+            });
+        });
+    </script>
 
     <style>
-        .letter-spacing-lg {
-            letter-spacing: 0.5rem;
-            font-size: 1.5rem;
+        .verification-input {
+            letter-spacing: 0.8rem;
+            font-size: 1.8rem;
+            height: 65px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
         }
 
-            .letter-spacing-lg::placeholder {
-                letter-spacing: 0.2rem;
-                opacity: 0.3;
+            .verification-input:focus {
+                border-color: #0d6efd;
+                box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
             }
 
         .tracking-wider {
-            letter-spacing: 0.05rem;
+            letter-spacing: 1.5px;
         }
 
         .rounded-4 {
-            border-radius: 1.25rem !important;
+            border-radius: 1rem !important;
+        }
+
+        .hover-primary:hover {
+            color: #0d6efd !important;
         }
     </style>
 }

@@ -82,6 +82,21 @@ namespace Business_Layer.Managers
             return result;
         }
 
+        public async Task TResendVerificationCodeAsync(string email)
+        {
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+                throw new LogicException("Email", "User not found.");
+
+            if (user.EmailConfirmed)
+                throw new LogicException("Email", "This account is already verified.");
+
+            string newCode = await CreateEmailTokenAsync(user);
+
+            await _emailActivationService.TSendConfirmEmailAsync(user.Email!, newCode);
+        }
+
         private async Task<string> CreateEmailTokenAsync(AppUser user)
         {
             var code = new Random().Next(100000, 999999).ToString();
