@@ -24,4 +24,8 @@
     <ProjectReference Include="..\Core Layer\Core Layer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ViewComponents\Layout\" />
+  </ItemGroup>
+
 </Project>
