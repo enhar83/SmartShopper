@@ -18,7 +18,7 @@
         </nav>
     </div>
     <div class="ms-auto">
-        <button type="button" class="btn btn-primary px-4" data-bs-toggle="modal" data-bs-target="#roleModal">
+        <button type="button" class="btn btn-primary px-4" onclick="openRoleModal()">
             <i class='bx bx-plus-circle'></i> Add New Role
         </button>
     </div>
@@ -54,7 +54,11 @@
                             <td>@item.CreatedDate.ToShortDateString()</td>
                             <td class="text-center">
                                 <div class="d-flex order-actions justify-content-center">
-                                    <a href="javascript:;" class="text-danger bg-light-danger border-0" onclick="deleteRole(@item.Id)">
+                                    <a href="javascript:;" class="text-primary bg-light-primary border-0 me-2" onclick="editRole('@item.Id')">
+                                        <i class='bx bxs-edit'></i>
+                                    </a>
+
+                                    <a href="javascript:;" class="text-danger bg-light-danger border-0" onclick="deleteRole('@item.Id')">
                                         <i class='bx bxs-trash'></i>
                                     </a>
                                 </div>
@@ -72,21 +76,23 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-top border-0 border-4 border-primary">
             <div class="modal-header">
-                <h5 class="modal-title text-primary">Create New Role</h5>
+                <h5 class="modal-title text-primary" id="modalHeaderTitle">Create New Role</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <form id="roleForm">
+                <input type="hidden" name="Id" id="roleId" />
+
                 <div class="modal-body">
                     <div class="col-12 mb-3">
                         <label class="form-label fw-bold">Role Name</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class='bx bx-shield-quarter'></i></span>
-                            <input type="text" name="RoleName" class="form-control" placeholder="e.g. Admin, Editor" required>
+                            <input type="text" name="RoleName" id="roleNameInput" class="form-control" placeholder="e.g. Admin, Editor" required>
                         </div>
                     </div>
                     <div class="col-12 mb-3">
                         <label class="form-label fw-bold">Description</label>
-                        <textarea name="Description" class="form-control" rows="3" placeholder="What is this role for?"></textarea>
+                        <textarea name="Description" id="roleDescriptionInput" class="form-control" rows="3" placeholder="What is this role for?"></textarea>
                     </div>
                     <div id="modalErrorArea" class="text-danger small px-2"></div>
                 </div>
@@ -100,23 +106,26 @@
 </div>
 
 @section Scripts {
-
     <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
     <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
+        var saveMode = "Add";
+
         $(document).ready(function () {
             $('#roleDataTable').DataTable();
 
             $("#roleForm").on("submit", function (e) {
                 e.preventDefault();
 
+                const url = saveMode === "Add" ? '/Admin/Role/CreateRole' : '/Admin/Role/UpdateRole';
                 const $btn = $("#btnSaveRole");
-                $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+                $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
 
                 $.ajax({
-                    url: '/Admin/Role/CreateRole',
+                    url: url,
                     type: 'POST',
                     data: $(this).serialize(),
                     success: function (res) {
@@ -126,7 +135,7 @@
                                 icon: 'success',
                                 title: 'Success!',
                                 text: res.message,
-                                timer: 2000,
+                                timer: 1500,
                                 showConfirmButton: false
                             }).then(() => {
                                 location.reload();
@@ -144,6 +153,31 @@
             });
         });
 
+        function openRoleModal() {
+            saveMode = "Add";
+            $("#roleForm")[0].reset();
+            $("#roleId").val("");
+            $("#modalHeaderTitle").text("Create New Role");
+            $("#modalErrorArea").empty();
+            $("#roleModal").modal('show');
+        }
+
+        function editRole(id) {
+            saveMode = "Update";
+            $("#modalErrorArea").empty();
+            $("#modalHeaderTitle").text("Update Role");
+
+            $.get('/Admin/Role/GetRole?id=' + id, function (data) {
+                $("#roleId").val(data.id);
+                $("#roleNameInput").val(data.roleName);
+                $("#roleDescriptionInput").val(data.description);
+
+                $("#roleModal").modal('show');
+            }).fail(function() {
+                Swal.fire('Error!', 'Could not fetch role details.', 'error');
+            });
+        }
+
         function deleteRole(id) {
             Swal.fire({
                 title: 'Are you sure?',
@@ -155,6 +189,23 @@
                 confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
+                    $.ajax({
+                        url: '/Admin/Role/DeleteRole',
+                        type: 'POST',
+                        data: { id: id },
+                        success: function (res) {
+                            if (res.success) {
+                                Swal.fire('Deleted!', res.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Error!', res.message, 'error');
+                            }
+                        },
+                        error: function () {
+                            Swal.fire('Error!', 'An error occurred while deleting.', 'error');
+                        }
+                    });
                 }
             })
         }

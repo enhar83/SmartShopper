@@ -46,5 +46,24 @@ namespace Business_Layer.Managers
             var rolesList = _mapper.Map<List<RoleListDto>>(roles);
             return rolesList;
         }
+
+        public async Task<IdentityResult> TUpdateRoleAsync(UpdateRoleDto updateRoleDto)
+        {
+            var role = await _roleManager.FindByIdAsync(updateRoleDto.Id.ToString());
+            if (role == null)
+                throw new LogicException("Role", "The role was not found.");
+
+            if (role.Name != updateRoleDto.RoleName)
+            {
+                var isRoleExists = await _roleManager.RoleExistsAsync(updateRoleDto.RoleName);
+                if (isRoleExists)
+                    throw new LogicException("RoleName", "This role name already exists in the system.");
+            }
+
+            _mapper.Map(updateRoleDto,role);
+
+            var result = await _roleManager.UpdateAsync(role);
+            return result;
+        }
     }
 }
