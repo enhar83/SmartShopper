@@ -6,17 +6,18 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.AuthDtos;
 using Core_Layer.Dtos.CategoryDtos;
+using Core_Layer.Dtos.RoleDtos;
 using Entity_Layer;
 
 namespace Business_Layer.Mapping.AuthMappings
 {
-    public class AuthMapping:Profile
+    public class AuthMapping : Profile
     {
-        public AuthMapping() 
+        public AuthMapping()
         {
             CreateMap<RegisterDto, AppUser>().ReverseMap();
 
-            CreateMap<AppUser,UserListDto>()
+            CreateMap<AppUser, UserListDto>()
                 .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name + " " + src.Surname))
                 .ReverseMap();
 

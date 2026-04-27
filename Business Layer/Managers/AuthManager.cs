@@ -93,6 +93,7 @@ namespace Business_Layer.Managers
 
             if (result.Succeeded)
             {
+                await _userManager.AddToRoleAsync(appUser, "Member");
                 string code = await CreateEmailTokenAsync(appUser); //appuser nesnesi üzerinde işlem yapılacağı için direkt yollanması best practicedir. 
                 await _emailActivationService.TSendConfirmEmailAsync(appUser.Email!, code); //gelen kodu ve maili emailActivationService içerisindeki metota yollanır. 
             }

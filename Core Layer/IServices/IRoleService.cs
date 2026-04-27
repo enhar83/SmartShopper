@@ -14,5 +14,6 @@ namespace Core_Layer.IServices
         Task<List<RoleListDto>> TGetAllRolesAsync();
         Task<IdentityResult> TUpdateRoleAsync(UpdateRoleDto updateRoleDto);
         Task<IdentityResult> TDeleteRoleAsync(DeleteRoleDto deleteRoleDto);
+        Task<List<UsersInRoleDto>> TUsersInRoleAsync(string roleName);
     }
 }

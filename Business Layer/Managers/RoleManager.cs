@@ -16,11 +16,13 @@ namespace Business_Layer.Managers
     public class RoleManager: IRoleService
     {
         private readonly RoleManager<AppRole> _roleManager;
+        private readonly UserManager<AppUser> _userManager;
         private readonly IMapper _mapper;
 
-        public RoleManager(RoleManager<AppRole> roleManager, IMapper mapper)
+        public RoleManager(RoleManager<AppRole> roleManager, UserManager<AppUser> userManager, IMapper mapper)
         {
             _roleManager = roleManager;
+            _userManager = userManager;
             _mapper = mapper;
         }
 
@@ -77,6 +79,19 @@ namespace Business_Layer.Managers
 
             var result = await _roleManager.UpdateAsync(role);
             return result;
+        }
+
+        public async Task<List<UsersInRoleDto>> TUsersInRoleAsync(string roleName)
+        {
+            if (string.IsNullOrEmpty(roleName))
+                return new List<UsersInRoleDto>();
+
+            var users = await _userManager.GetUsersInRoleAsync(roleName);
+
+            if (users == null)
+                return new List<UsersInRoleDto>();
+
+            return _mapper.Map<List<UsersInRoleDto>>(users.ToList());
         }
     }
 }

@@ -24,6 +24,10 @@ namespace Business_Layer.Mapping.RoleMappings
             CreateMap<UpdateRoleDto, AppRole>()
                 .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.RoleName))
                 .ReverseMap();
+
+            CreateMap<AppUser, UsersInRoleDto>()
+                .ForMember(dest => dest.FullName, opt => opt.MapFrom(src => src.Name + " " + src.Surname))
+                .ReverseMap();
         }
     }
 }

@@ -122,5 +122,15 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = "An unexpected error occurred during the deletion process." });
             }
         }
+
+        public async Task<IActionResult> GetUsersInRole(string roleName)
+        {
+            if (string.IsNullOrEmpty(roleName))
+                return BadRequest("Role name is required.");
+
+            var users = await _roleService.TUsersInRoleAsync(roleName);
+
+            return Json(users);
+        }
     }
 }
