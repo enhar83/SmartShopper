@@ -31,6 +31,8 @@ namespace Business_Layer.Managers
                 throw new LogicException("RoleName", "This role already exists in the system.");
 
             var role = _mapper.Map<AppRole>(createRoleDto);
+            role.CreatedDate = DateTime.Now;
+            role.IsDeleted = false;
 
             var result = await _roleManager.CreateAsync(role);
             return result;
