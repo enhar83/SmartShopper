@@ -39,6 +39,19 @@ namespace Business_Layer.Managers
             return result;
         }
 
+        public async Task<IdentityResult> TDeleteRoleAsync(DeleteRoleDto deleteRoleDto)
+        {
+            var role = await _roleManager.FindByIdAsync(deleteRoleDto.Id.ToString());
+            if (role == null)
+                throw new LogicException("RoleName", "The role not found");
+
+            if (role.Name == "Admin" )
+                throw new LogicException("RoleName", "System protected role cannot be deleted!");
+
+            var result = await _roleManager.DeleteAsync(role);
+            return result;
+        }
+
         public async Task<List<RoleListDto>> TGetAllRolesAsync()
         {
             var roles = await _roleManager.Roles.AsNoTracking().ToListAsync();

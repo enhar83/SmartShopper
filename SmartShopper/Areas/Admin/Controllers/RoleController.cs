@@ -92,5 +92,35 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = "An unexpected error occurred during update." });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteRole(DeleteRoleDto deleteRoleDto)
+        {
+            if (deleteRoleDto.Id == Guid.Empty)
+            {
+                return Json(new { success = false, message = "Invalid role ID." });
+            }
+
+            try
+            {
+                var result = await _roleService.TDeleteRoleAsync(deleteRoleDto);
+
+                if (result.Succeeded)
+                {
+                    return Json(new { success = true, message = "Role has been deleted successfully." });
+                }
+
+                var errorMessages = string.Join("<br>", result.Errors.Select(e => e.Description));
+                return Json(new { success = false, message = errorMessages });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An unexpected error occurred during the deletion process." });
+            }
+        }
     }
 }

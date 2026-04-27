@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace Core_Layer.Dtos.RoleDtos
 {
-    public class UpdateRoleDto
+    public class DeleteRoleDto
     {
         public Guid Id { get; set; }
         public required string RoleName { get; set; }
-        public required string Description { get; set; }
-        public bool IsDeleted { get; set; }
     }
 }
