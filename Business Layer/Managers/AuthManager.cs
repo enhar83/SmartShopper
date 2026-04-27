@@ -10,18 +10,21 @@ using Core_Layer.IServices;
 using Entity_Layer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using MimeKit.Encodings;
 
 namespace Business_Layer.Managers
 {
     public class AuthManager : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
+        private readonly SignInManager<AppUser> _signInManager;
         private readonly IEmailActivationService _emailActivationService;
         private readonly IMapper _mapper;
 
-        public AuthManager(UserManager<AppUser> userManager, IEmailActivationService emailActivationService, IMapper mapper)
+        public AuthManager(UserManager<AppUser> userManager, SignInManager<AppUser> signInManager, IEmailActivationService emailActivationService, IMapper mapper)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _emailActivationService = emailActivationService;
             _mapper = mapper;
         }
@@ -55,6 +58,21 @@ namespace Business_Layer.Managers
             var userListDto = _mapper.Map<List<UserListDto>>(users);
 
             return userListDto;
+        }
+
+        public async Task<bool> TLoginAsync(LoginDto loginDto)
+        {
+            var user = await _userManager.FindByEmailAsync(loginDto.UsernameOrEmail)
+                       ?? await _userManager.FindByNameAsync(loginDto.UsernameOrEmail);
+
+            if (user == null)
+                throw new LogicException("UsernameOrEmail", "Invalid username/email or password");
+
+            if (!user.EmailConfirmed)
+                throw new LogicException("UsernameOrEmail", "Please verfiy your email.");
+
+            var result = await _signInManager.PasswordSignInAsync(user, loginDto.Password, isPersistent: false, lockoutOnFailure: true);
+            return result.Succeeded;
         }
 
         public async Task<IdentityResult> TRegisterAsync(RegisterDto registerDto)

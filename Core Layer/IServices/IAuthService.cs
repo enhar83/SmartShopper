@@ -13,7 +13,8 @@ namespace Core_Layer.IServices
     {
         Task<IdentityResult> TRegisterAsync(RegisterDto registerDto);
         Task<bool> TConfirmEmailAsync(ConfirmUserEmailDto confirmUserEmailDto);
-        Task<List<UserListDto>> TGetUserListAsync();
         Task TResendVerificationCodeAsync(string email);
+        Task<bool> TLoginAsync(LoginDto loginDto);
+        Task<List<UserListDto>> TGetUserListAsync();
     }
 }
