@@ -11,6 +11,7 @@ namespace Core_Layer.IServices
     public interface IAuthService
     {
         Task<IdentityResult> TRegisterAsync(RegisterDto registerDto);
+        Task<bool> TConfirmEmailAsync(ConfirmUserEmailDto confirmUserEmailDto);
         Task<List<UserListDto>> TGetUserListAsync();
     }
 }

@@ -1,0 +1,106 @@
+﻿@using Core_Layer.Dtos.AuthDtos
+@model ConfirmUserEmailDto
+
+@{
+    ViewData["Title"] = "Verify Email";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+
+            @if (TempData["SuccessRegisterMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @TempData["SuccessRegisterMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card border-0 shadow-lg rounded-4">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 80px; height: 80px;">
+                            <i class="bi bi-shield-lock-fill fs-1"></i>
+                        </div>
+                        <h2 class="fw-bold">Security Check</h2>
+                        <p class="text-muted">
+                            We have sent a 6-digit verification code to <br />
+                            <span class="text-dark fw-semibold">@ViewBag.Email</span>
+                        </p>
+                    </div>
+
+                    @if (!ViewData.ModelState.IsValid)
+                    {
+                        <div class="alert alert-danger border-0 shadow-sm small">
+                            <div asp-validation-summary="All"></div>
+                        </div>
+                    }
+
+                    <form asp-action="VerifyEmail" method="post" class="needs-validation">
+                        <input type="hidden" asp-for="Email" value="@ViewBag.Email" />
+
+                        <div class="mb-4">
+                            <label asp-for="ActivationCode" class="form-label small fw-bold text-uppercase text-muted tracking-wider">Verification Code</label>
+                            <input asp-for="ActivationCode"
+                                   type="text"
+                                   class="form-control form-control-lg text-center fw-bold letter-spacing-lg"
+                                   placeholder="&bull;&bull;&bull;&bull;&bull;&bull;"
+                                   maxlength="6"
+                                   required
+                                   autocomplete="off" />
+                            <span asp-validation-for="ActivationCode" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-grid mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-3 shadow-sm py-3">
+                                <i class="bi bi-patch-check-fill me-2"></i>Verify My Account
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="text-center mt-4 pt-3 border-top">
+                        <p class="small text-muted mb-0">
+                            Didn't receive the code?
+                            <a href="#" class="text-primary fw-bold text-decoration-none">Resend Code</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-4">
+                <a asp-action="Register" class="text-muted small text-decoration-none">
+                    <i class="bi bi-arrow-left me-1"></i>Back to Registration
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <style>
+        .letter-spacing-lg {
+            letter-spacing: 0.5rem;
+            font-size: 1.5rem;
+        }
+
+            .letter-spacing-lg::placeholder {
+                letter-spacing: 0.2rem;
+                opacity: 0.3;
+            }
+
+        .tracking-wider {
+            letter-spacing: 0.05rem;
+        }
+
+        .rounded-4 {
+            border-radius: 1.25rem !important;
+        }
+    </style>
+}
+

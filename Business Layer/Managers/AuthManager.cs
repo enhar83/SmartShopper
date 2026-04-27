@@ -16,7 +16,7 @@ namespace Business_Layer.Managers
     public class AuthManager : IAuthService
     {
         private readonly UserManager<AppUser> _userManager;
-        private readonly IEmailActivationService _emailActivationService; 
+        private readonly IEmailActivationService _emailActivationService;
         private readonly IMapper _mapper;
 
         public AuthManager(UserManager<AppUser> userManager, IEmailActivationService emailActivationService, IMapper mapper)
@@ -24,6 +24,26 @@ namespace Business_Layer.Managers
             _userManager = userManager;
             _emailActivationService = emailActivationService;
             _mapper = mapper;
+        }
+
+        public async Task<bool> TConfirmEmailAsync(ConfirmUserEmailDto confirmUserEmailDto)
+        {
+            var user = await _userManager.FindByEmailAsync(confirmUserEmailDto.Email);
+            if (user == null)
+                throw new LogicException("Email", "Email could not found.");
+
+            if (user.ActivationCode != confirmUserEmailDto.ActivationCode)
+                throw new LogicException("Code", "The verification code is incorrect.");
+
+            user.EmailConfirmed = true;
+            user.ActivationCode = null; //doğrulama yapıldıktan sonra dbde kaldırılıyor. 
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (!result.Succeeded)
+                throw new Exception("An error occurred while confirming the email.");
+
+            return true;
         }
 
         public async Task<List<UserListDto>> TGetUserListAsync()

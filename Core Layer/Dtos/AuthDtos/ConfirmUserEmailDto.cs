@@ -9,6 +9,6 @@ namespace Core_Layer.Dtos.AuthDtos
     public class ConfirmUserEmailDto
     {
         public required string Email { get; set; }
-        public int ActivationCode { get; set; }
+        public string? ActivationCode { get; set; }
     }
 }

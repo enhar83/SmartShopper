@@ -14,7 +14,8 @@ namespace Business_Layer.Validators.AuthValidators
         {
             RuleFor(x => x.ActivationCode)
                 .NotEmpty().WithMessage("Activation code is required.")
-                .InclusiveBetween(100000, 999999).WithMessage("Activation code must be 6 digits.");
+                .Length(6).WithMessage("Activation code must be exactly 6 digits.")
+                .Matches(@"^\d{6}$").WithMessage("Activation code must contain only numbers.");
         }
     }
 }
