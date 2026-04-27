@@ -54,6 +54,7 @@ builder.Services.AddScoped<IProductImageService, ProductImageManager>();
 builder.Services.AddScoped<IAuthService, AuthManager>();
 builder.Services.AddScoped<IEmailActivationService, EmailActivationManager>();
 builder.Services.AddScoped<IRoleService, RoleManager>();
+builder.Services.AddScoped<IJwtService, JwtManager>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
