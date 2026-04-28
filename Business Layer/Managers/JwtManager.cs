@@ -36,6 +36,7 @@ namespace Business_Layer.Managers
 
                 new Claim("name",user.Name ?? ""),
                 new Claim("surname",user.Surname ?? ""),
+                new Claim("imageurl", user.ImageUrl ?? "/adminassets/images/avatars/default.png"),
 
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
