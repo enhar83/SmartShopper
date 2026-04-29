@@ -108,38 +108,21 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// --- SEEDING OPERASYONU ---
+// --- SEEDING OPERASYONU (YENÝ HALÝ) ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<AppDbContext>();
-
-    // DataSeeder'ý DI konteynerýndan alýyoruz
-    var seeder = services.GetRequiredService<DataSeeder>();
-
     try
     {
-        // Tablonun boþ olup olmadýðýný kontrol et
-        if (!await context.Products.AnyAsync())
-        {
-            Console.WriteLine(">> Ürün tablosu boþ. Teknoloji kategorisi ve diðerleri için ürünler üretiliyor...");
-
-            // Yeni modüler metodumuzu çaðýrýyoruz
-            await seeder.SeedOnlyProductsAsync();
-        }
-        else
-        {
-            Console.WriteLine(">> Veritabanýnda ürünler zaten mevcut, seed iþlemi atlandý.");
-        }
+        var seeder = services.GetRequiredService<DataSeeder>();
+        // Kontrol artýk metodun içinde yapýlýyor, direkt çaðýrýyoruz.
+        await seeder.SeedOnlyProductsAsync();
     }
     catch (Exception ex)
     {
-        // Hata detayýný daha net görmek için InnerException'a da bakýyoruz
-        var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
-        Console.WriteLine($">> Seed Hatasý: {message}");
+        Console.WriteLine($">> Seed Hatasý: {ex.Message}");
     }
 }
-// --------------------------
 
 if (!app.Environment.IsDevelopment())
 {

@@ -18,10 +18,13 @@ namespace Data_Access_Layer.Seeds
         {
             GeneratedProducts.Clear();
 
-            // 1. TECHNOLOGY ÜRÜNLERİNİ ÜRET
             var techSeed = new TechnologySeed();
             var techProducts = techSeed.GetProducts(existingSubCategories);
             GeneratedProducts.AddRange(techProducts);
+
+            var beautySeed = new CosmeticsAndBeautySeed();
+            var beautyProducts = beautySeed.GetProducts(existingSubCategories);
+            GeneratedProducts.AddRange(beautyProducts);
 
             // 2. İLERİDE DİĞER KATEGORİLER BURAYA EKLENECEK
             // var clothingSeed = new ClothingSeed();

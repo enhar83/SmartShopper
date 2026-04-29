@@ -1,9 +1,11 @@
-﻿using EFCore.BulkExtensions;
-using Data_Access_Layer.DbContext;
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Data_Access_Layer.DbContext;
+using Data_Access_Layer.Seeds.ProductSeeds;
+using EFCore.BulkExtensions;
+using Entity_Layer;
+using Microsoft.EntityFrameworkCore;
 
 namespace Data_Access_Layer.Seeds
 {
@@ -20,56 +22,65 @@ namespace Data_Access_Layer.Seeds
 
         public async Task SeedOnlyProductsAsync()
         {
-            // 1. DB'den mevcut alt kategorileri Category bilgisiyle birlikte çekiyoruz
-            // .Include(s => s.Category) kısmı kritik, çünkü TechnologySeed bu isme bakar.
+            // 1. DB'den alt kategorileri çek
             var existingSubCategories = await _context.SubCategories
                 .Include(s => s.Category)
                 .ToListAsync();
 
-            if (existingSubCategories.Count == 0)
+            if (existingSubCategories.Count == 0) return;
+
+            // 2. Hangi kategorilerin ürünleri DB'de halihazırda var?
+            // Ürünlerin bağlı olduğu SubCategory üzerinden Category isimlerini çekiyoruz.
+            var existingProductCategories = await _context.Products
+                .Select(p => p.SubCategory.Category.Name)
+                .Distinct()
+                .ToListAsync();
+
+            List<Product> productsToInsert = new();
+
+            // 3. TECHNOLOGY KONTROLÜ
+            if (!existingProductCategories.Contains("Technology"))
             {
-                Console.WriteLine(">> HATA: Veritabanında alt kategori bulunamadı.");
-                return;
+                Console.WriteLine(">> Technology ürünleri eksik, üretiliyor...");
+                var techSeed = new TechnologySeed();
+                productsToInsert.AddRange(techSeed.GetProducts(existingSubCategories));
             }
 
-            // 2. Modüler yeni metodumuzu çağırıyoruz
-            // Bu metod içeride TechnologySeed'i (ve ekleyeceğin diğerlerini) çalıştırır.
-            _seedService.SeedAllProducts(existingSubCategories);
-            var products = _seedService.GeneratedProducts;
-
-            if (products.Count == 0)
+            // 4. COSMETICS & BEAUTY KONTROLÜ
+            if (!existingProductCategories.Contains("Cosmetics & Beauty"))
             {
-                Console.WriteLine(">> UYARI: Üretilecek ürün bulunamadı (Filtreleme kriterlerini kontrol edin).");
-                return;
+                Console.WriteLine(">> Cosmetics & Beauty ürünleri eksik, üretiliyor...");
+                var beautySeed = new CosmeticsAndBeautySeed();
+                productsToInsert.AddRange(beautySeed.GetProducts(existingSubCategories));
             }
 
-            // 3. İlişki temizliği (Bulk Insert sırasında Foreign Key hatalarını önlemek için)
-            foreach (var p in products)
+            // 5. TOPLU EKLEME İŞLEMİ
+            if (productsToInsert.Count > 0)
             {
-                p.SubCategory = null!;
-            }
+                foreach (var p in productsToInsert) p.SubCategory = null!;
 
-            // 4. Veritabanına Toplu Yazma İşlemi
-            using (var transaction = await _context.Database.BeginTransactionAsync())
-            {
-                try
+                using (var transaction = await _context.Database.BeginTransactionAsync())
                 {
-                    await _context.BulkInsertAsync(products, config =>
+                    try
                     {
-                        config.PreserveInsertOrder = true;
-                        config.SetOutputIdentity = false;
-                        config.BatchSize = 5000;
-                    });
-
-                    await transaction.CommitAsync();
-                    Console.WriteLine($">> BAŞARILI: {products.Count} yeni ürün (Technology vb.) DB'ye eklendi.");
+                        await _context.BulkInsertAsync(productsToInsert, config =>
+                        {
+                            config.PreserveInsertOrder = true;
+                            config.BatchSize = 5000;
+                        });
+                        await transaction.CommitAsync();
+                        Console.WriteLine($">> BAŞARILI: {productsToInsert.Count} yeni ürün eklendi.");
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        throw new Exception("Seed sırasında hata oluştu!", ex);
+                    }
                 }
-                catch (Exception ex)
-                {
-                    await transaction.RollbackAsync();
-                    // İç hatayı (InnerException) görmek hata ayıklama için önemlidir
-                    throw new Exception($"Ürün Seed Hatası! Detay: {ex.InnerException?.Message ?? ex.Message}", ex);
-                }
+            }
+            else
+            {
+                Console.WriteLine(">> Tüm kategoriler güncel, yeni ürün eklenmedi.");
             }
         }
     }
