@@ -99,6 +99,27 @@ namespace Data_Access_Layer.Seeds
                 productsToInsert.AddRange(marketSeed.GetProducts(existingSubCategories));
             }
 
+            // Pet Supplies
+            if (!existingProductCategories.Contains("Pet Supplies"))
+            {
+                var petSeed = new PetSuppliesSeed();
+                productsToInsert.AddRange(petSeed.GetProducts(existingSubCategories));
+            }
+
+            // Home & Furniture
+            if (!existingProductCategories.Contains("Home & Furniture"))
+            {
+                var homeSeed = new HomeAndFurnitureSeed();
+                productsToInsert.AddRange(homeSeed.GetProducts(existingSubCategories));
+            }
+
+            // Books & Media
+            if (!existingProductCategories.Contains("Books & Media"))
+            {
+                var bookSeed = new BooksAndMediaSeed();
+                productsToInsert.AddRange(bookSeed.GetProducts(existingSubCategories));
+            }
+
             // 5. TOPLU EKLEME İŞLEMİ
             if (productsToInsert.Count > 0)
             {
