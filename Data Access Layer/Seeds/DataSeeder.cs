@@ -120,7 +120,41 @@ namespace Data_Access_Layer.Seeds
                 productsToInsert.AddRange(bookSeed.GetProducts(existingSubCategories));
             }
 
-            // 5. TOPLU EKLEME İŞLEMİ
+            // Fashion & Apparel
+            if (!existingProductCategories.Contains("Fashion & Apparel"))
+            {
+                var fashionSeed = new FashionAndApparelSeed();
+                productsToInsert.AddRange(fashionSeed.GetProducts(existingSubCategories));
+            }
+
+            // Baby & Kids
+            if (!existingProductCategories.Contains("Baby & Kids"))
+            {
+                var babySeed = new BabyAndKidsSeed();
+                productsToInsert.AddRange(babySeed.GetProducts(existingSubCategories));
+            }
+
+            // Sports & Outdoor
+            if (!existingProductCategories.Contains("Sports & Outdoor"))
+            {
+                var sportSeed = new SportsAndOutdoorSeed();
+                productsToInsert.AddRange(sportSeed.GetProducts(existingSubCategories));
+            }
+
+            // Toys & Hobby
+            if (!existingProductCategories.Contains("Toys & Hobby"))
+            {
+                var toySeed = new ToysAndHobbySeed();
+                productsToInsert.AddRange(toySeed.GetProducts(existingSubCategories));
+            }
+
+            Console.WriteLine("Existing Product Categories:");
+
+            foreach (var item in existingProductCategories)
+            {
+                Console.WriteLine(item);
+            }
+
             if (productsToInsert.Count > 0)
             {
                 foreach (var p in productsToInsert) p.SubCategory = null!;

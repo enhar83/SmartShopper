@@ -18,7 +18,7 @@ namespace Data_Access_Layer.Seeds.ProductSeeds
             ["Kitchen"] = new() { MinPrice = 200, MaxPrice = 18000, MinProducts = 7, MaxProducts = 17, Names = new[] { "Non-Stick Ceramic Cookware Set", "Professional Chef Knife Kit", "Digital Air Fryer", "Adjustable Bar Stool" } },
             ["Decoration"] = new() { MinPrice = 100, MaxPrice = 8000, MinProducts = 3, MaxProducts = 9, Names = new[] { "Abstract Canvas Wall Art", "Decorative Floor Vase", "Aromatic Candle Set", "Boho Style Throw Rug" } },
             ["Lighting"] = new() { MinPrice = 150, MaxPrice = 12000, MinProducts = 2, MaxProducts = 5, Names = new[] { "Modern Sputnik Chandelier", "Adjustable Floor Lamp", "Dimmable Bedside Light", "Industrial Pendant Lamp" } },
-            ["Bathroom"] = new() { MinPrice = 80, MaxPrice = 9500, MinProducts = 30, MaxProducts = 6, Names = new[] { "Bamboo Bath Mat", "Luxury Towel Set", "Wall-Mounted Mirror Cabinet", "Rainfall Shower Head" } }
+            ["Bathroom"] = new() { MinPrice = 80, MaxPrice = 9500, MinProducts = 3, MaxProducts = 6, Names = new[] { "Bamboo Bath Mat", "Luxury Towel Set", "Wall-Mounted Mirror Cabinet", "Rainfall Shower Head" } }
         };
 
         public List<Product> GetProducts(List<SubCategory> allSubCategories)

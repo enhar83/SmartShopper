@@ -79,12 +79,15 @@ namespace Data_Access_Layer.Seeds.ProductSeeds
 
         public List<Product> GetProducts(List<SubCategory> allSubCategories)
         {
-            var products = new List<Product>();
+            
 
             // Footwear Category ID: CF83BCD1-6202-47FD-9A20-A6A4FF303702
             var footwearSubs = allSubCategories
                 .Where(x => x.CategoryId == Guid.Parse("CF83BCD1-6202-47FD-9A20-A6A4FF303702"))
                 .ToList();
+            var products = new List<Product>();
+
+
 
             foreach (var sub in footwearSubs)
             {
