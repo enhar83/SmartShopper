@@ -78,6 +78,27 @@ namespace Data_Access_Layer.Seeds
                 productsToInsert.AddRange(gardenSeed.GetProducts(existingSubCategories));
             }
 
+            // Office & Stationery
+            if (!existingProductCategories.Contains("Office & Stationery"))
+            {
+                var officeSeed = new OfficeAndStationerySeed();
+                productsToInsert.AddRange(officeSeed.GetProducts(existingSubCategories));
+            }
+
+            // Automotive
+            if (!existingProductCategories.Contains("Automotive"))
+            {
+                var autoSeed = new AutomotiveSeed();
+                productsToInsert.AddRange(autoSeed.GetProducts(existingSubCategories));
+            }
+
+            // Supermarket
+            if (!existingProductCategories.Contains("Supermarket"))
+            {
+                var marketSeed = new SupermarketSeed();
+                productsToInsert.AddRange(marketSeed.GetProducts(existingSubCategories));
+            }
+
             // 5. TOPLU EKLEME İŞLEMİ
             if (productsToInsert.Count > 0)
             {
