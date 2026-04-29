@@ -15,7 +15,15 @@ namespace Business_Layer.Mapping.ProductMappings
         public ProductMapping() 
         {
             CreateMap<AddProductDto, Product>().ReverseMap();
-            CreateMap<Product, ProductListDto>().ReverseMap();
+
+            CreateMap<Product, ProductListDto>()
+                .ForMember(dest => dest.SubCategoryName, opt => opt.MapFrom(src =>
+                    src.SubCategory != null ? src.SubCategory.Name : string.Empty))
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src =>
+                    (src.SubCategory != null && src.SubCategory.Category != null)
+                    ? src.SubCategory.Category.Name
+                    : string.Empty));
+
             CreateMap<UpdateProductDto, Product>().ReverseMap();
         }
     }

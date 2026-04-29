@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Core_Layer.Dtos.CategoryDtos;
 using Core_Layer.Dtos.ProductDtos;
 using Core_Layer.Dtos.RoleDtos;
@@ -33,9 +34,9 @@ namespace Business_Layer.Managers
 
         public async Task<List<ProductListDto>> TGetProductListAsync()
         {
-            var products = await _productRepository.GetAll().ToListAsync();
-
-            return _mapper.Map<List<ProductListDto>>(products);
+            return await _productRepository.GetAll()
+                .ProjectTo<ProductListDto>(_mapper.ConfigurationProvider)
+                .ToListAsync();
         }
 
         public async Task TAddProductAsync(AddProductDto addProductDto)

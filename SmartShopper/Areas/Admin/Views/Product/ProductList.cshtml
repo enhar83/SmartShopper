@@ -32,6 +32,8 @@
                                     <th>Name</th>
                                     <th>Price</th>
                                     <th>Stock</th>
+                                    <th>Category Name</th>
+                                    <th>Subcategory Name</th>
                                     <th>Gender</th>
                                     <th class="text-center">Status</th>
                                     <th>Created Date</th>
@@ -53,6 +55,8 @@
                                                 @item.Stock
                                             </span>
                                         </td>
+                                        <td>@item.CategoryName</td>
+                                        <td>@item.SubCategoryName</td>
                                         <td>
                                             <span class="badge bg-info">@(item.Gender?.ToString() ?? "N/A")</span>
                                         </td>

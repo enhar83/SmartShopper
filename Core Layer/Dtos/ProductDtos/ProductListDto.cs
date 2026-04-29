@@ -12,6 +12,8 @@ namespace Core_Layer.Dtos.ProductDtos
         public Guid Id { get; set; }
         public required string Name { get; set; }
         public required string Description { get; set; }
+        public required string CategoryName {get;set;}
+        public required string SubCategoryName {get;set;}
         public decimal Price { get; set; }
         public int Stock { get; set; }
         public GenderType? Gender { get; set; }

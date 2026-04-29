@@ -7,6 +7,7 @@ using Core_Layer.IServices;
 using Core_Layer.Settings;
 using Data_Access_Layer.DbContext;
 using Data_Access_Layer.Repositories;
+using Data_Access_Layer.Seeds;
 using Entity_Layer;
 using FluentValidation;
 using FluentValidation.AspNetCore;
@@ -56,6 +57,8 @@ builder.Services.AddScoped<IEmailActivationService, EmailActivationManager>();
 builder.Services.AddScoped<IRoleService, RoleManager>();
 builder.Services.AddScoped<IJwtService, JwtManager>();
 
+builder.Services.AddScoped<DataSeeder>();
+
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 
@@ -93,7 +96,6 @@ builder.Services.AddAuthentication(options =>
     {
         OnMessageReceived = context =>
         {
-            // Request içindeki "JwtToken" isimli cookie'yi oku
             var token = context.Request.Cookies["JwtToken"];
             if (!string.IsNullOrEmpty(token))
             {
@@ -106,7 +108,39 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// --- SEEDING OPERASYONU ---
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
+
+    // DataSeeder'ý DI konteynerýndan alýyoruz
+    var seeder = services.GetRequiredService<DataSeeder>();
+
+    try
+    {
+        // Tablonun boþ olup olmadýðýný kontrol et
+        if (!await context.Products.AnyAsync())
+        {
+            Console.WriteLine(">> Ürün tablosu boþ. Teknoloji kategorisi ve diðerleri için ürünler üretiliyor...");
+
+            // Yeni modüler metodumuzu çaðýrýyoruz
+            await seeder.SeedOnlyProductsAsync();
+        }
+        else
+        {
+            Console.WriteLine(">> Veritabanýnda ürünler zaten mevcut, seed iþlemi atlandý.");
+        }
+    }
+    catch (Exception ex)
+    {
+        // Hata detayýný daha net görmek için InnerException'a da bakýyoruz
+        var message = ex.InnerException != null ? ex.InnerException.Message : ex.Message;
+        Console.WriteLine($">> Seed Hatasý: {message}");
+    }
+}
+// --------------------------
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
