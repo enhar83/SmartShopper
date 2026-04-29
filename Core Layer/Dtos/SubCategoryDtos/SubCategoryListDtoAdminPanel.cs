@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Core_Layer.Dtos.SubCategoryDtos
 {
-    public class SubCategoryListDto
+    public class SubCategoryListDtoAdminPanel
     {
         public Guid Id { get; set; }
         public required string Name { get; set; }

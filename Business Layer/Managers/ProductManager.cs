@@ -32,10 +32,10 @@ namespace Business_Layer.Managers
             _mapper = mapper;
         }
 
-        public async Task<List<ProductListDto>> TGetProductListAsync()
+        public async Task<List<ProductListDtoAdminPanel>> TGetProductListAsync()
         {
             return await _productRepository.GetAll()
-                .ProjectTo<ProductListDto>(_mapper.ConfigurationProvider)
+                .ProjectTo<ProductListDtoAdminPanel>(_mapper.ConfigurationProvider)
                 .ToListAsync();
         }
 
@@ -70,13 +70,13 @@ namespace Business_Layer.Managers
             await _uow.SaveAsync();
         }
 
-        public async Task<ProductListDto> TGetByIdAsync(Guid id)
+        public async Task<ProductListDtoAdminPanel> TGetByIdAsync(Guid id)
         {
             var product = await _productRepository.GetByIdAsync(id);
             if (product == null)
-                throw new LogicException(nameof(ProductListDto.Id), "The product not found");
+                throw new LogicException(nameof(ProductListDtoAdminPanel.Id), "The product not found");
 
-            return _mapper.Map<ProductListDto>(product);
+            return _mapper.Map<ProductListDtoAdminPanel>(product);
         }
     }
 }

@@ -41,20 +41,20 @@ namespace Business_Layer.Managers
             await _uow.SaveAsync();
         }
 
-        public async Task<List<SubCategoryListDto>> TGetAllSubCategoriesByParentAsync(Guid parentId)
+        public async Task<List<SubCategoryListDtoAdminPanel>> TGetAllSubCategoriesByParentAsync(Guid parentId)
         {
             var subCategories = await _subCategoryRepository.Where(s=>s.CategoryId == parentId).ToListAsync();
 
-            return _mapper.Map<List<SubCategoryListDto>>(subCategories);
+            return _mapper.Map<List<SubCategoryListDtoAdminPanel>>(subCategories);
         }
 
-        public async Task<SubCategoryListDto> TGetByIdAsync(Guid id)
+        public async Task<SubCategoryListDtoAdminPanel> TGetByIdAsync(Guid id)
         {
             var subCategory = await _subCategoryRepository.GetByIdAsync(id);
             if (subCategory == null)
-                throw new LogicException(nameof(SubCategoryListDto.Id), "The subcategory not found");
+                throw new LogicException(nameof(SubCategoryListDtoAdminPanel.Id), "The subcategory not found");
 
-            return _mapper.Map<SubCategoryListDto>(subCategory);
+            return _mapper.Map<SubCategoryListDtoAdminPanel>(subCategory);
         }
 
         public async Task TUpdateSubCategoryAsync(UpdateSubCategoryDto updateSubCategoryDto)

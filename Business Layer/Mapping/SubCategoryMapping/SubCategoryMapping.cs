@@ -16,7 +16,7 @@ namespace Business_Layer.Mapping.SubCategoryMapping
         public SubCategoryMapping()
         {
             CreateMap<AddSubCategoryDto,SubCategory>().ReverseMap();
-            CreateMap<SubCategory, SubCategoryListDto>().ReverseMap();
+            CreateMap<SubCategory, SubCategoryListDtoAdminPanel>().ReverseMap();
             CreateMap<UpdateSubCategoryDto, SubCategory>().ReverseMap();
 
             CreateMap<SubCategory, SubCategoryListInSidebarDto>()

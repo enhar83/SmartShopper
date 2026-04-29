@@ -11,8 +11,8 @@ namespace Core_Layer.IServices
     public interface ISubCategoryService
     {
         Task TAddSubCategoryAsync(AddSubCategoryDto addSubCategoryDto);
-        Task<SubCategoryListDto> TGetByIdAsync(Guid id);
-        Task<List<SubCategoryListDto>> TGetAllSubCategoriesByParentAsync(Guid id);
+        Task<SubCategoryListDtoAdminPanel> TGetByIdAsync(Guid id);
+        Task<List<SubCategoryListDtoAdminPanel>> TGetAllSubCategoriesByParentAsync(Guid id);
         Task TUpdateSubCategoryAsync(UpdateSubCategoryDto updateSubCategoryDto);
     }
 }

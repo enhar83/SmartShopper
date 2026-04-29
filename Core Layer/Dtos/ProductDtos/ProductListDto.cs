@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Entity_Layer;
 
 namespace Core_Layer.Dtos.ProductDtos
 {
@@ -12,15 +11,10 @@ namespace Core_Layer.Dtos.ProductDtos
         public Guid Id { get; set; }
         public required string Name { get; set; }
         public required string Description { get; set; }
-        public required string CategoryName {get;set;}
-        public required string SubCategoryName {get;set;}
-        public decimal Price { get; set; }
+        public required string CategoryName { get; set; }
+        public string? SubCategoryName { get; set; }
+        public string? MainImageUrl { get; set; }
+        public double Price { get; set; }
         public int Stock { get; set; }
-        public GenderType? Gender { get; set; }
-        public List<ProductImage>? ProductImages { get; set; }
-        public Guid SubCategoryId { get; set; }
-        public DateTime CreatedDate { get; set; }
-        public DateTime UpdatedDate { get; set; }
-        public bool IsDeleted { get; set; }
     }
 }

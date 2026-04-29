@@ -16,7 +16,7 @@ namespace Business_Layer.Mapping.ProductMappings
         {
             CreateMap<AddProductDto, Product>().ReverseMap();
 
-            CreateMap<Product, ProductListDto>()
+            CreateMap<Product, ProductListDtoAdminPanel>()
                 .ForMember(dest => dest.SubCategoryName, opt => opt.MapFrom(src =>
                     src.SubCategory != null ? src.SubCategory.Name : string.Empty))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src =>
@@ -25,6 +25,17 @@ namespace Business_Layer.Mapping.ProductMappings
                     : string.Empty));
 
             CreateMap<UpdateProductDto, Product>().ReverseMap();
+
+            CreateMap<Product, ProductListDto>()
+            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.SubCategory != null ? src.SubCategory.Category.Name : null))
+            .ForMember(dest => dest.SubCategoryName, opt => opt.MapFrom(src => src.SubCategory != null ? src.SubCategory.Name : null))
+            .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src =>
+                src.ProductImages != null && src.ProductImages.Any(x => x.IsMain)
+                ? src.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
+                : src.ProductImages != null && src.ProductImages.Any()
+                ? src.ProductImages.First().ImageUrl
+                : "/images/default-product.png"))
+            .ReverseMap();
         }
     }
 }
