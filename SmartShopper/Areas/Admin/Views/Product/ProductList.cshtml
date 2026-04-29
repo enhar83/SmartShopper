@@ -273,7 +273,7 @@
             $("#imageModal").modal("show");
         }
 
-        function loadProductImages(productId) {
+                function loadProductImages(productId) {
             $.get('/Admin/ProductImage/GetProductImages?productId=' + productId, function (res) {
                 var html = "";
                 if (!res || res.length === 0) {
@@ -285,13 +285,19 @@
                     res.forEach(img => {
                         var url = img.imageUrl || img.ImageUrl;
                         var isMain = (img.isMain !== undefined) ? img.isMain : img.IsMain;
-                        if (url && !url.startsWith('/')) { url = '/' + url; }
+
+                        // Dış link değilse başına / ekle
+                        if (url && !url.startsWith('/') && !url.startsWith('http')) { url = '/' + url; }
 
                         html += `<div class="col-md-4 col-sm-6">
                                     <div class="card shadow-none border mb-0 overflow-hidden position-relative">
                                         ${isMain ? '<span class="badge bg-success position-absolute top-0 end-0 m-2" style="z-index:5;">Main</span>' : ''}
                                         <div style="height: 140px; background: #f8f9fa; display: flex; align-items: center; justify-content: center;">
-                                            <img src="${url}" class="img-fluid" style="max-height: 100%; object-fit: contain;" onerror="this.src='/adminassets/images/no-image.png'">
+                                            <img src="${url}"
+                                                 class="img-fluid"
+                                                 style="max-height: 100%; object-fit: contain;"
+                                                 loading="lazy"
+                                                 onerror="this.onerror=null;this.src='https://placehold.co/800x600?text=No+Image'">
                                         </div>
                                         <div class="card-footer bg-light p-2 text-center">
                                             <button class="btn btn-sm btn-outline-danger border-0" onclick="deleteProductImage('${img.id || img.Id}', '${productId}')" title="Delete">

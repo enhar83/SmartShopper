@@ -12,5 +12,6 @@ namespace Entity_Layer
         public required string Name { get; set; }
         public Guid CategoryId { get; set; }
         public required Category Category { get; set; }
+        public ICollection<Product> Products { get; set; } = new List<Product>();
     }
 }

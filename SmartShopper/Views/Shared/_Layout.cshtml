@@ -30,11 +30,11 @@
         <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="https://browsehappy.com/">upgrade your browser</a> to improve your experience and security.</p>
     <![endif]-->
     <!--  ====== preloader start =============================================  -->
-    <div id="preloader">
+    @* <div id="preloader">
         <div class="circle">
             <div class="inner"></div>
         </div>
-    </div>
+    </div> *@
     <!--  preloader-end  -->
     <!--  ====== header-area-start=======================================  -->
     <header>
@@ -122,7 +122,7 @@
                                         </li>
                                         <li class="full-mega-menu-position">
                                             <a href="blog-right-sidebar.html">Blog</a>
-                                            <ul class="mega-menu full-mega-menu full-mega-menu2 border-gray  pb-40 pl-50 pt-60" data-background=">">
+                                            <ul class="mega-menu full-mega-menu full-mega-menu2 border-gray  pb-40 pl-50 pt-60" data-background="">
                                                 <li class="border-r-light-gray pl-10">
                                                     <a class="mega-title mb-20" href="#">Blog Layouts 1</a>
                                                     <ul>
@@ -455,9 +455,9 @@
     <script src="~/assets/js/plugins.js"></script>
     <script src="~/assets/js/wow.min.js"></script>
     <script src="~/assets/js/audioplayer.js"></script>
+    <script src="~/assets/js/main.js"></script>
     <script src="~/assets/js/slick.min.js"></script>
     <script src="~/assets/js/jquery.meanmenu.min.js"></script>
-    <script src="~/assets/js/main.js"></script>
 
     @await RenderSectionAsync("Scripts", required: false)
 

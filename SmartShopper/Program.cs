@@ -117,6 +117,7 @@ using (var scope = app.Services.CreateScope())
         var seeder = services.GetRequiredService<DataSeeder>();
         // Kontrol artýk metodun içinde yapýlýyor, direkt çaðýrýyoruz.
         await seeder.SeedOnlyProductsAsync();
+
     }
     catch (Exception ex)
     {

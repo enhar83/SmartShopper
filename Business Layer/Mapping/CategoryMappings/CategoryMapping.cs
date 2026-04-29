@@ -16,6 +16,11 @@ namespace Business_Layer.Mapping.CategoryMappings
             CreateMap<Category, CategoryListDto>().ReverseMap();
             CreateMap<AddCategoryDto, Category>().ReverseMap();
             CreateMap<UpdateCategoryDto, Category>().ReverseMap();
+
+            CreateMap<Category, CategoryListInSidebarDto>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.SubCategories, opt => opt.MapFrom(src => src.SubCategories.Where(s => !s.IsDeleted)))
+                .ReverseMap();
         }
     }
 }

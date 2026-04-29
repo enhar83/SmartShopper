@@ -18,6 +18,11 @@ namespace Business_Layer.Mapping.SubCategoryMapping
             CreateMap<AddSubCategoryDto,SubCategory>().ReverseMap();
             CreateMap<SubCategory, SubCategoryListDto>().ReverseMap();
             CreateMap<UpdateSubCategoryDto, SubCategory>().ReverseMap();
+
+            CreateMap<SubCategory, SubCategoryListInSidebarDto>()
+                .ForMember(dest => dest.SubCategoryName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.ProductCount, opt => opt.MapFrom(src => src.Products != null ? src.Products.Count(p => !p.IsDeleted) : 0))
+                .ReverseMap();
         }
     }
 }
