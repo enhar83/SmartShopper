@@ -13,5 +13,6 @@ namespace Core_Layer.IServices
         Task<List<CategoryListDto>> TGetAllCategories();
         Task TAddCategory(AddCategoryDto addCategoryDto);
         Task TUpdateCategoryAsync(UpdateCategoryDto updateCategoryDto);
+        Task<List<CategoryListInSidebarDto>> TGetCategoriesForSidebarAsync();
     }
 }

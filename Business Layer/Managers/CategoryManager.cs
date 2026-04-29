@@ -60,6 +60,18 @@ namespace Business_Layer.Managers
             return _mapper.Map<CategoryListDto>(category); 
         }
 
+        public async Task<List<CategoryListInSidebarDto>> TGetCategoriesForSidebarAsync()
+        {
+            var categories = await _categoryRepository.GetAll()
+                .Include(c => c.SubCategories.Where(s => !s.IsDeleted)) 
+                    .ThenInclude(s => s.Products.Where(p => !p.IsDeleted))
+                .Where(c => !c.IsDeleted) 
+                .OrderBy(c => c.Name) 
+                .ToListAsync();
+
+            return _mapper.Map<List<CategoryListInSidebarDto>>(categories);
+        }
+
         public async Task TUpdateCategoryAsync(UpdateCategoryDto updateCategoryDto)
         {
             var category = await _categoryRepository.GetByIdAsync(updateCategoryDto.Id);
