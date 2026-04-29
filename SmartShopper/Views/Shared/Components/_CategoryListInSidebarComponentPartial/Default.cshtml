@@ -1,0 +1,179 @@
+﻿@using Core_Layer.Dtos.CategoryDtos
+@model List<CategoryListInSidebarDto>
+
+<div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12">
+    <div id="accordion" class="shop-sidebar-btn-accordion over-hidden">
+        <div class="card border-0">
+            <div class="card-header theme-bg py-1">
+                <button class="shop-accordion-btn width100 theme-bg border-0 px-0" data-toggle="collapse" data-target="#collapseAccessories">
+                    <span class="side-bar-accor-btn d-flex justify-content-between align-items-center py-2">
+                        <span class="icon-align-left"></span>
+                        <span class="shop-accor-left-icon"><span class="icon-chevron-up"></span></span>
+                    </span>
+                </button>
+            </div>
+            <div id="collapseAccessories" class="collapse show" data-parent="#accordion">
+                <div class="card-body p-0">
+                    <div class="shop-l-right rs-right mt-20">
+
+                        <div class="sidebar-widget shop-sidebar-categories">
+                            <h4>Product Categories</h4>
+                            <ul>
+                                @foreach (var cat in Model)
+                                {
+                                    <li>
+                                        <div class="category-row">
+                                            <span class="cat-name">@cat.CategoryName</span>
+                                            <span class="custom-acc-trigger">+</span>
+                                        </div>
+                                        <ul class="panel">
+                                            @if (cat.SubCategories != null && cat.SubCategories.Any())
+                                            {
+                                                foreach (var subcat in cat.SubCategories)
+                                                {
+                                                    <li>
+                                                        <a class="subcategory-link" href="javascript:void(0)" data-id="@subcat.Id">
+                                                            • @subcat.SubCategoryName <span>(@subcat.ProductCount)</span>
+                                                        </a>
+                                                    </li>
+                                                }
+                                            }
+                                        </ul>
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+                        <div class="sidebar-widget">
+                            <h4>Filter by price</h4>
+                            <div class="f-price-filter">
+                                <div id="slider-range"></div>
+                                <form action="#" class="d-flex justify-content-between pt-10 align-items-center">
+                                    <button class="filter-btn border-0" type="submit" style="padding: 4px 12px; font-size: 12px;">Filter</button>
+                                    <div class="price-amount" style="font-size: 12px;">
+                                        <label class="mb-0">Price:</label>
+                                        <input type="text" id="amount" readonly class="theme-color border-0 p-0 pl-1" style="width: 80px;">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div class="sidebar-widget">
+                            <h4>Brand</h4>
+                            <div class="brand">
+                                <ul>
+                                    <li class="pb-1"><a href="#" style="font-size: 13px;">Sony</a></li>
+                                    <li class="pb-1"><a href="#" style="font-size: 13px;">Apple</a></li>
+                                    <li class="pb-1"><a href="#" style="font-size: 13px;">Samsung</a></li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .shop-sidebar-categories {
+        font-family: 'Poppins', sans-serif;
+    }
+
+        .shop-sidebar-categories ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+    .sidebar-widget h4 {
+        font-size: 16px;
+        font-weight: 600;
+        padding-bottom: 8px !important;
+        margin-bottom: 15px !important;
+        border-bottom: 2px solid #333; 
+        color: #333;
+        text-transform: capitalize;
+    }
+
+    .category-row {
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.2s ease;
+        color: #444;
+        font-weight: 500;
+        font-size: 14px;
+    }
+
+        .category-row:hover {
+            color: #f39c12;
+            padding-left: 4px;
+        }
+
+    .custom-acc-trigger {
+        font-size: 16px;
+        font-weight: 300;
+        color: #ccc;
+    }
+
+    .shop-sidebar-categories .panel {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-in-out;
+        background-color: #fafafa;
+    }
+
+        .shop-sidebar-categories .panel li {
+            padding-left: 15px;
+        }
+
+    .subcategory-link {
+        color: #666;
+        font-size: 13px;
+        text-decoration: none;
+        display: block;
+        padding: 4px 0;
+        transition: all 0.2s ease;
+    }
+
+        .subcategory-link:hover {
+            color: #f39c12;
+        }
+
+    .active-cat .custom-acc-trigger {
+        transform: rotate(45deg);
+        color: #f39c12;
+    }
+
+    .active-cat .category-row {
+        color: #f39c12;
+        border-bottom-color: #f39c12;
+    }
+
+    .sidebar-widget {
+        margin-bottom: 20px !important;
+    }
+</style>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const rows = document.querySelectorAll('.category-row');
+        rows.forEach(row => {
+            row.addEventListener('click', function() {
+                const parentLi = this.parentElement;
+                const panel = this.nextElementSibling;
+                parentLi.classList.toggle('active-cat');
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        });
+    });
+</script>
