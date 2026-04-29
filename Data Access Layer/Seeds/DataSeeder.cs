@@ -54,6 +54,30 @@ namespace Data_Access_Layer.Seeds
                 productsToInsert.AddRange(beautySeed.GetProducts(existingSubCategories));
             }
 
+            // 5. JEWELRY & ACCESSORIES KONTROLÜ
+            if (!existingProductCategories.Contains("Jewelry & Accessories"))
+            {
+                Console.WriteLine(">> Jewelry & Accessories ürünleri eksik, üretiliyor...");
+                var jewelrySeed = new JewelryAndAccessoriesSeed();
+                productsToInsert.AddRange(jewelrySeed.GetProducts(existingSubCategories));
+            }
+
+            // 6. FOOTWEAR KONTROLÜ
+            if (!existingProductCategories.Contains("Footwear"))
+            {
+                Console.WriteLine(">> Footwear ürünleri eksik, üretiliyor...");
+                var footwearSeed = new FootwearSeed();
+                productsToInsert.AddRange(footwearSeed.GetProducts(existingSubCategories));
+            }
+
+            // 7. GARDEN & PATIO KONTROLÜ
+            if (!existingProductCategories.Contains("Garden & Patio"))
+            {
+                Console.WriteLine(">> Garden & Patio ürünleri eksik, üretiliyor...");
+                var gardenSeed = new GardenAndPatioSeed();
+                productsToInsert.AddRange(gardenSeed.GetProducts(existingSubCategories));
+            }
+
             // 5. TOPLU EKLEME İŞLEMİ
             if (productsToInsert.Count > 0)
             {
