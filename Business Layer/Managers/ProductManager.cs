@@ -78,5 +78,18 @@ namespace Business_Layer.Managers
 
             return _mapper.Map<ProductListDtoAdminPanel>(product);
         }
+
+        public async Task<List<ProductListDto>> TGetProductListForIndex()
+        {
+            var products = await _productRepository.GetAll()
+                .Include(p => p.SubCategory)
+                .ThenInclude(c=>c!.Category)
+                .Include(p => p.ProductImages) 
+                .Where(p => !p.IsDeleted)
+                .OrderByDescending(p => p.Id)
+                .ToListAsync();
+
+            return _mapper.Map<List<ProductListDto>>(products);
+        }
     }
 }

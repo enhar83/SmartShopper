@@ -10,9 +10,9 @@ using Entity_Layer;
 
 namespace Business_Layer.Mapping.ProductMappings
 {
-    public class ProductMapping:Profile
+    public class ProductMapping : Profile
     {
-        public ProductMapping() 
+        public ProductMapping()
         {
             CreateMap<AddProductDto, Product>().ReverseMap();
 
@@ -32,9 +32,7 @@ namespace Business_Layer.Mapping.ProductMappings
             .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src =>
                 src.ProductImages != null && src.ProductImages.Any(x => x.IsMain)
                 ? src.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
-                : src.ProductImages != null && src.ProductImages.Any()
-                ? src.ProductImages.First().ImageUrl
-                : "/images/default-product.png"))
+                : "NO_IMAGE"))
             .ReverseMap();
         }
     }

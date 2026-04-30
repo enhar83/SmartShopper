@@ -1,1323 +1,354 @@
-﻿
+﻿@using Core_Layer.Dtos.ProductDtos
+@model List<ProductListDto>
+
 @{
-    ViewData["Title"] = "ProductList";
+    ViewData["Title"] = "Shop";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+<style>
+    .single-product {
+        border-radius: 4px;
+        background: #fff;
+        height: 100%;
+        overflow: hidden;
+    }
 
+    .product-img-container {
+        height: 300px;
+        position: relative;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 
+    .product-tag {
+        font-size: 13px;
+        color: #888;
+        margin-bottom: 5px;
+    }
 
-        <!-- ======slider-area-start=========================================== -->
-        <div class="slider-area over-hidden">
-            <div class="single-page page-height3 d-flex align-items-center">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12  d-flex align-items-center justify-content-center">
-                            <div class="page-title pt-65 pb-45 text-center">
-                                <h2 class="text-capitalize theme-color mb-20">Shop</h2>
-                                <nav aria-label="breadcrumb">
-                                    <ol class="breadcrumb justify-content-center bg-transparent">
-                                        <li class="breadcrumb-item"><a class="primary-color" href="index.html">Home</a></li>
-                                        <li class="breadcrumb-item active text-capitalize" aria-current="page">Shop page</li>
-                                    </ol>
-                                </nav>
-                            </div><!-- /page title -->
-                        </div><!-- /col -->
-                    </div><!-- /row -->
-                </div><!-- /container -->
-                <!-- </div> -->
-            </div><!-- /single-slider -->
+    .product-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        display: block;
+        color: #222;
+        text-decoration: none;
+    }
+
+    .price-container {
+        position: relative;
+        height: 30px;
+        overflow: hidden;
+    }
+
+    .product-price {
+        font-size: 15px;
+        color: #222;
+        font-weight: 500;
+        transition: transform 0.3s ease;
+        display: block;
+    }
+
+    .add-to-cart-btn {
+        position: absolute;
+        top: 30px;
+        left: 0;
+        font-size: 13px;
+        font-weight: 700;
+        color: #e67e22;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+        .add-to-cart-btn i {
+            margin-right: 5px;
+        }
+
+    .single-product:hover .product-price {
+        transform: translateY(-30px);
+    }
+
+    .single-product:hover .add-to-cart-btn {
+        transform: translateY(-30px);
+    }
+
+    .pagination {
+        display: flex;
+        padding-left: 0;
+        list-style: none;
+        border-radius: 0.25rem;
+    }
+
+    .page-item {
+        margin: 0 4px;
+    }
+
+    .page-link {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px !important;
+        background: #fff;
+        color: #333;
+        font-weight: 600;
+        border: 1px solid #eee !important;
+        transition: all 0.2s ease;
+        text-decoration: none !important;
+    }
+
+        .page-link:hover {
+            background-color: #f8f9fa;
+            color: #e67e22;
+            border-color: #e67e22 !important;
+        }
+
+    .page-item.active .page-link {
+        background-color: #222 !important;
+        border-color: #222 !important;
+        color: #fff !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .page-item.disabled .page-link {
+        color: #ccc;
+        pointer-events: none;
+        background: #fafafa;
+    }
+
+    #product-list-container {
+        transition: opacity 0.3s ease;
+    }
+
+    .subcategory-link.active-sub {
+        color: #f39c12 !important;
+        font-weight: 700;
+    }
+</style>
+
+<div class="slider-area over-hidden" style="background: #fcfcfc; padding: 50px 0;">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-12">
+                <h2 class="mb-10">Shop</h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb justify-content-center bg-transparent p-0">
+                        <li class="breadcrumb-item"><a href="/" style="color:#888;">Home</a></li>
+                        <li class="breadcrumb-item active">Shop page</li>
+                    </ol>
+                </nav>
+            </div>
         </div>
-        <!-- slider-area-end=  -->
-        <!-- ====== right-sidebar-area-start================================ -->
-        <div class="right-sidebar-area">
-            <div class="container-wrapper extra-padding-15">
-                <div class="row">
+    </div>
+</div>
 
-                    @await Component.InvokeAsync("_CategoryListInSidebarComponentPartial")
+<div class="right-sidebar-area mt-50">
+    <div class="container">
+        <div class="row">
+            @await Component.InvokeAsync("_CategoryListInSidebarComponentPartial")
 
-                    <div class="col-xl-9  col-lg-9  col-md-12  col-sm- col-">
-                        <div class="shop-rs-left">
-                            <!-- ====== shop-header-area-start=============================================== -->
-                            <div class="shop-header-area mt-20">
-                                <div class="px-2">
-                                    <div class="row align-items-center">
-                                        <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12">
-                                            <div class="shop-title mb-10">
-                                                <h6 class="mb-0">Showing all 12 results</h6>
-                                            </div>
-                                        </div><!-- /col -->
-                                        <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12 d-sm-flex align-items-center justify-content-end">
-                                            <div class="shop-title-right">
-                                                <form action="#" class="mr-20 mb-10 product-filter">
-                                                    <select class="form-control border-0 p-0 rounded-0" id="exampleFormControlSelect1">
-                                                        <option value="menu_order" selected="selected">Default sorting</option>
-                                                        <option value="popularity">Sort by popularity</option>
-                                                        <option value="rating">Sort by average rating</option>
-                                                        <option value="date">Sort by latest</option>
-                                                        <option value="price">Sort by price: low to high</option>
-                                                        <option value="price-desc">Sort by price: high to low</option>
-                                                    </select>
-                                                </form>
-                                            </div><!-- /product-selection -->
-                                            <div class="view-mode d-flex align-items-center mb-10">
-                                                <span class="mr-2">Views:</span>
-                                                <ul class="single-product-tab nav" id="myTab" role="tablist">
-                                                    <li class="nav-item">
-                                                        <a class="nav-link active p-tab-btn" id="s-p-list1-tab" data-toggle="tab" href="#s-p-list1" role="tab" aria-controls="s-p-list1" aria-selected="true" title="Grid">
-                                                            <span class="icon-grid"></span>
-                                                        </a>
-                                                    </li>
-                                                    <li class="nav-item">
-                                                        <a class="nav-link p-tab-btn" id="s-p-list2-tab" data-toggle="tab" href="#s-p-list2" role="tab" aria-controls="s-p-list2" aria-selected="false" title="List">
-                                                            <span class="icon-list"></span>
-                                                        </a>
-                                                    </li>
-                                                </ul><!-- /single-product-tab nav -->
-                                            </div>
-                                        </div><!-- /col -->
-                                    </div><!-- /row -->
-                                </div><!-- /container -->
-                            </div>
-                            <!-- shop-header-area-end -->
-                            <!-- ====== product-tabs-area-start================================ -->
-                            <div class="product-tabs-area product-area pt-20 over-hidden">
-                                <div class="product-content">
-                                    <div class="single-product-tab-content tab-content" id="myTabContent">
-                                        <div class="tab-pane show active" id="s-p-list1" role="tabpanel" aria-labelledby="s-p-list1">
-                                            <div class="row products-tab-grid">
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="1000ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product3.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover3.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Lamp,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Lamp with Dimmer Switch</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color"><span>$</span>300.00</span>
-                                                                            <span>-</span>
-                                                                            <span class="theme-color"><span>$</span>900.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Select option">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>Select option
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="600ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product9.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover9.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Flowerpots</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Blossom Porcelain Side bottle</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color"><span>$</span>320.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="500ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product5.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover5.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Chair living room fiberglass</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color"><span>$</span>120.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="100ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product1.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover1.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Clocks,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Blossom Porcelain Side Plates</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color">$</span><span>320.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="400ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block secondary-bg mb-1">Sale</span>
-                                                                    <span class="text-center text-white d-block black-bg">New</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product2.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover2.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">bowls,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Designs Woolrich Klettersack Backpack</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="secondary-color"><span>$</span>200.00</span>
-                                                                        </li>
-                                                                        <li>
-                                                                            <del class="primary-color pl-10"><span>$ 220.00</span></del>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="900ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block secondary-bg">Sale</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product10.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover10.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Clocks,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Wood design dining chair</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="secondary-color"><span>$</span>320.00</span>
-                                                                        </li>
-                                                                        <li>
-                                                                            <del class="primary-color pl-10"><span>$ 320.00</span></del>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="800ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product6.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover6.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Art,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Designs Woolrich Klettersack Backpack</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color"><span>$</span>320.00</span>
-                                                                            <span>-</span>
-                                                                            <span class="theme-color"><span>$</span>620.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="1100ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block secondary-bg mb-1">Sale</span>
-                                                                    <span class="text-center text-white d-block black-bg">New</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product7.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover7.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">clock,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Wood design bedroom clock</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="secondary-color"><span>$</span>320.00</span>
-                                                                        </li>
-                                                                        <li>
-                                                                            <del class="primary-color pl-10"><span>$ 320.00</span></del>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Go to buy">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>Go to buy
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="1300ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product4.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover4.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Clocks,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Bronze Round Wall Mirror</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color"><span>$</span>320.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="150ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product17.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover17.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Chair,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Organic Chair living room fiberglass</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color"><span>$</span>220.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="View product">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>View product
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="1700ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product12.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product-hover12.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Bag,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Saint Laurent College bag</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color">$</span><span>540.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-6 col-12 pl-20 pr-20">
-                                                    <div class="s-p-wrapper  wow fadeInUp animated" data-wow-duration="0.5s" data-wow-delay="300ms">
-                                                        <div class="single-product mb-40">
-                                                            <div class="single-product-img position-relative over-hidden">
-                                                                <div class="single-product-label position-absolute">
-                                                                    <span class="text-center text-white d-block secondary-bg">Sale</span>
-                                                                </div><!-- /product-label -->
-                                                                <a class="position-relative d-block" href="product-details.html">
-                                                                    <img src="~/assets/images/product/product16.jpg" alt="">
-                                                                    <img class="hover-img position-absolute" src="~/assets/images/product/product8.jpg" alt="product">
-                                                                </a>
-                                                                <ul class="view-btn position-absolute transition-3">
-                                                                    <li class="text-center">
-                                                                        <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                    </li>
-                                                                </ul><!-- /view-btn -->
-                                                            </div><!-- /single-product-img -->
-                                                            <div class="single-product-info position-relative mt-10">
-                                                                <div class="single-product-tag ">
-                                                                    <a href="product-details.html" class="primary-color mr-1">Clocks,</a>
-                                                                    <a href="product-details.html" class="primary-color">Dining</a>
-                                                                </div>
-                                                                <h5 class="single-product-name"><a href="product-details.html">Ipsum metus feugiat</a></h5>
-                                                                <div class="single-product-action d-flex position-relative transition-3">
-                                                                    <ul class="single-product-price d-flex">
-                                                                        <li>
-                                                                            <span class="theme-color"><span>$</span>400.00</span>
-                                                                        </li>
-                                                                    </ul><!-- /single-product-price -->
-                                                                    <div class="add-to-cart position-absolute transition-3">
-                                                                        <a href="product-details.html" class="d-block theme-color text-uppercase" data-toggle="tooltip" data-placement="top" title="Add to cart">
-                                                                            <span class="mr-2"><span class="icon-shopping-bag"></span></span>add to cart
-                                                                        </a>
-                                                                    </div><!-- /add-to-cart -->
-                                                                </div><!-- /single-product-action -->
-                                                                <ul class="single-product-wishlist position-absolute">
-                                                                    <li><a href="wishlist.html" data-toggle="tooltip" data-placement="top" title="Add to Wishlist"><span class="icon-heart"></span></a></li>
-                                                                </ul><!-- /single-product-wishlist -->
-                                                            </div>
-                                                        </div><!-- /single-product -->
-                                                    </div>
-                                                </div><!-- /col -->
-                                            </div><!-- /row -->
-                                        </div>
-                                        <div class="tab-pane" id="s-p-list2" role="tabpanel" aria-labelledby="s-p-list2">
-                                            <!-- ====== product-list-view-area-start================================ -->
-                                            <div class="product-list-view product-tabs-area product-area pt-20 over-hidden">
-                                                <div class="row products-tab-grid">
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block secondary-bg mb-1">Sale</span>
-                                                                            <span class="text-center text-white d-block black-bg">New</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product2.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover2.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Designs Woolrich Klettersack Backpack</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="secondary-color"><span>$</span>200.00</span>
-                                                                                <del class="primary-color pl-10"><span>$ 220.00</span></del>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product6.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover6.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Designs Woolrich Klettersack Backpack</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="theme-color"><span>$</span>320.00</span>
-                                                                                <span>-</span>
-                                                                                <span class="theme-color"><span>$</span>620.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block secondary-bg">Sale</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product10.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover10.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Wood design dining chair</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="secondary-color"><span>$</span>320.00</span>
-                                                                                <del class="primary-color pl-10"><span>$ 320.00</span></del>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product5.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover5.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Chair living room fiberglass</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="theme-color"><span>$</span>120.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product9.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover9.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Blossom Porcelain Side bottle</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="theme-color"><span>$</span>320.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam fringilla augue nec est tristique auctor. Donec non est at libero vulputate rutrum. Morbi ornare lectus quis justo gravida semper. Nulla tellus mi, vulputate adipiscing cursus eu, suscipit id nulla.</p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product3.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover3.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Lamp with Dimmer Switch</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="theme-color"><span>$</span>300.00</span>
-                                                                                <span>-</span>
-                                                                                <span class="theme-color"><span>$</span>900.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40 mb-25">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block secondary-bg mb-1">Sale</span>
-                                                                            <span class="text-center text-white d-block black-bg">New</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product7.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover7.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Wood design bedroom clock</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="d-block">$96.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product4.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover4.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Bronze Round Wall Mirror</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="d-block">$196.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block secondary-bg">Sale</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product8.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover8.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Wholesale Hot Sale Modern Design</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="secondary-color"><span>$</span>700.00</span>
-                                                                                <del class="primary-color pl-10"><span>$ 920.00</span></del>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product12.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover12.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Saint Laurent College bag</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="d-block">$116.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam fringilla augue nec est tristique auctor. Donec non est at libero vulputate rutrum. Morbi ornare lectus quis justo gravida semper. Nulla tellus mi, vulputate adipiscing cursus eu, suscipit id nulla.</p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block brown-l-bg">Hot</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product17.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover17.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Organic Chair living room fiberglass</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="d-block">$496.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 pl-20 pr-20">
-                                                        <div class="single-product mb-40">
-                                                            <div class="row">
-                                                                <div class="col-xl-4  col-lg-4  col-md-4  col-sm-4 col-12 pr-0">
-                                                                    <div class="single-product-img position-relative over-hidden mb-25">
-                                                                        <div class="single-product-label position-absolute">
-                                                                            <span class="text-center text-white d-block secondary-bg mb-1">Sale</span>
-                                                                            <span class="text-center text-white d-block black-bg">New</span>
-                                                                        </div><!-- /product-label -->
-                                                                        <a class="position-relative d-block" href="product-details.html">
-                                                                            <img src="~/assets/images/product/product15.jpg" alt="">
-                                                                            <img class="hover-img position-absolute" src="~/assets/images/product/product-hover15.jpg" alt="product">
-                                                                        </a>
-                                                                        <ul class="view-btn position-absolute transition-3">
-                                                                            <li class="text-center">
-                                                                                <a class="theme-color white-bg text-center d-inline-block" href="product-details.html" data-toggle="tooltip" data-placement="top" title="Blossom Porcelain Side bottle">Quick View</a>
-                                                                            </li>
-                                                                        </ul><!-- /view-btn -->
-                                                                    </div><!-- /single-product-img -->
-                                                                </div><!-- /col -->
-                                                                <div class="col-xl-8  col-lg-8  col-md-8  col-sm-8 col-12">
-                                                                    <div class="p-list-content mb-25 pl-20">
-                                                                        <div class="product-left-img-info">
-                                                                            <div class="single-product-tag ">
-                                                                                <a href="product-details.html" class="primary-color mr-1">Decor,</a>
-                                                                                <a href="product-details.html" class="primary-color">Flowerpots</a>
-                                                                            </div>
-                                                                            <h6><a href="product-details.html">Leather Supreme duffle bag</a></h6>
-                                                                            <div class="p-info-img-price mt-10 mb-20">
-                                                                                <span class="d-block">$96.00</span>
-                                                                            </div>
-                                                                            <p class="mb-1">
-                                                                                Typi non habent claritatem insitam, est usus legentis in iis qui facit
-                                                                                eorum claritatem. Investigationes demonstraverunt lectores legere me
-                                                                                lius quod ii legunt saepius. Claritas est etiam processus.
-                                                                            </p>
-                                                                            <p class="mb-1">
-                                                                                – Light green crewneck sweatshirt.<br>
-                                                                                – Hand pockets.<br>
-                                                                                – Relaxed fit.
-                                                                            </p>
-                                                                            <div class="all-info d-sm-flex align-items-center">
-                                                                                <div class="quick-add-to-cart d-lg-flex align-items-center">
-                                                                                    <a data-toggle="tooltip" data-placement="top" title="Add to Cart" href="cart.html" class="sub-btn white-bg d-inline-block theme-color mt-15 mr-15 border-light-gray2 transition-3">Add to cart</a>
-                                                                                </div><!-- /quick-add-to-cart -->
-                                                                                <ul class="single-product-list-button d-flex align-items-center mt-15">
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Add to Wishlist">
-                                                                                        <a href="wishlist.html" class="d-block border-light-gray2 text-dark"><span class="icon-heart"></span></a>
-                                                                                    </li>
-                                                                                    <li data-toggle="tooltip" data-placement="top" title="Compare">
-                                                                                        <a href="#" class="d-block border-light-gray2 text-dark"><span><i class="fas fa-compress"></i></span></a>
-                                                                                    </li>
-                                                                                </ul><!-- /single-product-list-button -->
-                                                                            </div>
-                                                                        </div><!-- /mega-product -->
-                                                                    </div>
-                                                                </div><!-- /col -->
-                                                            </div><!-- /row -->
-                                                        </div><!-- /single-product -->
-                                                    </div><!-- /col -->
-                                                </div><!-- /row -->
-                                            </div><!-- /product-list-view -->
-                                            <!-- product-list-view-area-end  -->
-                                        </div>
-                                    </div>
-                                </div><!-- /product-content -->
-                            </div>
-                            <!-- product-area-end  -->
-                        </div><!-- shop-rs-left -->
-                    </div><!-- /col -->
-                </div><!-- /row -->
-                <div class="row">
-                    <div class="col-xl-12  col-lg-12  col-md-12  col-sm-12 col-12 d-flex justify-content-center">
-                        <div class="shop-view-more-btn mt-55 pb-100">
-                            <a class="more-view-btn d-inline-block border-light-gray2 white-bg theme-color text-capitalize" href="shop.html">Load more products</a>
+            <div class="col-xl-9 col-lg-9 col-md-12">
+                <div class="shop-header-area mb-40">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6 class="mb-0 text-muted" id="filter-info-text">
+                                Showing all <span class="theme-color">@Model.Count</span> products
+                            </h6>
                         </div>
-                    </div><!-- /col -->
-                </div><!-- /row -->
-                <div class="bottom-line"></div>
-            </div><!-- /container -->
+                        <div class="col-md-4 d-flex justify-content-md-end">
+                            <div class="view-mode d-flex align-items-center">
+                                <a href="javascript:void(0)" id="gridBtn" class="mr-3 active" style="color:#222;"><i class="fas fa-th"></i></a>
+                                <a href="javascript:void(0)" id="listBtn" style="color:#ccc;"><i class="fas fa-list"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="product-list-container" class="row"></div>
+
+                <div class="row mt-50 mb-80">
+                    <div class="col-12 d-flex justify-content-center">
+                        <nav>
+                            <ul class="pagination justify-content-center" id="pagination-container"></ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
         </div>
-        <!-- right-sidebar-area-end -->
-       
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const allProducts = @Html.Raw(Json.Serialize(Model));
+        let filteredProducts = [...allProducts];
+        const pageSize = 12;
+        let currentPage = 1;
+        let currentView = 'grid';
+
+        const container = document.getElementById("product-list-container");
+        const pagination = document.getElementById("pagination-container");
+        const filterInfoText = document.getElementById("filter-info-text");
+
+        function render() {
+            container.style.opacity = "0";
+            setTimeout(() => {
+                const start = (currentPage - 1) * pageSize;
+                const end = Math.min(start + pageSize, filteredProducts.length);
+                const currentItems = filteredProducts.slice(start, end);
+
+                container.innerHTML = "";
+
+                if (filteredProducts.length === 0) {
+                    container.innerHTML = '<div class="col-12 text-center py-5"><h5>No products found.</h5></div>';
+                } else {
+                    currentItems.forEach(item => {
+                        container.insertAdjacentHTML('beforeend', currentView === 'grid' ? getGridHtml(item) : getListHtml(item));
+                    });
+                }
+
+                renderPagination();
+                container.style.opacity = "1";
+            }, 200);
+        }
+
+        function getGridHtml(item) {
+            const img = (item.mainImageUrl && item.mainImageUrl !== "NO_IMAGE")
+                ? `<img src="${item.mainImageUrl}" class="w-100 h-100" style="object-fit:cover;">`
+                : `<i class="fas fa-image fa-3x text-muted"></i>`;
+
+            return `
+                <div class="col-xl-4 col-md-6 col-sm-6 mb-5">
+                    <div class="single-product">
+                        <div class="product-img-container mb-3">
+                            <a href="/Product/Detail/${item.id}" class="w-100 h-100 d-flex align-items-center justify-content-center">${img}</a>
+                        </div>
+                        <div class="product-tag text-capitalize">${item.categoryName || ''}, ${item.subCategoryName || ''}</div>
+                        <a href="/Product/Detail/${item.id}" class="product-title text-capitalize">${item.name}</a>
+                        <div class="price-container">
+                            <span class="product-price">$${item.price.toFixed(2)}</span>
+                            <a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket"></i> ADD TO CART</a>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function getListHtml(item) {
+            return `
+                <div class="col-12 mb-4">
+                    <div class="single-product p-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <div class="product-img-container" style="height:200px;">
+                                    <img src="${item.mainImageUrl}" class="img-fluid" style="height:100%; width:100%; object-fit:cover;">
+                                </div>
+                            </div>
+                            <div class="col-md-8 px-4">
+                                <div class="product-tag text-capitalize">${item.categoryName}, ${item.subCategoryName}</div>
+                                <h4 class="mb-2 text-capitalize">${item.name}</h4>
+                                <p class="text-muted small mb-3">${item.description || ''}</p>
+                                <div class="price-container">
+                                    <span class="product-price">$${item.price.toFixed(2)}</span>
+                                    <a href="javascript:void(0)" class="add-to-cart-btn">ADD TO CART</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredProducts.length / pageSize);
+            pagination.innerHTML = "";
+            if (totalPages <= 1) return;
+
+            const maxVisible = 2;
+            pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></a></li>`);
+
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= currentPage - maxVisible && i <= currentPage + maxVisible)) {
+                    pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goPage(${i})">${i}</a></li>`);
+                } else if (i === currentPage - maxVisible - 1 || i === currentPage + maxVisible + 1) {
+                    pagination.insertAdjacentHTML('beforeend', '<li class="pagination-ellipsis">...</li>');
+                }
+            }
+
+            pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></a></li>`);
+        }
+
+        window.goPage = function(p) {
+            currentPage = p;
+            render();
+            window.scrollTo({ top: document.querySelector('.shop-header-area').offsetTop - 50, behavior: 'smooth' });
+        };
+
+        function filterByCategory(subCategoryName) {
+            const targetName = String(subCategoryName).toLowerCase().trim();
+
+            if (!targetName || targetName === "null" || targetName === "") {
+                filteredProducts = [...allProducts];
+                filterInfoText.innerHTML = `Showing all <span class="theme-color">${allProducts.length}</span> products`;
+            } else {
+                filteredProducts = allProducts.filter(p => {
+                    const productSubName = String(p.subCategoryName || "").toLowerCase().trim();
+                    return productSubName === targetName;
+                });
+                filterInfoText.innerHTML = `<span class="theme-color">${filteredProducts.length}</span> products listed in <span class="theme-color">"${subCategoryName}"</span> category`;
+            }
+
+            currentPage = 1;
+            render();
+        }
+
+        document.addEventListener('click', function (e) {
+            const subLink = e.target.closest('.subcategory-link');
+            if (subLink) {
+                e.preventDefault();
+                document.querySelectorAll('.subcategory-link').forEach(l => l.classList.remove('active-sub'));
+                subLink.classList.add('active-sub');
+                const subName = subLink.getAttribute('data-name');
+                filterByCategory(subName);
+                return;
+            }
+
+            const catRow = e.target.closest('.category-row');
+            if (catRow) {
+                const parentLi = catRow.parentElement;
+                const panel = catRow.nextElementSibling;
+                parentLi.classList.toggle('active-cat');
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            }
+        });
+
+        document.getElementById("gridBtn").addEventListener("click", function() {
+            currentView = 'grid';
+            this.style.color = "#222";
+            this.classList.add("active");
+            document.getElementById("listBtn").style.color = "#ccc";
+            document.getElementById("listBtn").classList.remove("active");
+            render();
+        });
+
+        document.getElementById("listBtn").addEventListener("click", function() {
+            currentView = 'list';
+            this.style.color = "#222";
+            this.classList.add("active");
+            document.getElementById("gridBtn").style.color = "#ccc";
+            document.getElementById("gridBtn").classList.remove("active");
+            render();
+        });
+
+        render();
+    });
+</script>
