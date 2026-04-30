@@ -1,0 +1,92 @@
+﻿<header>
+    <div id="header-sticky" class="header-area">
+        <div class="header pl-30 pr-30 pt-15 pb-15">
+            <div class="container-fluid">
+                <div class="row align-items-center justify-content-lg-between position-relative">
+
+                    @await Component.InvokeAsync("_LayoutMainMenuComponentPartial")
+
+
+                    <div class="col-xl-2  col-lg-2 col-md-4 col-sm-4 col-4 d-flex align-items-center justify-content-center">
+                        <div class="logo">
+                            <a href="index.html" class="d-block" data-toggle="tooltip" data-selector="true" data-placement="bottom" title="Homess"><img src="~/assets/images/logo/logo.png" alt="HOMESS"></a>
+                        </div>
+                    </div><!-- /col -->
+                    <div class="col-xl-5  col-lg-5 col-md-4 col-sm-4 col-4">
+                        <div class="header-right d-flex justify-content-end align-items-center">
+                            <ul class="header-login d-none d-lg-block">
+                                <li><a href="login.html" data-toggle="tooltip" data-selector="true" data-placement="bottom" title="Login / Register"><span class="icon-users"></span><span class="logo-register ml-2">Login / Register</span></a></li>
+                            </ul>
+                            <ul class="header-search d-none d-lg-block">
+                                <li><span class="icon-search"></span></li>
+                            </ul>
+                            <ul class="header-heart d-none d-lg-block">
+                                <li><a href="wishlist.html" data-toggle="tooltip" data-selector="true" data-placement="bottom" title="View wishlist"><span class="icon-heart"></span></a></li>
+                            </ul>
+                            <ul>
+                                <li class="position-relative">
+                                    <div class="header-shopping-cart">
+                                        <span class="icon-shopping-bag"></span><sup class="s-count">0</sup>
+                                    </div>
+                                    <div class="header-shopping-cart-details position-absolute bg-white border-gray pl-30 pr-30 pt-30 pb-30">
+                                        <div class="h-shop-cart-contetn over-x-heddne over-y-scroll">
+                                            <ul class="d-flex pb-20 border-b-light-gray">
+                                                <li class="h-shop-cart-img pl-0">
+                                                    <a class="d-block" href="product-details.html"><img src="~/assets/images/product/product1.jpg" alt=""></a>
+                                                </li>
+                                                <li class="pl-3">
+                                                    <h6 class="single-product-name"><a href="product-details.html">Blossom Porcelain Side Plates</a></h6>
+                                                    <span class="primary-color">1<span>x</span>$320.00</span>
+                                                </li>
+                                                <li class="s-p-remove px-1 pl-0">
+                                                    <span>x</span>
+                                                </li>
+                                            </ul>
+                                            <ul class="d-flex pt-20 pb-20 border-b-light-gray">
+                                                <li class="h-shop-cart-img pl-0">
+                                                    <a class="d-block" href="product-details.html"><img src="~/assets/images/product/product5.jpg" alt=""></a>
+                                                </li>
+                                                <li class="pl-3">
+                                                    <h6 class="single-product-name"><a href="product-details.html">Chair living room fiberglass</a></h6>
+                                                    <span class="primary-color">1<span>x</span>$120.00</span>
+                                                </li>
+                                                <li class="s-p-remove px-1 pl-0">
+                                                    <span>x</span>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                        <div class="s-sub-t mt-3 mb-20">
+                                            <span class="theme-color">Subtotal:</span>
+                                            <span class="theme-color float-right"> $440.00</span>
+                                        </div>
+                                        <a class="more-view-btn d-block theme-color border-light-gray2 text-center white-bg theme-color text-capitalize mb-20" href="shop.html">view cart</a>
+                                        <a href="#" class="sub-btn d-inline-block width100 text-white text-uppercase theme-bg border-0 ">checkout</a>
+                                    </div><!-- /header-shopping-cart -->
+                                </li>
+                            </ul>
+                            <ul class="d-none d-lg-block">
+                                <li class=" position-relative">
+                                    <div class="header-setting"><span class="icon-settings"></span></div>
+                                    <div class="header-setting-content position-absolute pt-30 pl-30 pr-30 pb-30">
+                                        <h5>Language</h5>
+                                        <ul class="mb-20 pt-1">
+                                            <li><a href="#">English</a></li>
+                                            <li><a href="#">France</a></li>
+                                            <li><a href="#">Germany</a></li>
+                                        </ul>
+                                        <h5>Currencies</h5>
+                                        <ul class="pt-1">
+                                            <li><a href="#">USD – US Dollar</a></li>
+                                            <li><a href="#">EUR – Euro</a></li>
+                                            <li><a href="#">GBP – British Pound</a></li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div><!-- /header-right -->
+                    </div><!-- /col -->
+                </div><!-- /row -->
+            </div><!-- /container -->
+        </div>
+    </div><!-- /header-bottom -->
+</header>
