@@ -23,6 +23,21 @@
         justify-content: center;
     }
 
+    .subcat-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 4px 14px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+        border-radius: 3px;
+        z-index: 2;
+        letter-spacing: 0.8px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
     .product-tag {
         font-size: 13px;
         color: #888;
@@ -197,6 +212,18 @@
         const pagination = document.getElementById("pagination-container");
         const filterInfoText = document.getElementById("filter-info-text");
 
+        const subCatColorMap = {};
+        const modernColors = ["#d4a373", "#e67e22", "#2ecc71", "#3498db", "#9b59b6", "#e74c3c", "#1abc9c", "#2c3e50", "#27ae60", "#d35400"];
+
+        function getSubCatColor(name) {
+            if (!name) return "#999";
+            if (!subCatColorMap[name]) {
+                const colorIndex = Object.keys(subCatColorMap).length % modernColors.length;
+                subCatColorMap[name] = modernColors[colorIndex];
+            }
+            return subCatColorMap[name];
+        }
+
         function render() {
             container.style.opacity = "0";
             setTimeout(() => {
@@ -206,7 +233,7 @@
 
                 container.innerHTML = "";
 
-                if (filteredProducts.length === 0) {
+                if (currentItems.length === 0) {
                     container.innerHTML = '<div class="col-12 text-center py-5"><h5>No products found.</h5></div>';
                 } else {
                     currentItems.forEach(item => {
@@ -224,14 +251,18 @@
                 ? `<img src="${item.mainImageUrl}" class="w-100 h-100" style="object-fit:cover;">`
                 : `<i class="fas fa-image fa-3x text-muted"></i>`;
 
+            const badgeColor = getSubCatColor(item.subCategoryName);
+            const badgeHtml = item.subCategoryName ? `<div class="subcat-badge" style="background-color: ${badgeColor}">${item.subCategoryName}</div>` : "";
+
             return `
                 <div class="col-xl-4 col-md-6 col-sm-6 mb-5">
                     <div class="single-product">
                         <div class="product-img-container mb-3">
-                            <a href="/Product/Detail/${item.id}" class="w-100 h-100 d-flex align-items-center justify-content-center">${img}</a>
+                            ${badgeHtml}
+                            <a href="/Product/ProductDetails/${item.id}" class="w-100 h-100 d-flex align-items-center justify-content-center">${img}</a>
                         </div>
-                        <div class="product-tag text-capitalize">${item.categoryName || ''}, ${item.subCategoryName || ''}</div>
-                        <a href="/Product/Detail/${item.id}" class="product-title text-capitalize">${item.name}</a>
+                        <div class="product-tag text-capitalize">${item.categoryName || ''}</div>
+                        <a href="/Product/ProductDetails/${item.id}" class="product-title text-capitalize">${item.name}</a>
                         <div class="price-container">
                             <span class="product-price">$${item.price.toFixed(2)}</span>
                             <a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket"></i> ADD TO CART</a>
@@ -241,6 +272,9 @@
         }
 
         function getListHtml(item) {
+            const badgeColor = getSubCatColor(item.subCategoryName);
+            const badgeHtml = item.subCategoryName ? `<span class="badge mb-2" style="background-color: ${badgeColor}; color: #fff; padding: 5px 10px; text-transform: uppercase; font-size: 10px;">${item.subCategoryName}</span>` : "";
+
             return `
                 <div class="col-12 mb-4">
                     <div class="single-product p-3">
@@ -251,7 +285,8 @@
                                 </div>
                             </div>
                             <div class="col-md-8 px-4">
-                                <div class="product-tag text-capitalize">${item.categoryName}, ${item.subCategoryName}</div>
+                                ${badgeHtml}
+                                <div class="product-tag text-capitalize">${item.categoryName}</div>
                                 <h4 class="mb-2 text-capitalize">${item.name}</h4>
                                 <p class="text-muted small mb-3">${item.description || ''}</p>
                                 <div class="price-container">
@@ -276,7 +311,7 @@
                 if (i === 1 || i === totalPages || (i >= currentPage - maxVisible && i <= currentPage + maxVisible)) {
                     pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goPage(${i})">${i}</a></li>`);
                 } else if (i === currentPage - maxVisible - 1 || i === currentPage + maxVisible + 1) {
-                    pagination.insertAdjacentHTML('beforeend', '<li class="pagination-ellipsis">...</li>');
+                    pagination.insertAdjacentHTML('beforeend', '<li class="pagination-ellipsis" style="display:flex; align-items:center; padding: 0 10px; color: #999;">...</li>');
                 }
             }
 
@@ -291,18 +326,13 @@
 
         function filterByCategory(subCategoryName) {
             const targetName = String(subCategoryName).toLowerCase().trim();
-
             if (!targetName || targetName === "null" || targetName === "") {
                 filteredProducts = [...allProducts];
                 filterInfoText.innerHTML = `Showing all <span class="theme-color">${allProducts.length}</span> products`;
             } else {
-                filteredProducts = allProducts.filter(p => {
-                    const productSubName = String(p.subCategoryName || "").toLowerCase().trim();
-                    return productSubName === targetName;
-                });
+                filteredProducts = allProducts.filter(p => String(p.subCategoryName || "").toLowerCase().trim() === targetName);
                 filterInfoText.innerHTML = `<span class="theme-color">${filteredProducts.length}</span> products listed in <span class="theme-color">"${subCategoryName}"</span> category`;
             }
-
             currentPage = 1;
             render();
         }
@@ -313,8 +343,7 @@
                 e.preventDefault();
                 document.querySelectorAll('.subcategory-link').forEach(l => l.classList.remove('active-sub'));
                 subLink.classList.add('active-sub');
-                const subName = subLink.getAttribute('data-name');
-                filterByCategory(subName);
+                filterByCategory(subLink.getAttribute('data-name'));
                 return;
             }
 
@@ -323,28 +352,21 @@
                 const parentLi = catRow.parentElement;
                 const panel = catRow.nextElementSibling;
                 parentLi.classList.toggle('active-cat');
-                if (panel.style.maxHeight) {
-                    panel.style.maxHeight = null;
-                } else {
-                    panel.style.maxHeight = panel.scrollHeight + "px";
-                }
+                if (panel.style.maxHeight) panel.style.maxHeight = null;
+                else panel.style.maxHeight = panel.scrollHeight + "px";
             }
         });
 
         document.getElementById("gridBtn").addEventListener("click", function() {
             currentView = 'grid';
-            this.style.color = "#222";
             this.classList.add("active");
-            document.getElementById("listBtn").style.color = "#ccc";
             document.getElementById("listBtn").classList.remove("active");
             render();
         });
 
         document.getElementById("listBtn").addEventListener("click", function() {
             currentView = 'list';
-            this.style.color = "#222";
             this.classList.add("active");
-            document.getElementById("gridBtn").style.color = "#ccc";
             document.getElementById("gridBtn").classList.remove("active");
             render();
         });
