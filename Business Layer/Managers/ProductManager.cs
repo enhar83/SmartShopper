@@ -147,5 +147,40 @@ namespace Business_Layer.Managers
 
             return dto;
         }
+
+        public async Task<List<SimilarProductsForProductDetailDto>> TGetSimilarProductsForProductDetailAsync(Guid subCategoryId)
+        {
+            var products = await _productRepository.Where(x => x.SubCategoryId == subCategoryId && !x.IsDeleted)
+                .Include(x => x.SubCategory)
+                    .ThenInclude(s => s!.Category)
+                .Include(x => x.ProductImages)
+                .Take(10) 
+                .ToListAsync();
+
+            var mappedList = _mapper.Map<List<SimilarProductsForProductDetailDto>>(products);
+            for (int i = 0; i < products.Count; i++)
+            {
+                var product = products[i];
+                var dto = mappedList[i];
+
+                if (product.Stock <= 0)
+                {
+                    dto.StockStatus = "Out of Stock";
+                    dto.StockStatusClass = "bg-danger";
+                }
+                else if (product.Stock <= 50)
+                {
+                    dto.StockStatus = "Limited";
+                    dto.StockStatusClass = "bg-warning text-dark";
+                }
+                else
+                {
+                    dto.StockStatus = "In Stock";
+                    dto.StockStatusClass = "bg-success";
+                }
+            }
+
+            return mappedList;
+        }
     }
 }

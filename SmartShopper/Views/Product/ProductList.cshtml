@@ -21,10 +21,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        overflow: hidden; /* Fotoğraf büyürken dışarı taşmaması için */
+        overflow: hidden;
     }
 
-        /* Görsel Büyütme Efekti */
         .product-img-container img {
             transition: transform 0.5s ease;
             width: 100%;
@@ -33,10 +32,9 @@
         }
 
     .single-product:hover .product-img-container img {
-        transform: scale(1.1); /* %10 büyüme */
+        transform: scale(1.1);
     }
 
-    /* Alt Kategori Badge (Sol Üst) */
     .subcat-badge {
         position: absolute;
         top: 15px;
@@ -52,7 +50,6 @@
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    /* Stok Durum Badge (Sağ Üst) */
     .stock-status-badge {
         position: absolute;
         top: 15px;
@@ -66,7 +63,6 @@
         z-index: 3;
     }
 
-    /* Stok Renkleri Garantisi */
     .bg-success {
         background-color: #28a745 !important;
         color: #fff !important;
@@ -137,7 +133,6 @@
         transform: translateY(-30px);
     }
 
-    /* Pagination */
     .pagination {
         display: flex;
         padding-left: 0;
@@ -206,7 +201,6 @@
     <div class="container">
         <div class="row">
             @await Component.InvokeAsync("_CategoryListInSidebarComponentPartial")
-
             <div class="col-xl-9 col-lg-9 col-md-12">
                 <div class="shop-header-area mb-40">
                     <div class="row align-items-center">
@@ -223,9 +217,7 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="product-list-container" class="row"></div>
-
                 <div class="row mt-50 mb-80">
                     <div class="col-12 d-flex justify-content-center">
                         <nav>
@@ -250,6 +242,25 @@
         const pagination = document.getElementById("pagination-container");
         const filterInfoText = document.getElementById("filter-info-text");
 
+        // URL PARAMETRESİ İLE OTOMATİK FİLTRELEME
+        const urlParams = new URLSearchParams(window.location.search);
+        const subCategoryParam = urlParams.get('subCategory');
+
+        if (subCategoryParam) {
+            const targetName = String(subCategoryParam).toLowerCase().trim();
+            filteredProducts = allProducts.filter(p => String(p.subCategoryName || "").toLowerCase().trim() === targetName);
+            if(filterInfoText) {
+                filterInfoText.innerHTML = `<span class="theme-color">${filteredProducts.length}</span> products in <span class="theme-color">"${subCategoryParam}"</span>`;
+            }
+            setTimeout(() => {
+                document.querySelectorAll('.subcategory-link').forEach(l => {
+                    if(l.getAttribute('data-name') === subCategoryParam) {
+                        l.classList.add('active-sub');
+                    }
+                });
+            }, 300);
+        }
+
         const subCatColorMap = {};
         const modernColors = ["#d4a373", "#e67e22", "#2ecc71", "#3498db", "#9b59b6", "#e74c3c", "#1abc9c", "#2c3e50", "#27ae60", "#d35400"];
 
@@ -268,7 +279,6 @@
                 const start = (currentPage - 1) * pageSize;
                 const end = Math.min(start + pageSize, filteredProducts.length);
                 const currentItems = filteredProducts.slice(start, end);
-
                 container.innerHTML = "";
                 if (currentItems.length === 0) {
                     container.innerHTML = '<div class="col-12 text-center py-5"><h5>No products found.</h5></div>';
@@ -286,10 +296,8 @@
             const img = (item.mainImageUrl && item.mainImageUrl !== "NO_IMAGE")
                 ? `<img src="${item.mainImageUrl}" class="img-fluid">`
                 : `<i class="fas fa-image fa-3x text-muted"></i>`;
-
             const subCatBadgeColor = getSubCatColor(item.subCategoryName);
             const isOutOfStock = item.stockStatus === "Out of Stock";
-
             const cartBtnHtml = isOutOfStock
                 ? `<span class="add-to-cart-btn text-muted" style="cursor:not-allowed; opacity:0.6;"><i class="fas fa-ban"></i> SOLD OUT</span>`
                 : `<a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket"></i> ADD TO CART</a>`;
@@ -315,7 +323,6 @@
         function getListHtml(item) {
             const subCatBadgeColor = getSubCatColor(item.subCategoryName);
             const isOutOfStock = item.stockStatus === "Out of Stock";
-
             const cartBtnHtml = isOutOfStock
                 ? `<span class="btn btn-sm btn-secondary disabled mt-2">Sold Out</span>`
                 : `<a href="javascript:void(0)" class="add-to-cart-btn">ADD TO CART</a>`;

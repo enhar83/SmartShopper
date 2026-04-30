@@ -254,64 +254,7 @@
     </div>
 </div>
 
-<div class="related-product-area mt-80 mb-100">
-    <div class="container-wrapper extra-padding-15">
-        <div class="section-title text-center mb-50">
-            <h2>#Related products</h2>
-            <p class="text-muted">You might also like these products</p>
-        </div>
-        <div class="row">
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 mb-30">
-                <div class="single-product related-product-card p-3 text-center">
-                    <div class="related-img-container">
-                        <img src="~/assets/images/product/product1.jpg" alt="Related" class="main-product-img">
-                    </div>
-                    <div class="mt-3">
-                        <div class="small text-muted">Category</div>
-                        <h6 class="mt-1"><a href="#" class="text-dark">Related Product 1</a></h6>
-                        <span class="theme-color font-weight-bold">$100.00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 mb-30">
-                <div class="single-product related-product-card p-3 text-center">
-                    <div class="related-img-container">
-                        <img src="~/assets/images/product/product2.jpg" alt="Related" class="main-product-img">
-                    </div>
-                    <div class="mt-3">
-                        <div class="small text-muted">Category</div>
-                        <h6 class="mt-1"><a href="#" class="text-dark">Related Product 2</a></h6>
-                        <span class="theme-color font-weight-bold">$150.00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 mb-30">
-                <div class="single-product related-product-card p-3 text-center">
-                    <div class="related-img-container">
-                        <img src="~/assets/images/product/product3.jpg" alt="Related" class="main-product-img">
-                    </div>
-                    <div class="mt-3">
-                        <div class="small text-muted">Category</div>
-                        <h6 class="mt-1"><a href="#" class="text-dark">Related Product 3</a></h6>
-                        <span class="theme-color font-weight-bold">$200.00</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-lg-3 col-md-6 col-sm-6 col-12 mb-30">
-                <div class="single-product related-product-card p-3 text-center">
-                    <div class="related-img-container">
-                        <img src="~/assets/images/product/product4.jpg" alt="Related" class="main-product-img">
-                    </div>
-                    <div class="mt-3">
-                        <div class="small text-muted">Category</div>
-                        <h6 class="mt-1"><a href="#" class="text-dark">Related Product 4</a></h6>
-                        <span class="theme-color font-weight-bold">$250.00</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+@await Component.InvokeAsync("_SimilarProductsListInProductDetailComponentPartial", new { subCategoryId = Model.SubCategoryId })
 
 <script>
     document.getElementById('scrollUp')?.addEventListener('click', function() {

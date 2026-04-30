@@ -1,0 +1,217 @@
+﻿@using Core_Layer.Dtos.ProductDtos
+@model List<SimilarProductsForProductDetailDto>
+
+<style>
+    /* Carousel Konteynırı */
+    .related-slider-wrapper {
+        position: relative;
+        padding: 0 45px;
+    }
+
+    .related-product-card {
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s ease;
+        border-radius: 8px;
+        background: #fff;
+        margin: 15px 10px;
+        height: 450px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .related-img-container {
+        height: 250px;
+        width: 100%;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #f9f9f9;
+        position: relative;
+        border-radius: 4px 4px 0 0;
+    }
+
+        .related-img-container img {
+            transition: transform 0.5s ease;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: cover;
+        }
+
+    .related-product-card:hover .related-img-container img {
+        transform: scale(1.1);
+    }
+
+    /* Badge'ler */
+    .badge-subcat {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        padding: 4px 10px;
+        font-size: 9px;
+        font-weight: 700;
+        color: #fff;
+        text-transform: uppercase;
+        border-radius: 3px;
+        z-index: 2;
+        background-color: #d4a373;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .badge-stock {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        padding: 4px 10px;
+        font-size: 9px;
+        color: #fff;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 3px;
+        z-index: 2;
+    }
+
+    /* Sağ Alt Buton Tasarımı */
+    .view-all-wrapper {
+        text-align: right;
+        margin-top: 10px;
+        padding-right: 10px;
+    }
+
+    .view-all-similar {
+        display: inline-block;
+        padding: 10px 25px;
+        border: 2px solid #222;
+        color: #222;
+        font-weight: 700;
+        text-transform: uppercase;
+        font-size: 11px;
+        border-radius: 50px;
+        transition: 0.3s;
+        text-decoration: none !important;
+    }
+
+        .view-all-similar:hover {
+            background: #222;
+            color: #fff;
+        }
+
+    /* Oklar */
+    .rel-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40px;
+        height: 40px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 10;
+        transition: 0.3s;
+    }
+
+        .rel-arrow:hover {
+            background: #f39c12;
+            color: #fff;
+            border-color: #f39c12;
+        }
+
+    .rel-prev {
+        left: 0;
+    }
+
+    .rel-next {
+        right: 0;
+    }
+
+    .related-carousel .slick-track {
+        display: flex !important;
+    }
+</style>
+
+<div class="related-product-area mt-80 mb-100">
+    <div class="container-wrapper extra-padding-15">
+        <div class="section-title text-center mb-50">
+            <h2>#Related products</h2>
+            <p class="text-muted">You might also like these products from the same category</p>
+        </div>
+
+        <div class="related-slider-wrapper">
+            <!-- Özel Oklar -->
+            <div class="rel-arrow rel-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="rel-arrow rel-next"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="related-carousel">
+                @foreach (var item in Model)
+                {
+                    <div>
+                        <div class="single-product related-product-card p-3 text-center">
+                            <div class="related-img-container">
+                                <div class="badge-subcat">@item.SubCategoryName</div>
+                                <div class="badge-stock @item.StockStatusClass">@item.StockStatus</div>
+
+                                <a href="/Product/ProductDetails/@item.Id" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                    @if (!string.IsNullOrEmpty(item.MainImageUrl) && item.MainImageUrl != "NO_IMAGE")
+                                    {
+                                        <img src="@item.MainImageUrl" alt="@item.Name">
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-image fa-4x text-muted opacity-50"></i>
+                                    }
+                                </a>
+                            </div>
+                            <div class="mt-3">
+                                <div class="small text-muted text-capitalize">@item.CategoryName</div>
+                                <h6 class="mt-1" style="height: 40px; overflow: hidden;">
+                                    <a href="/Product/ProductDetails/@item.Id" class="text-dark text-capitalize">@item.Name</a>
+                                </h6>
+                                <span class="theme-color font-weight-bold">@item.Price.ToString("C2")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            @* Sağ Alt Köşedeki Buton *@
+            @if (Model != null && Model.Any())
+            {
+                <div class="view-all-wrapper">
+                    <a href="/Product/ProductList?subCategory=@Model.First().SubCategoryName" class="view-all-similar">
+                        VIEW ALL SIMILAR PRODUCTS <i class="fas fa-arrow-right ml-1"></i>
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Scripts Bölümü -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('.related-carousel').slick({
+            dots: false,
+            infinite: true,
+            speed: 800,
+            slidesToShow: 4,
+            slidesToScroll: 1,
+            autoplay: true,
+            autoplaySpeed: 5000,
+            prevArrow: $('.rel-prev'),
+            nextArrow: $('.rel-next'),
+            responsive: [
+                { breakpoint: 1200, settings: { slidesToShow: 3 } },
+                { breakpoint: 992, settings: { slidesToShow: 2 } },
+                { breakpoint: 576, settings: { slidesToShow: 1 } }
+            ]
+        });
+    });
+</script>

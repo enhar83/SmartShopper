@@ -13,6 +13,7 @@ namespace Core_Layer.Dtos.ProductDtos
         public required string Name { get; set; }
         public required string Description { get; set; }
         public required string CategoryName { get; set; }
+        public Guid SubCategoryId { get; set; }
         public string? SubCategoryName { get; set; }
         public string? MainImageUrl { get; set; }
         public ICollection<ProductImage>? ProductImages { get; set; }
