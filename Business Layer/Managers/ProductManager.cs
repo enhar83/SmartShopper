@@ -95,15 +95,33 @@ namespace Business_Layer.Managers
         public async Task<ProductDetailDto> TGetProductDetailsAsync(Guid id)
         {
             var product = await _productRepository.Where(x => x.Id == id)
-                .Include(x => x.ProductImages) 
-                .Include(x => x.SubCategory)  
-                .ThenInclude(s => s!.Category)
+                .Include(x => x.ProductImages)
+                .Include(x => x.SubCategory)
+                    .ThenInclude(s => s!.Category)
                 .FirstOrDefaultAsync();
 
             if (product == null)
                 throw new LogicException("Id", "The product not found.");
-                
-            return _mapper.Map<ProductDetailDto>(product);
+
+            var dto = _mapper.Map<ProductDetailDto>(product);
+
+            if (product.Stock <= 0)
+            {
+                dto.StockStatus = "Out of Stock";
+                dto.StockStatusClass = "text-danger";
+            }
+            else if (product.Stock <= 30)
+            {
+                dto.StockStatus = "Limited Stock! (Hurry up, almost gone)";
+                dto.StockStatusClass = "text-warning";
+            }
+            else
+            {
+                dto.StockStatus = "In Stock";
+                dto.StockStatusClass = "text-success";
+            }
+
+            return dto;
         }
     }
 }

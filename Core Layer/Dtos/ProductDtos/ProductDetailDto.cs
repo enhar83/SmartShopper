@@ -18,5 +18,7 @@ namespace Core_Layer.Dtos.ProductDtos
         public ICollection<ProductImage>? ProductImages { get; set; }
         public double Price { get; set; }
         public int Stock { get; set; }
+        public required string StockStatus { get; set; }
+        public required string StockStatusClass { get; set; }
     }
 }
