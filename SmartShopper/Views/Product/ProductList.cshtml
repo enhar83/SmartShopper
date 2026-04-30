@@ -23,6 +23,7 @@
         justify-content: center;
     }
 
+    /* Alt Kategori Badge (Sol Üst) */
     .subcat-badge {
         position: absolute;
         top: 15px;
@@ -36,6 +37,20 @@
         z-index: 2;
         letter-spacing: 0.8px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Stok Durum Badge (Sağ Üst) */
+    .stock-status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 4px 10px;
+        font-size: 10px;
+        color: #fff;
+        font-weight: 700;
+        text-transform: uppercase;
+        border-radius: 3px;
+        z-index: 2;
     }
 
     .product-tag {
@@ -85,6 +100,7 @@
             margin-right: 5px;
         }
 
+    /* Hover Efektleri */
     .single-product:hover .product-price {
         transform: translateY(-30px);
     }
@@ -93,6 +109,7 @@
         transform: translateY(-30px);
     }
 
+    /* Pagination */
     .pagination {
         display: flex;
         padding-left: 0;
@@ -129,13 +146,6 @@
         background-color: #222 !important;
         border-color: #222 !important;
         color: #fff !important;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-    }
-
-    .page-item.disabled .page-link {
-        color: #ccc;
-        pointer-events: none;
-        background: #fafafa;
     }
 
     #product-list-container {
@@ -232,7 +242,6 @@
                 const currentItems = filteredProducts.slice(start, end);
 
                 container.innerHTML = "";
-
                 if (currentItems.length === 0) {
                     container.innerHTML = '<div class="col-12 text-center py-5"><h5>No products found.</h5></div>';
                 } else {
@@ -240,7 +249,6 @@
                         container.insertAdjacentHTML('beforeend', currentView === 'grid' ? getGridHtml(item) : getListHtml(item));
                     });
                 }
-
                 renderPagination();
                 container.style.opacity = "1";
             }, 200);
@@ -251,29 +259,39 @@
                 ? `<img src="${item.mainImageUrl}" class="w-100 h-100" style="object-fit:cover;">`
                 : `<i class="fas fa-image fa-3x text-muted"></i>`;
 
-            const badgeColor = getSubCatColor(item.subCategoryName);
-            const badgeHtml = item.subCategoryName ? `<div class="subcat-badge" style="background-color: ${badgeColor}">${item.subCategoryName}</div>` : "";
+            const subCatBadgeColor = getSubCatColor(item.subCategoryName);
+            const isOutOfStock = item.stockStatus === "Out of Stock";
+
+            // Add to Cart Butonu (Stok kontrolüne göre)
+            const cartBtnHtml = isOutOfStock
+                ? `<span class="add-to-cart-btn text-muted" style="cursor:not-allowed; opacity:0.6;"><i class="fas fa-ban"></i> SOLD OUT</span>`
+                : `<a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket"></i> ADD TO CART</a>`;
 
             return `
                 <div class="col-xl-4 col-md-6 col-sm-6 mb-5">
                     <div class="single-product">
                         <div class="product-img-container mb-3">
-                            ${badgeHtml}
+                            <div class="subcat-badge" style="background-color: ${subCatBadgeColor}">${item.subCategoryName || ''}</div>
+                            <div class="stock-status-badge ${item.stockStatusClass || ''}">${item.stockStatus || ''}</div>
                             <a href="/Product/ProductDetails/${item.id}" class="w-100 h-100 d-flex align-items-center justify-content-center">${img}</a>
                         </div>
                         <div class="product-tag text-capitalize">${item.categoryName || ''}</div>
                         <a href="/Product/ProductDetails/${item.id}" class="product-title text-capitalize">${item.name}</a>
                         <div class="price-container">
                             <span class="product-price">$${item.price.toFixed(2)}</span>
-                            <a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket"></i> ADD TO CART</a>
+                            ${cartBtnHtml}
                         </div>
                     </div>
                 </div>`;
         }
 
         function getListHtml(item) {
-            const badgeColor = getSubCatColor(item.subCategoryName);
-            const badgeHtml = item.subCategoryName ? `<span class="badge mb-2" style="background-color: ${badgeColor}; color: #fff; padding: 5px 10px; text-transform: uppercase; font-size: 10px;">${item.subCategoryName}</span>` : "";
+            const subCatBadgeColor = getSubCatColor(item.subCategoryName);
+            const isOutOfStock = item.stockStatus === "Out of Stock";
+
+            const cartBtnHtml = isOutOfStock
+                ? `<span class="btn btn-sm btn-secondary disabled mt-2">Sold Out</span>`
+                : `<a href="javascript:void(0)" class="add-to-cart-btn">ADD TO CART</a>`;
 
             return `
                 <div class="col-12 mb-4">
@@ -281,17 +299,18 @@
                         <div class="row align-items-center">
                             <div class="col-md-4">
                                 <div class="product-img-container" style="height:200px;">
+                                    <div class="stock-status-badge ${item.stockStatusClass}" style="bottom:10px; right:10px; top:auto;">${item.stockStatus}</div>
                                     <img src="${item.mainImageUrl}" class="img-fluid" style="height:100%; width:100%; object-fit:cover;">
                                 </div>
                             </div>
                             <div class="col-md-8 px-4">
-                                ${badgeHtml}
+                                <span class="badge mb-2" style="background-color: ${subCatBadgeColor}; color: #fff; padding: 5px 10px; text-transform: uppercase; font-size: 10px;">${item.subCategoryName}</span>
                                 <div class="product-tag text-capitalize">${item.categoryName}</div>
                                 <h4 class="mb-2 text-capitalize">${item.name}</h4>
                                 <p class="text-muted small mb-3">${item.description || ''}</p>
                                 <div class="price-container">
                                     <span class="product-price">$${item.price.toFixed(2)}</span>
-                                    <a href="javascript:void(0)" class="add-to-cart-btn">ADD TO CART</a>
+                                    ${cartBtnHtml}
                                 </div>
                             </div>
                         </div>
@@ -303,38 +322,30 @@
             const totalPages = Math.ceil(filteredProducts.length / pageSize);
             pagination.innerHTML = "";
             if (totalPages <= 1) return;
-
             const maxVisible = 2;
             pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></a></li>`);
-
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - maxVisible && i <= currentPage + maxVisible)) {
                     pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goPage(${i})">${i}</a></li>`);
                 } else if (i === currentPage - maxVisible - 1 || i === currentPage + maxVisible + 1) {
-                    pagination.insertAdjacentHTML('beforeend', '<li class="pagination-ellipsis" style="display:flex; align-items:center; padding: 0 10px; color: #999;">...</li>');
+                    pagination.insertAdjacentHTML('beforeend', '<li style="display:flex; align-items:center; padding:0 10px; color:#999;">...</li>');
                 }
             }
-
             pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></a></li>`);
         }
 
-        window.goPage = function(p) {
-            currentPage = p;
-            render();
-            window.scrollTo({ top: document.querySelector('.shop-header-area').offsetTop - 50, behavior: 'smooth' });
-        };
+        window.goPage = function(p) { currentPage = p; render(); window.scrollTo({ top: document.querySelector('.shop-header-area').offsetTop - 50, behavior: 'smooth' }); };
 
         function filterByCategory(subCategoryName) {
             const targetName = String(subCategoryName).toLowerCase().trim();
-            if (!targetName || targetName === "null" || targetName === "") {
+            if (!targetName || targetName === "" || targetName === "null") {
                 filteredProducts = [...allProducts];
                 filterInfoText.innerHTML = `Showing all <span class="theme-color">${allProducts.length}</span> products`;
             } else {
                 filteredProducts = allProducts.filter(p => String(p.subCategoryName || "").toLowerCase().trim() === targetName);
-                filterInfoText.innerHTML = `<span class="theme-color">${filteredProducts.length}</span> products listed in <span class="theme-color">"${subCategoryName}"</span> category`;
+                filterInfoText.innerHTML = `<span class="theme-color">${filteredProducts.length}</span> products in <span class="theme-color">"${subCategoryName}"</span>`;
             }
-            currentPage = 1;
-            render();
+            currentPage = 1; render();
         }
 
         document.addEventListener('click', function (e) {
@@ -346,30 +357,16 @@
                 filterByCategory(subLink.getAttribute('data-name'));
                 return;
             }
-
             const catRow = e.target.closest('.category-row');
             if (catRow) {
-                const parentLi = catRow.parentElement;
                 const panel = catRow.nextElementSibling;
-                parentLi.classList.toggle('active-cat');
-                if (panel.style.maxHeight) panel.style.maxHeight = null;
-                else panel.style.maxHeight = panel.scrollHeight + "px";
+                catRow.parentElement.classList.toggle('active-cat');
+                panel.style.maxHeight = panel.style.maxHeight ? null : panel.scrollHeight + "px";
             }
         });
 
-        document.getElementById("gridBtn").addEventListener("click", function() {
-            currentView = 'grid';
-            this.classList.add("active");
-            document.getElementById("listBtn").classList.remove("active");
-            render();
-        });
-
-        document.getElementById("listBtn").addEventListener("click", function() {
-            currentView = 'list';
-            this.classList.add("active");
-            document.getElementById("gridBtn").classList.remove("active");
-            render();
-        });
+        document.getElementById("gridBtn").addEventListener("click", function() { currentView = 'grid'; this.classList.add("active"); document.getElementById("listBtn").classList.remove("active"); render(); });
+        document.getElementById("listBtn").addEventListener("click", function() { currentView = 'list'; this.classList.add("active"); document.getElementById("gridBtn").classList.remove("active"); render(); });
 
         render();
     });

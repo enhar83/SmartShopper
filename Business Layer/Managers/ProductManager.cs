@@ -89,7 +89,31 @@ namespace Business_Layer.Managers
                 .OrderByDescending(p => p.Id)
                 .ToListAsync();
 
-            return _mapper.Map<List<ProductListDto>>(products);
+            var mappedList = _mapper.Map<List<ProductListDto>>(products);
+
+            for (int i = 0; i < products.Count; i++)
+            {
+                var originalProduct = products[i];
+                var targetDto = mappedList[i];
+
+                if (originalProduct.Stock <= 0)
+                {
+                    targetDto.StockStatus = "Out of Stock";
+                    targetDto.StockStatusClass = "bg-danger"; 
+                }
+                else if (originalProduct.Stock <= 50)
+                {
+                    targetDto.StockStatus = "Limited";
+                    targetDto.StockStatusClass = "bg-warning text-dark"; 
+                }
+                else
+                {
+                    targetDto.StockStatus = "In Stock";
+                    targetDto.StockStatusClass = "bg-success";
+                }
+            }
+
+            return mappedList;
         }
 
         public async Task<ProductDetailDto> TGetProductDetailsAsync(Guid id)
@@ -110,7 +134,7 @@ namespace Business_Layer.Managers
                 dto.StockStatus = "Out of Stock";
                 dto.StockStatusClass = "text-danger";
             }
-            else if (product.Stock <= 30)
+            else if (product.Stock <= 50)
             {
                 dto.StockStatus = "Limited Stock! (Hurry up, almost gone)";
                 dto.StockStatusClass = "text-warning";
