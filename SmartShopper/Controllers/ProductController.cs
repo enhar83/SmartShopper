@@ -1,4 +1,5 @@
-﻿using Core_Layer.IServices;
+﻿using AspNetCoreGeneratedDocument;
+using Core_Layer.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Controllers
@@ -16,6 +17,12 @@ namespace SmartShopper.Controllers
         {
             var products = await _productService.TGetProductListForIndex();
             return View(products);
+        }
+
+        public async Task<IActionResult> ProductDetails(Guid id)
+        {
+            var product = await _productService.TGetProductDetailsAsync(id);
+            return View(product);
         }
     }
 }

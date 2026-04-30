@@ -9,6 +9,7 @@ namespace Core_Layer.Dtos.ProductDtos
 {
     public class ProductDetailDto
     {
+        public Guid Id { get; set; }
         public required string Name { get; set; }
         public required string Description { get; set; }
         public required string CategoryName { get; set; }

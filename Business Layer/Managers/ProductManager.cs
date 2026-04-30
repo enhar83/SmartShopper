@@ -91,5 +91,19 @@ namespace Business_Layer.Managers
 
             return _mapper.Map<List<ProductListDto>>(products);
         }
+
+        public async Task<ProductDetailDto> TGetProductDetailsAsync(Guid id)
+        {
+            var product = await _productRepository.Where(x => x.Id == id)
+                .Include(x => x.ProductImages) 
+                .Include(x => x.SubCategory)  
+                .ThenInclude(s => s!.Category)
+                .FirstOrDefaultAsync();
+
+            if (product == null)
+                throw new LogicException("Id", "The product not found.");
+                
+            return _mapper.Map<ProductDetailDto>(product);
+        }
     }
 }

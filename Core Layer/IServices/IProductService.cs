@@ -15,5 +15,6 @@ namespace Core_Layer.IServices
         Task<List<ProductListDtoAdminPanel>> TGetProductListAsync();
         Task TUpdateProductAsync(UpdateProductDto updateProductDto);
         Task<List<ProductListDto>> TGetProductListForIndex();
+        Task<ProductDetailDto> TGetProductDetailsAsync(Guid id);
     }
 }
