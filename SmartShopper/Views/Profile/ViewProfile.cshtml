@@ -98,10 +98,8 @@
             <form id="editProfileForm" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" id="editId" name="Id" />
-
                 <div class="modal-body p-4">
                     <div id="errorList" class="alert alert-danger d-none"></div>
-
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="small text-uppercase fw-bold">First Name</label>
@@ -149,7 +147,7 @@
                 </button>
             </div>
             <div class="modal-body p-0">
-                <div id="addressContainer" class="p-4">
+                <div id="addressContainer" class="p-4" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center p-5">
                         <div class="spinner-border theme-color" role="status"></div>
                     </div>
@@ -157,8 +155,53 @@
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Close</button>
-                <button type="button" id="btnAddAddress" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Add New</button>
+                <button type="button" id="btnOpenAddAddress" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Add New</button>
             </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addAddressModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header theme-bg text-white">
+                <h5 class="modal-title text-white"><i class="fas fa-plus mr-2"></i> Add New Address</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="addAddressForm">
+                @Html.AntiForgeryToken()
+                <div class="modal-body p-4">
+                    <div id="addAddressErrorList" class="alert alert-danger d-none"></div>
+                    <div class="mb-3">
+                        <label class="small text-uppercase fw-bold">Address Title</label>
+                        <input type="text" name="Title" class="form-control" placeholder="Home, Office etc." required />
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-uppercase fw-bold">Country</label>
+                            <input type="text" name="Country" class="form-control" required />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="small text-uppercase fw-bold">City</label>
+                            <input type="text" name="City" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-uppercase fw-bold">District</label>
+                        <input type="text" name="District" class="form-control" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="small text-uppercase fw-bold">Full Address</label>
+                        <textarea name="FullAddress" class="form-control" rows="3" required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Save Address</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -249,7 +292,14 @@
                 loadAddresses();
             });
 
+            $('#btnOpenAddAddress').on('click', function () {
+                $('#addAddressErrorList').addClass('d-none').empty();
+                $('#addAddressForm')[0].reset();
+                $('#addAddressModal').modal('show');
+            });
+
             function loadAddresses() {
+                $('#addressContainer').html('<div class="text-center p-5"><div class="spinner-border theme-color" role="status"></div></div>');
                 $.ajax({
                     url: '/UserAddress/UserAddressList',
                     type: 'GET',
@@ -279,6 +329,31 @@
                     }
                 });
             }
+
+            $('#addAddressForm').on('submit', function (e) {
+                e.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: '/UserAddress/AddAddress',
+                    type: 'POST',
+                    data: formData,
+                    success: function (res) {
+                        if (res.succeeded) {
+                            $('#addAddressModal').modal('hide');
+                            Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false });
+                            loadAddresses();
+                        }
+                    },
+                    error: function (xhr) {
+                        let res = xhr.responseJSON;
+                        let errorHtml = '<ul class="mb-0">';
+                        if (res && res.errors) { $.each(res.errors, function (i, item) { errorHtml += '<li>' + item + '</li>'; }); }
+                        else { errorHtml += '<li>Unexpected server error.</li>'; }
+                        errorHtml += '</ul>';
+                        $('#addAddressErrorList').html(errorHtml).removeClass('d-none');
+                    }
+                });
+            });
 
             $('#editProfileForm').on('submit', function (e) {
                 e.preventDefault();
