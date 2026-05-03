@@ -11,7 +11,6 @@ namespace Core_Layer.Dtos.ProfileDtos
         public Guid Id { get; set; }
         public required string Name { get; set; }
         public required string Surname { get; set; }
-        public string? City { get; set; }
         public string? ImageUrl { get; set; }
         public required string UserName { get; set; }
         public string? PhoneNumber { get; set; }

@@ -49,11 +49,11 @@ namespace SmartShopper.Areas.Admin.Controllers
 
         public async Task<IActionResult> GetProduct(Guid id)
         {
-            var category = await _productService.TGetByIdAsync(id);
-            if (category == null)
+            var product = await _productService.TGetByIdAsync(id);
+            if (product == null)
                 return NotFound(new { success = false, message = "Category not found." });
 
-            return Json(category);
+            return Json(product);
         }
 
         [HttpPost]
