@@ -14,7 +14,6 @@
 <div class="contact-area bg-light pt-50">
     <div class="container-wrapper extra-padding-15">
         <div class="row pb-100">
-            <!-- Sidebar: Profile Overview -->
             <div class="col-xl-4 col-lg-5 col-md-12">
                 <div class="contact-form-left mt-60 text-center rounded bg-white shadow-sm p-5 border">
                     <div class="section-title text-center">
@@ -39,7 +38,6 @@
                 </div>
             </div>
 
-            <!-- Main Content: Account Details -->
             <div class="col-xl-8 col-lg-7 col-md-12">
                 <div class="contact-form-right mt-60 rounded bg-white shadow-sm p-5 border">
                     <div class="d-flex justify-content-between align-items-center mb-35">
@@ -88,7 +86,6 @@
     </div>
 </div>
 
-<!-- Modal: Address Management List -->
 <div class="modal fade" id="addressListModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg">
@@ -102,7 +99,7 @@
                 <div id="addressContainer" class="p-4" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center p-5">
                         <div class="spinner-border theme-color" role="status"></div>
-                        <p class="mt-2 text-muted">Synchronizing addresses...</p>
+                        <p class="mt-2 text-muted">Refreshing Address Book...</p>
                     </div>
                 </div>
             </div>
@@ -114,7 +111,6 @@
     </div>
 </div>
 
-<!-- Modal: Address Form (Add/Update) -->
 <div class="modal fade" id="addressFormModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg">
@@ -202,7 +198,6 @@
             text-transform: uppercase;
         }
 
-        /* Address Card Styling: Senior UI Approach */
         .address-card {
             border-left: 4px solid #FF5722;
             transition: all 0.3s ease;
@@ -236,13 +231,11 @@
         let cachedAddresses = [];
 
         $(document).ready(function () {
-            // Address Management: Show List
             $('#btnManageAddresses').on('click', function () {
                 $('#addressListModal').modal('show');
                 loadAddresses();
             });
 
-            // Global Address Loader: Senior Logic
             function loadAddresses() {
                 const container = $('#addressContainer');
                 container.html('<div class="text-center p-5"><div class="spinner-border theme-color" role="status"></div><p class="mt-2 text-muted">Refreshing Address Book...</p></div>');
@@ -285,13 +278,11 @@
                         container.html(html);
                     },
                     error: function (xhr) {
-                        container.html('<div class="alert alert-danger border-0 shadow-sm"><i class="fas fa-exclamation-circle mr-2"></i> Failed to sync addresses. Please check your connection.</div>');
-                        console.error("Address Load Error: ", xhr.statusText);
+                        container.html('<div class="alert alert-danger border-0 shadow-sm"><i class="fas fa-exclamation-circle mr-2"></i> Failed to sync addresses.</div>');
                     }
                 });
             }
 
-            // Delegated Events for Dynamically Created Buttons
             $(document).on('click', '.btn-edit-address', function () {
                 const id = $(this).data('id');
                 const addr = cachedAddresses.find(x => x.id === id);
@@ -309,7 +300,43 @@
                 }
             });
 
-            // Open Add Modal
+            $(document).on('click', '.btn-delete-address', function () {
+                const id = $(this).data('id');
+                const token = $('input[name="__RequestVerificationToken"]').val();
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "This address will be permanently removed from the system!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#FF5722',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: '/UserAddress/DeleteAddress',
+                            type: 'POST',
+                            data: {
+                                id: id,
+                                __RequestVerificationToken: token
+                            },
+                            success: function (res) {
+                                if (res.succeeded) {
+                                    Swal.fire({ icon: 'success', title: 'Deleted!', text: res.message, timer: 1500, showConfirmButton: false });
+                                    loadAddresses();
+                                }
+                            },
+                            error: function (xhr) {
+                                let res = xhr.responseJSON;
+                                Swal.fire({ icon: 'error', title: 'Error!', text: res && res.errors ? res.errors[0] : 'Delete failed.' });
+                            }
+                        });
+                    }
+                });
+            });
+
             $('#btnOpenAddAddress').on('click', function () {
                 $('#addressForm')[0].reset();
                 $('#addrId').val('');
@@ -318,12 +345,10 @@
                 $('#addressFormModal').modal('show');
             });
 
-            // Unified Form Submit (Create/Update)
             $('#addressForm').on('submit', function (e) {
                 e.preventDefault();
                 const id = $('#addrId').val();
                 const url = id ? '/UserAddress/UpdateAddress' : '/UserAddress/AddAddress';
-
                 let formData = $(this).serializeArray();
                 if(id) {
                     const isDeleted = $('#addrIsDeleted').is(':checked');
@@ -344,7 +369,7 @@
                     },
                     error: function (xhr) {
                         let res = xhr.responseJSON;
-                        let errorHtml = '<ul class="mb-0 text-left small">' + (res && res.errors ? res.errors.map(e => `<li>${e}</li>`).join('') : '<li>An unexpected server error occurred.</li>') + '</ul>';
+                        let errorHtml = '<ul class="mb-0 text-left small">' + (res && res.errors ? res.errors.map(e => `<li>${e}</li>`).join('') : '<li>An unexpected server error occurred.</li>') + 'ul';
                         $('#addressErrorList').html(errorHtml).removeClass('d-none');
                     }
                 });

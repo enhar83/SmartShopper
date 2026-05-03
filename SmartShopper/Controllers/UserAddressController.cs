@@ -84,5 +84,30 @@ namespace SmartShopper.Controllers
                 return StatusCode(500, new { succeeded = false, errors = new[] { "An unexpected technical error occurred while updating the address." } });
             }
         }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAddress(Guid id)
+        {
+            if (id == Guid.Empty)
+            {
+                return BadRequest(new { succeeded = false, errors = new[] { "Invalid address identification." } });
+            }
+
+            try
+            {
+                await _userAddressService.TDeleteUserAddressAsync(id);
+
+                return Ok(new { succeeded = true, message = "The address has been permanently deleted." });
+            }
+            catch (LogicException ex)
+            {
+                return BadRequest(new { succeeded = false, errors = new[] { ex.Message } });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { succeeded = false, errors = new[] { "A technical error occurred while deleting the address." } });
+            }
+        }
     }
 }

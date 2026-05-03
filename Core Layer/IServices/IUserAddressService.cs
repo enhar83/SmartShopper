@@ -12,5 +12,6 @@ namespace Core_Layer.IServices
         Task<List<UserAddressListDto>> TGetUserAddressListAsync(Guid userId);
         Task TAddUserAddressAsync(AddUserAddressDto addUserAddressDto);
         Task TUpdateUserAddressAsync(UpdateUserAddressDto updateUserAddressDto);
+        Task TDeleteUserAddressAsync(Guid id);
     }
 }

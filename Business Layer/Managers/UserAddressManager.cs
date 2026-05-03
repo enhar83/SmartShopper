@@ -6,6 +6,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
+using Bogus.DataSets;
 using Core_Layer.Dtos.UserAddressDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IRepositories;
@@ -33,18 +34,50 @@ namespace Business_Layer.Managers
 
         public async Task TAddUserAddressAsync(AddUserAddressDto addUserAddressDto)
         {
-            var userAddress = _mapper.Map<UserAddress>(addUserAddressDto);
-
             var userIdClaim = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier);
-
             if (string.IsNullOrEmpty(userIdClaim))
                 throw new LogicException("Auth", "User authentication required.");
 
-            userAddress.AppUserId = Guid.Parse(userIdClaim); 
-            userAddress.CreatedDate = DateTime.Now;          
-            userAddress.IsDeleted = false;                  
+            var currentUserId = Guid.Parse(userIdClaim);
+
+            bool isTitleExists = await _userAddressRepository.AnyAsync(x =>
+                x.AppUserId == currentUserId &&
+                x.Title.ToLower() == addUserAddressDto.Title.ToLower());
+
+            if (isTitleExists)
+                throw new LogicException("Duplicate", $"You already have an address titled '{addUserAddressDto.Title}'.");
+
+            bool isAddressExists = await _userAddressRepository.AnyAsync(x =>
+                x.AppUserId == currentUserId &&
+                x.FullAddress.ToLower() == addUserAddressDto.FullAddress.ToLower());
+
+            if (isAddressExists)
+                throw new LogicException("Duplicate", "This full address is already registered in your account.");
+
+            var userAddress = _mapper.Map<UserAddress>(addUserAddressDto);
+            userAddress.AppUserId = currentUserId;
+            userAddress.CreatedDate = DateTime.Now;
+            userAddress.IsDeleted = false;
 
             await _userAddressRepository.AddAsync(userAddress);
+            await _uow.SaveAsync();
+        }
+
+        public async Task TDeleteUserAddressAsync(Guid id)
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new LogicException("Auth", "User authentication required.");
+
+            var currentUserId = Guid.Parse(userIdClaim);
+
+            var address = await _userAddressRepository.GetByIdAsync(id);
+
+            if (address == null || address.AppUserId != currentUserId)
+                throw new LogicException("NotFound", "Address record not found or you don't have permission to delete it.");
+
+            _userAddressRepository.Remove(address);
+
             await _uow.SaveAsync();
         }
 
