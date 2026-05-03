@@ -16,6 +16,7 @@ namespace Entity_Layer
         public string? ActivationCode { get; set; }
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public ICollection<UserAddress>? Addresses { get; set; } 
+        public ICollection<Favorite>? Favorites { get; set; }
 
     }
 }
