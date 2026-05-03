@@ -61,5 +61,41 @@ namespace Business_Layer.Managers
             return _mapper.Map<List<UserAddressListDto>>(addresses);
         }
 
+        public async Task TUpdateUserAddressAsync(UpdateUserAddressDto updateUserAddressDto)
+        {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdClaim))
+                throw new LogicException("Auth", "User session not found.");
+
+            var currentUserId = Guid.Parse(userIdClaim);
+
+            var existAddress = await _userAddressRepository.GetByIdAsync(updateUserAddressDto.Id);
+
+            if (existAddress == null || existAddress.AppUserId != currentUserId)
+                throw new LogicException("NotFound", "Address record not found or access denied.");
+
+            bool isTitleExists = await _userAddressRepository.AnyAsync(x =>
+                x.AppUserId == currentUserId &&
+                x.Title.ToLower() == updateUserAddressDto.Title.ToLower() &&
+                x.Id != updateUserAddressDto.Id);
+
+            if (isTitleExists)
+                throw new LogicException("Duplicate", $"You already have an address titled '{updateUserAddressDto.Title}'.");
+
+            bool isAddressExists = await _userAddressRepository.AnyAsync(x =>
+                x.AppUserId == currentUserId &&
+                x.FullAddress.ToLower() == updateUserAddressDto.FullAddress.ToLower() &&
+                x.Id != updateUserAddressDto.Id);
+
+            if (isAddressExists)
+                throw new LogicException("Duplicate", "This full address is already registered in your account.");
+
+            _mapper.Map(updateUserAddressDto, existAddress);
+            existAddress.UpdatedDate = DateTime.Now;
+            existAddress.IsDeleted = updateUserAddressDto.IsDeleted;
+
+            _userAddressRepository.Update(existAddress);
+            await _uow.SaveAsync();
+        }
     }
 }

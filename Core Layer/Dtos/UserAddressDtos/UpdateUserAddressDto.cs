@@ -14,5 +14,6 @@ namespace Core_Layer.Dtos.UserAddressDtos
         public required string City { get; set; }
         public string? District { get; set; }
         public required string FullAddress { get; set; }
+        public bool IsDeleted { get; set; }
     }
 }

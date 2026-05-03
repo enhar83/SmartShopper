@@ -16,7 +16,7 @@ namespace SmartShopper.Controllers
             _userAddressService = userAddressService;
         }
 
-        public async Task<IActionResult> UserAddressList()
+        public async Task<IActionResult> GetUserAddresses()
         {
             var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userIdString == null)
@@ -54,6 +54,34 @@ namespace SmartShopper.Controllers
             catch (Exception)
             {
                 return StatusCode(500, new { succeeded = false, errors = new[] { "A technical error occurred while saving the address." } });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken] 
+        public async Task<IActionResult> UpdateAddress(UpdateUserAddressDto updateUserAddressDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage);
+
+                return BadRequest(new { succeeded = false, errors = errors });
+            }
+
+            try
+            {
+                await _userAddressService.TUpdateUserAddressAsync(updateUserAddressDto);
+                return Ok(new { succeeded = true, message = "Address has been updated successfully." });
+            }
+            catch (LogicException ex)
+            {
+                return BadRequest(new { succeeded = false, errors = new[] { ex.Message } });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { succeeded = false, errors = new[] { "An unexpected technical error occurred while updating the address." } });
             }
         }
     }

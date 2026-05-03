@@ -14,6 +14,7 @@
 <div class="contact-area bg-light pt-50">
     <div class="container-wrapper extra-padding-15">
         <div class="row pb-100">
+            <!-- Sidebar: Profile Overview -->
             <div class="col-xl-4 col-lg-5 col-md-12">
                 <div class="contact-form-left mt-60 text-center rounded bg-white shadow-sm p-5 border">
                     <div class="section-title text-center">
@@ -38,6 +39,7 @@
                 </div>
             </div>
 
+            <!-- Main Content: Account Details -->
             <div class="col-xl-8 col-lg-7 col-md-12">
                 <div class="contact-form-right mt-60 rounded bg-white shadow-sm p-5 border">
                     <div class="d-flex justify-content-between align-items-center mb-35">
@@ -55,27 +57,27 @@
                     <div class="contact-form profile-view-form">
                         <div class="row">
                             <div class="col-md-6 mb-25">
-                                <label class="fw-bold text-dark text-uppercase">First Name</label>
+                                <label class="fw-bold text-dark text-uppercase small">First Name</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.Name</div>
                             </div>
                             <div class="col-md-6 mb-25">
-                                <label class="fw-bold text-dark text-uppercase">Last Name</label>
+                                <label class="fw-bold text-dark text-uppercase small">Last Name</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.Surname</div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-25">
-                                <label class="fw-bold text-dark text-uppercase">Email Address</label>
+                                <label class="fw-bold text-dark text-uppercase small">Email Address</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.Email</div>
                             </div>
                             <div class="col-md-6 mb-25">
-                                <label class="fw-bold text-dark text-uppercase">Phone Number</label>
+                                <label class="fw-bold text-dark text-uppercase small">Phone Number</label>
                                 <div class="p-3 border rounded bg-light text-muted">@(Model.PhoneNumber ?? "Not Provided")</div>
                             </div>
                         </div>
                         <div class="row justify-content-center">
                             <div class="col-md-6 mb-25 text-center">
-                                <label class="fw-bold text-dark text-uppercase">Username</label>
+                                <label class="fw-bold text-dark text-uppercase small">Username</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.UserName</div>
                             </div>
                         </div>
@@ -86,57 +88,7 @@
     </div>
 </div>
 
-<div class="modal fade" id="editModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header theme-bg text-white">
-                <h5 class="modal-title text-white"><i class="fas fa-user-cog mr-2"></i> Update Profile Details</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form id="editProfileForm" enctype="multipart/form-data">
-                @Html.AntiForgeryToken()
-                <input type="hidden" id="editId" name="Id" />
-                <div class="modal-body p-4">
-                    <div id="errorList" class="alert alert-danger d-none"></div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">First Name</label>
-                            <input type="text" id="editName" name="Name" class="form-control" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">Last Name</label>
-                            <input type="text" id="editSurname" name="Surname" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">Username</label>
-                            <input type="text" id="editUserName" name="UserName" class="form-control" />
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">Phone Number</label>
-                            <input type="text" id="editPhone" name="PhoneNumber" class="form-control" />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="small text-uppercase fw-bold">Profile Picture</label>
-                        <div class="d-flex align-items-center mt-2">
-                            <img id="currentImagePreview" src="" class="rounded-circle mr-3 shadow-sm" style="width: 60px; height: 60px; object-fit: cover; display:none; border: 2px solid #eee;">
-                            <input type="file" name="UserImage" class="form-control-file" id="userImageInput" />
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer bg-light justify-content-end">
-                    <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
+<!-- Modal: Address Management List -->
 <div class="modal fade" id="addressListModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg">
@@ -150,6 +102,7 @@
                 <div id="addressContainer" class="p-4" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center p-5">
                         <div class="spinner-border theme-color" role="status"></div>
+                        <p class="mt-2 text-muted">Synchronizing addresses...</p>
                     </div>
                 </div>
             </div>
@@ -161,40 +114,46 @@
     </div>
 </div>
 
-<div class="modal fade" id="addAddressModal" tabindex="-1" role="dialog" aria-hidden="true">
+<!-- Modal: Address Form (Add/Update) -->
+<div class="modal fade" id="addressFormModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content border-0 shadow-lg">
             <div class="modal-header theme-bg text-white">
-                <h5 class="modal-title text-white"><i class="fas fa-plus mr-2"></i> Add New Address</h5>
+                <h5 class="modal-title text-white" id="addressModalTitle"><i class="fas fa-plus mr-2"></i> Add New Address</h5>
                 <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form id="addAddressForm">
+            <form id="addressForm">
                 @Html.AntiForgeryToken()
+                <input type="hidden" name="Id" id="addrId" />
                 <div class="modal-body p-4">
-                    <div id="addAddressErrorList" class="alert alert-danger d-none"></div>
+                    <div id="addressErrorList" class="alert alert-danger d-none"></div>
                     <div class="mb-3">
                         <label class="small text-uppercase fw-bold">Address Title</label>
-                        <input type="text" name="Title" class="form-control" placeholder="Home, Office etc." required />
+                        <input type="text" name="Title" id="addrTitle" class="form-control" placeholder="e.g. Home, Office" required />
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="small text-uppercase fw-bold">Country</label>
-                            <input type="text" name="Country" class="form-control" required />
+                            <input type="text" name="Country" id="addrCountry" class="form-control" required />
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="small text-uppercase fw-bold">City</label>
-                            <input type="text" name="City" class="form-control" required />
+                            <input type="text" name="City" id="addrCity" class="form-control" required />
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="small text-uppercase fw-bold">District</label>
-                        <input type="text" name="District" class="form-control" />
+                        <input type="text" name="District" id="addrDistrict" class="form-control" />
                     </div>
                     <div class="mb-3">
                         <label class="small text-uppercase fw-bold">Full Address</label>
-                        <textarea name="FullAddress" class="form-control" rows="3" required></textarea>
+                        <textarea name="FullAddress" id="addrFull" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3 form-check" id="isDeletedSection" style="display:none;">
+                        <input type="checkbox" class="form-check-input" name="IsDeleted" id="addrIsDeleted">
+                        <label class="form-check-label text-danger fw-bold" for="addrIsDeleted">Archive this address (Make it Passive)</label>
                     </div>
                 </div>
                 <div class="modal-footer bg-light">
@@ -231,15 +190,6 @@
             background-color: #FF5722 !important;
         }
 
-        .modal-header.theme-bg {
-            border-bottom: 0;
-        }
-
-        .form-control:focus {
-            border-color: #FF5722;
-            box-shadow: none;
-        }
-
         .btn-fixed-size {
             min-width: 140px;
             height: 45px;
@@ -247,136 +197,155 @@
             align-items: center;
             justify-content: center;
             border-radius: 4px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 600;
             text-transform: uppercase;
-            transition: all 0.3s;
         }
 
+        /* Address Card Styling: Senior UI Approach */
         .address-card {
             border-left: 4px solid #FF5722;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
         }
 
             .address-card:hover {
-                transform: translateX(5px);
-                background-color: #f9f9f9;
+                transform: translateX(8px);
+                background-color: #fafafa;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             }
+
+            .address-card.is-deleted {
+                border-left-color: #6c757d;
+                opacity: 0.65;
+                background-color: #f8f9fa;
+            }
+
+        .badge-status {
+            font-size: 10px;
+            padding: 4px 10px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-radius: 20px;
+        }
     </style>
 }
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        $(document).ready(function () {
-            $('#btnEditProfile').on('click', function () {
-                $.ajax({
-                    url: '/Profile/GetProfileForEdit',
-                    type: 'GET',
-                    success: function (res) {
-                        $('#editId').val(res.id);
-                        $('#editName').val(res.name);
-                        $('#editSurname').val(res.surname);
-                        $('#editUserName').val(res.userName);
-                        $('#editPhone').val(res.phoneNumber);
-                        if (res.userImage) { $('#currentImagePreview').attr('src', res.userImage).show(); }
-                        else { $('#currentImagePreview').hide(); }
-                        $('#errorList').addClass('d-none').empty();
-                        $('#editModal').modal('show');
-                    }
-                });
-            });
+        let cachedAddresses = [];
 
+        $(document).ready(function () {
+            // Address Management: Show List
             $('#btnManageAddresses').on('click', function () {
                 $('#addressListModal').modal('show');
                 loadAddresses();
             });
 
-            $('#btnOpenAddAddress').on('click', function () {
-                $('#addAddressErrorList').addClass('d-none').empty();
-                $('#addAddressForm')[0].reset();
-                $('#addAddressModal').modal('show');
-            });
-
+            // Global Address Loader: Senior Logic
             function loadAddresses() {
-                $('#addressContainer').html('<div class="text-center p-5"><div class="spinner-border theme-color" role="status"></div></div>');
+                const container = $('#addressContainer');
+                container.html('<div class="text-center p-5"><div class="spinner-border theme-color" role="status"></div><p class="mt-2 text-muted">Refreshing Address Book...</p></div>');
+
                 $.ajax({
-                    url: '/UserAddress/UserAddressList',
+                    url: '/UserAddress/GetUserAddresses',
                     type: 'GET',
+                    dataType: 'json',
                     success: function (res) {
                         let html = '';
-                        if (res.succeeded && res.data.length > 0) {
+                        if (res.succeeded && res.data && res.data.length > 0) {
+                            cachedAddresses = res.data;
                             res.data.forEach(addr => {
+                                const statusClass = addr.isDeleted ? 'is-deleted' : 'is-active';
+                                const badge = addr.isDeleted
+                                    ? '<span class="badge badge-secondary badge-status ml-2"><i class="fas fa-archive mr-1"></i> Passive</span>'
+                                    : '<span class="badge badge-success badge-status ml-2" style="background-color: #28a745;"><i class="fas fa-check-circle mr-1"></i> Active</span>';
+
                                 html += `
-                                    <div class="address-card p-3 mb-3 border rounded bg-white shadow-sm">
+                                    <div class="address-card p-4 mb-3 border rounded bg-white shadow-sm ${statusClass}">
                                         <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <h6 class="fw-bold mb-1 text-uppercase">${addr.title}</h6>
-                                                <p class="small text-muted mb-0">${addr.fullAddress}</p>
-                                                <p class="small text-dark mb-0 font-italic">${addr.city} / ${addr.country}</p>
+                                            <div style="flex: 1;">
+                                                <div class="d-flex align-items-center mb-2">
+                                                    <h6 class="fw-bold mb-0 text-dark">${addr.title}</h6>
+                                                    ${badge}
+                                                </div>
+                                                <p class="small text-muted mb-1" style="line-height: 1.5;">${addr.fullAddress}</p>
+                                                <p class="small mb-0 font-weight-bold" style="color: #FF5722;">${addr.city} / ${addr.country}</p>
                                             </div>
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-outline-primary border-0"><i class="fas fa-edit"></i></button>
-                                                <button class="btn btn-sm btn-outline-danger border-0"><i class="fas fa-trash-alt"></i></button>
+                                            <div class="btn-group ml-3">
+                                                <button class="btn btn-sm btn-outline-primary border-0 btn-edit-address" data-id="${addr.id}" title="Edit"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger border-0 btn-delete-address" data-id="${addr.id}" title="Delete"><i class="fas fa-trash-alt"></i></button>
                                             </div>
                                         </div>
                                     </div>`;
                             });
                         } else {
-                            html = '<div class="text-center p-5 text-muted"><i class="fas fa-map-marked fa-3x mb-3"></i><p>No registered addresses found.</p></div>';
+                            html = '<div class="text-center p-5 text-muted"><i class="fas fa-map-marked-alt fa-3x mb-3" style="opacity: 0.2;"></i><p>No addresses found in your profile.</p></div>';
                         }
-                        $('#addressContainer').html(html);
+                        container.html(html);
+                    },
+                    error: function (xhr) {
+                        container.html('<div class="alert alert-danger border-0 shadow-sm"><i class="fas fa-exclamation-circle mr-2"></i> Failed to sync addresses. Please check your connection.</div>');
+                        console.error("Address Load Error: ", xhr.statusText);
                     }
                 });
             }
 
-            $('#addAddressForm').on('submit', function (e) {
+            // Delegated Events for Dynamically Created Buttons
+            $(document).on('click', '.btn-edit-address', function () {
+                const id = $(this).data('id');
+                const addr = cachedAddresses.find(x => x.id === id);
+                if (addr) {
+                    $('#addressModalTitle').html('<i class="fas fa-edit mr-2"></i> Edit Existing Address');
+                    $('#addrId').val(addr.id);
+                    $('#addrTitle').val(addr.title);
+                    $('#addrCountry').val(addr.country);
+                    $('#addrCity').val(addr.city);
+                    $('#addrDistrict').val(addr.district);
+                    $('#addrFull').val(addr.fullAddress);
+                    $('#addrIsDeleted').prop('checked', addr.isDeleted);
+                    $('#isDeletedSection').show();
+                    $('#addressFormModal').modal('show');
+                }
+            });
+
+            // Open Add Modal
+            $('#btnOpenAddAddress').on('click', function () {
+                $('#addressForm')[0].reset();
+                $('#addrId').val('');
+                $('#addressModalTitle').html('<i class="fas fa-plus mr-2"></i> Register New Address');
+                $('#isDeletedSection').hide();
+                $('#addressFormModal').modal('show');
+            });
+
+            // Unified Form Submit (Create/Update)
+            $('#addressForm').on('submit', function (e) {
                 e.preventDefault();
-                let formData = $(this).serialize();
+                const id = $('#addrId').val();
+                const url = id ? '/UserAddress/UpdateAddress' : '/UserAddress/AddAddress';
+
+                let formData = $(this).serializeArray();
+                if(id) {
+                    const isDeleted = $('#addrIsDeleted').is(':checked');
+                    formData = formData.filter(x => x.name !== 'IsDeleted');
+                    formData.push({ name: 'IsDeleted', value: isDeleted });
+                }
+
                 $.ajax({
-                    url: '/UserAddress/AddAddress',
+                    url: url,
                     type: 'POST',
-                    data: formData,
+                    data: $.param(formData),
                     success: function (res) {
                         if (res.succeeded) {
-                            $('#addAddressModal').modal('hide');
-                            Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false });
+                            $('#addressFormModal').modal('hide');
+                            Swal.fire({ icon: 'success', title: 'Data Saved', text: res.message, timer: 1500, showConfirmButton: false });
                             loadAddresses();
                         }
                     },
                     error: function (xhr) {
                         let res = xhr.responseJSON;
-                        let errorHtml = '<ul class="mb-0">';
-                        if (res && res.errors) { $.each(res.errors, function (i, item) { errorHtml += '<li>' + item + '</li>'; }); }
-                        else { errorHtml += '<li>Unexpected server error.</li>'; }
-                        errorHtml += '</ul>';
-                        $('#addAddressErrorList').html(errorHtml).removeClass('d-none');
-                    }
-                });
-            });
-
-            $('#editProfileForm').on('submit', function (e) {
-                e.preventDefault();
-                let formData = new FormData(this);
-                $.ajax({
-                    url: '/Profile/EditProfile',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (res) {
-                        if (res.succeeded) {
-                            $('#editModal').modal('hide');
-                            Swal.fire({ icon: 'success', title: 'Updated', timer: 1500, showConfirmButton: false }).then(() => location.reload());
-                        }
-                    },
-                    error: function (xhr) {
-                        let res = xhr.responseJSON;
-                        let errorHtml = '<ul class="mb-0">';
-                        if (res && res.errors) { $.each(res.errors, function (i, item) { errorHtml += '<li>' + item + '</li>'; }); }
-                        else { errorHtml += '<li>Unexpected server error.</li>'; }
-                        errorHtml += '</ul>';
-                        $('#errorList').html(errorHtml).removeClass('d-none');
+                        let errorHtml = '<ul class="mb-0 text-left small">' + (res && res.errors ? res.errors.map(e => `<li>${e}</li>`).join('') : '<li>An unexpected server error occurred.</li>') + '</ul>';
+                        $('#addressErrorList').html(errorHtml).removeClass('d-none');
                     }
                 });
             });
