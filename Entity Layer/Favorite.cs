@@ -10,8 +10,8 @@ namespace Entity_Layer
     public class Favorite : BaseEntity
     {
         public Guid AppUserId { get; set; }
-        public required AppUser AppUser { get; set; }
+        public virtual AppUser AppUser { get; set; } = null!;
         public Guid ProductId { get; set; }
-        public required Product Product { get; set; }
+        public virtual Product Product { get; set; } = null!;
     }
 }

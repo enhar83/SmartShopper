@@ -35,5 +35,9 @@ namespace Data_Access_Layer.Repositories
         public IQueryable<T> Where(Expression<Func<T, bool>> expression) => _dbSet.Where(expression);
 
         public async Task<bool> AnyAsync(Expression<Func<T, bool>> expression) => await _dbSet.AnyAsync(expression);
+        public async Task<T?> GetAsync(Expression<Func<T, bool>> expression)
+        {
+            return await _dbSet.FirstOrDefaultAsync(expression);
+        }
     }
 }

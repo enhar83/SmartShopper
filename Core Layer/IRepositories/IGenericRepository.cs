@@ -14,6 +14,7 @@ namespace Core_Layer.IRepositories
         IQueryable<T> GetAll();
         IQueryable<T> Where(Expression<Func<T, bool>> expression);
         Task<bool> AnyAsync(Expression<Func<T, bool>> expression);
+        Task<T?> GetAsync(Expression<Func<T, bool>> expression);
         Task AddAsync(T entity);
         void Update(T entity);
         void Remove(T entity);
