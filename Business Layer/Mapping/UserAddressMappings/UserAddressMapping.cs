@@ -18,6 +18,10 @@ namespace Business_Layer.Mapping.UserAddressMappings
             CreateMap<AddUserAddressDto, UserAddress>()
                 .ForMember(dest => dest.AppUser, opt => opt.Ignore())
                 .ReverseMap();
+
+            CreateMap<UpdateUserAddressDto, UserAddress>()
+                .ForMember(dest => dest.AppUser, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }
