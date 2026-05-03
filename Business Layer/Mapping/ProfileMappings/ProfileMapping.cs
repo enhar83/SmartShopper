@@ -13,7 +13,11 @@ namespace Business_Layer.Mapping.ProfileMappings
     {
         public ProfileMapping() 
         {
-            CreateMap<ViewProfileDto, AppUser>().ReverseMap();
+            CreateMap<AppUser, ViewProfileDto>().ReverseMap();
+
+            CreateMap<EditProfileDto, AppUser>()
+                .ForMember(dest => dest.ImageUrl, opt => opt.Ignore())
+                .ReverseMap();
         }   
     }
 }
