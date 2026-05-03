@@ -1,0 +1,124 @@
+﻿@using Core_Layer.Dtos.ProfileDtos
+@model ViewProfileDto
+
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    string initials = "";
+    if (!string.IsNullOrEmpty(Model.Name)) initials += Model.Name[0];
+    if (!string.IsNullOrEmpty(Model.Surname)) initials += Model.Surname[0];
+    initials = initials.ToUpper();
+}
+
+<div class="contact-area bg-light pt-50">
+    <div class="container-wrapper extra-padding-15">
+        <div class="row pb-100">
+
+            <!-- Left Column: Summary Card -->
+            <div class="col-xl-4 col-lg-5 col-md-12">
+                <div class="contact-form-left mt-60 text-center rounded bg-white shadow-sm p-5 border">
+                    <div class="section-title text-center">
+                        <div class="profile-avatar-container mb-30 d-flex justify-content-center">
+                            @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <img src="@Model.ImageUrl" alt="Profile" class="rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover; border: 5px solid #fff;">
+                            }
+                            else
+                            {
+                                <div class="rounded-circle shadow d-flex align-items-center justify-content-center text-white fw-bold"
+                                     style="width: 150px; height: 150px; background: linear-gradient(135deg, #FF5722 0%, #FF9800 100%); font-size: 64px; border: 5px solid #fff;">
+                                    @initials
+                                </div>
+                            }
+                        </div>
+                        <h3 class="mb-10">@Model.Name @Model.Surname</h3>
+                        <p class="theme-color mb-30">@@@Model.UserName</p>
+                        <div class="bottom-line mb-30"></div>
+                        <p class="text-muted small">Your profile information is securely stored. You can review your personal details here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Detail Form -->
+            <div class="col-xl-8 col-lg-7 col-md-12">
+                <div class="contact-form-right mt-60 rounded bg-white shadow-sm p-5 border">
+                    <div class="d-flex justify-content-between align-items-center mb-35">
+                        <h3 class="mb-0">Account Details</h3>
+                        <a asp-action="UpdateProfile" class="review-btn d-inline-block text-white theme-bg transition text-uppercase btn-sm" style="padding: 10px 20px; font-size: 12px;">
+                            <i class="fas fa-user-edit mr-10"></i>Edit Profile
+                        </a>
+                    </div>
+
+                    <div class="contact-form profile-view-form">
+                        <div class="row">
+                            <div class="col-md-6 mb-25">
+                                <label class="fw-bold text-dark">First Name</label>
+                                <div class="p-3 border rounded bg-light text-muted">@Model.Name</div>
+                            </div>
+                            <div class="col-md-6 mb-25">
+                                <label class="fw-bold text-dark">Last Name</label>
+                                <div class="p-3 border rounded bg-light text-muted">@Model.Surname</div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-25">
+                                <label class="fw-bold text-dark">Email Address</label>
+                                <div class="p-3 border rounded bg-light text-muted">
+                                    <i class="fas fa-envelope theme-color mr-10"></i>@Model.Email
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-25">
+                                <label class="fw-bold text-dark">Phone Number</label>
+                                <div class="p-3 border rounded bg-light text-muted">
+                                    <i class="fas fa-phone theme-color mr-10"></i>@(Model.PhoneNumber ?? "Not Provided")
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-25">
+                                <label class="fw-bold text-dark">Location / City</label>
+                                <div class="p-3 border rounded bg-light text-muted">
+                                    <i class="fas fa-map-marker-alt theme-color mr-10"></i>@(Model.City ?? "No location set")
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-25">
+                                <label class="fw-bold text-dark">Security Identifier</label>
+                                <div class="p-3 border rounded bg-light text-muted small">@Model.Id.ToString().Substring(0, 8)... (Internal)</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .profile-view-form label {
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            color: #777;
+        }
+
+        .profile-view-form .bg-light {
+            background-color: #fcfcfc !important;
+            border-color: #f0f0f0 !important;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .theme-color {
+            color: #FF5722 !important;
+        }
+
+        .theme-bg {
+            background-color: #FF5722 !important;
+        }
+    </style>
+}
