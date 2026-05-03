@@ -42,9 +42,14 @@
                 <div class="contact-form-right mt-60 rounded bg-white shadow-sm p-5 border">
                     <div class="d-flex justify-content-between align-items-center mb-35">
                         <h3 class="mb-0">Account Details</h3>
-                        <button type="button" id="btnEditProfile" class="review-btn d-inline-block text-white theme-bg transition text-uppercase btn-sm border-0" style="padding: 10px 20px; font-size: 12px; cursor:pointer;">
-                            <i class="fas fa-user-edit mr-10"></i>Edit Profile
-                        </button>
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnManageAddresses" class="btn btn-outline-dark transition text-uppercase btn-sm mr-2" style="padding: 10px 20px; font-size: 12px; font-weight: 600;">
+                                <i class="fas fa-map-marked-alt mr-2"></i>My Addresses
+                            </button>
+                            <button type="button" id="btnEditProfile" class="review-btn d-inline-block text-white theme-bg transition text-uppercase btn-sm border-0" style="padding: 10px 20px; font-size: 12px; cursor:pointer;">
+                                <i class="fas fa-user-edit mr-10"></i>Edit Profile
+                            </button>
+                        </div>
                     </div>
 
                     <div class="contact-form profile-view-form">
@@ -68,9 +73,8 @@
                                 <div class="p-3 border rounded bg-light text-muted">@(Model.PhoneNumber ?? "Not Provided")</div>
                             </div>
                         </div>
-                        <!-- Username Ortalama Revizyonu -->
                         <div class="row justify-content-center">
-                            <div class="col-md-6 mb-25">
+                            <div class="col-md-6 mb-25 text-center">
                                 <label class="fw-bold text-dark text-uppercase">Username</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.UserName</div>
                             </div>
@@ -108,7 +112,6 @@
                             <input type="text" id="editSurname" name="Surname" class="form-control" />
                         </div>
                     </div>
-                    <!-- Username ve Phone Number Yan Yana Revizyonu -->
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="small text-uppercase fw-bold">Username</label>
@@ -128,11 +131,34 @@
                     </div>
                 </div>
                 <div class="modal-footer bg-light justify-content-end">
-                    <!-- Buton Boyutları Eşitleme (min-width ve aynı padding) -->
                     <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="review-btn text-white theme-bg border-0 btn-fixed-size">Save Changes</button>
+                    <button type="submit" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addressListModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title text-white"><i class="fas fa-map-marker-alt mr-2"></i> My Registered Addresses</h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="addressContainer" class="p-4">
+                    <div class="text-center p-5">
+                        <div class="spinner-border theme-color" role="status"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Close</button>
+                <button type="button" id="btnAddAddress" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Add New</button>
+            </div>
         </div>
     </div>
 </div>
@@ -171,7 +197,6 @@
             box-shadow: none;
         }
 
-        /* Buton Boyutlarını Eşitleyen Özel Class */
         .btn-fixed-size {
             min-width: 140px;
             height: 45px;
@@ -184,6 +209,16 @@
             text-transform: uppercase;
             transition: all 0.3s;
         }
+
+        .address-card {
+            border-left: 4px solid #FF5722;
+            transition: transform 0.2s;
+        }
+
+            .address-card:hover {
+                transform: translateX(5px);
+                background-color: #f9f9f9;
+            }
     </style>
 }
 
@@ -201,26 +236,53 @@
                         $('#editSurname').val(res.surname);
                         $('#editUserName').val(res.userName);
                         $('#editPhone').val(res.phoneNumber);
-
-                        if (res.userImage) {
-                            $('#currentImagePreview').attr('src', res.userImage).show();
-                        } else {
-                            $('#currentImagePreview').hide();
-                        }
-
+                        if (res.userImage) { $('#currentImagePreview').attr('src', res.userImage).show(); }
+                        else { $('#currentImagePreview').hide(); }
                         $('#errorList').addClass('d-none').empty();
                         $('#editModal').modal('show');
-                    },
-                    error: function () {
-                        Swal.fire('Error', 'Data synchronization failed.', 'error');
                     }
                 });
             });
 
+            $('#btnManageAddresses').on('click', function () {
+                $('#addressListModal').modal('show');
+                loadAddresses();
+            });
+
+            function loadAddresses() {
+                $.ajax({
+                    url: '/UserAddress/UserAddressList',
+                    type: 'GET',
+                    success: function (res) {
+                        let html = '';
+                        if (res.succeeded && res.data.length > 0) {
+                            res.data.forEach(addr => {
+                                html += `
+                                    <div class="address-card p-3 mb-3 border rounded bg-white shadow-sm">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="fw-bold mb-1 text-uppercase">${addr.title}</h6>
+                                                <p class="small text-muted mb-0">${addr.fullAddress}</p>
+                                                <p class="small text-dark mb-0 font-italic">${addr.city} / ${addr.country}</p>
+                                            </div>
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-primary border-0"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger border-0"><i class="fas fa-trash-alt"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                            });
+                        } else {
+                            html = '<div class="text-center p-5 text-muted"><i class="fas fa-map-marked fa-3x mb-3"></i><p>No registered addresses found.</p></div>';
+                        }
+                        $('#addressContainer').html(html);
+                    }
+                });
+            }
+
             $('#editProfileForm').on('submit', function (e) {
                 e.preventDefault();
                 let formData = new FormData(this);
-
                 $.ajax({
                     url: '/Profile/EditProfile',
                     type: 'POST',
@@ -230,25 +292,14 @@
                     success: function (res) {
                         if (res.succeeded) {
                             $('#editModal').modal('hide');
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Success',
-                                text: res.message,
-                                timer: 1500,
-                                showConfirmButton: false
-                            }).then(() => {
-                                location.reload();
-                            });
+                            Swal.fire({ icon: 'success', title: 'Updated', timer: 1500, showConfirmButton: false }).then(() => location.reload());
                         }
                     },
                     error: function (xhr) {
                         let res = xhr.responseJSON;
                         let errorHtml = '<ul class="mb-0">';
-                        if (res && res.errors) {
-                            $.each(res.errors, function (i, item) { errorHtml += '<li>' + item + '</li>'; });
-                        } else {
-                            errorHtml += '<li>Unexpected server error.</li>';
-                        }
+                        if (res && res.errors) { $.each(res.errors, function (i, item) { errorHtml += '<li>' + item + '</li>'; }); }
+                        else { errorHtml += '<li>Unexpected server error.</li>'; }
                         errorHtml += '</ul>';
                         $('#errorList').html(errorHtml).removeClass('d-none');
                     }
