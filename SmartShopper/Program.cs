@@ -57,6 +57,7 @@ builder.Services.AddScoped<IEmailActivationService, EmailActivationManager>();
 builder.Services.AddScoped<IRoleService, RoleManager>();
 builder.Services.AddScoped<IJwtService, JwtManager>();
 builder.Services.AddScoped<IProfileService, ProfileManager>();
+builder.Services.AddScoped<IUserAddressService, UserAddressManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 
