@@ -108,6 +108,8 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
+builder.Services.AddHttpContextAccessor(); //httpcontextaccessor'a business katmanýndan eriþmek için gerekli.
+
 var app = builder.Build();
 
 // --- SEEDING OPERASYONU (YENÝ HALÝ) ---
@@ -136,6 +138,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
 
 app.UseAuthentication();
 app.UseAuthorization();

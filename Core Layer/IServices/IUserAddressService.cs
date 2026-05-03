@@ -10,5 +10,6 @@ namespace Core_Layer.IServices
     public interface IUserAddressService
     {
         Task<List<UserAddressListDto>> TGetUserAddressListAsync(Guid userId);
+        Task TAddUserAddressAsync(AddUserAddressDto addUserAddressDto);
     }
 }
