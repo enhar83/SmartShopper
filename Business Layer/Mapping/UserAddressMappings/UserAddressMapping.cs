@@ -14,6 +14,10 @@ namespace Business_Layer.Mapping.UserAddressMappings
         public UserAddressMapping() 
         {
             CreateMap<UserAddress, UserAddressListDto>().ReverseMap();
+
+            CreateMap<AddUserAddressDto, UserAddress>()
+                .ForMember(dest => dest.AppUser, opt => opt.Ignore())
+                .ReverseMap();
         }
     }
 }
