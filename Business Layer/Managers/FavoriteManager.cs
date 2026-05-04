@@ -28,7 +28,7 @@ namespace Business_Layer.Managers
             _httpContextAccessor = httpContextAccessor;
         }
 
-        public async Task<bool> TTogleFavoriteAsync(Guid productId)
+        public async Task<bool> TToggleFavoriteAsync(Guid productId)
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(userIdClaim))

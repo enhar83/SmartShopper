@@ -8,6 +8,6 @@ namespace Core_Layer.IServices
 {
     public interface IFavoriteService
     {
-        Task<bool> TTogleFavoriteAsync(Guid productId);
+        Task<bool> TToggleFavoriteAsync(Guid productId);
     }
 }
