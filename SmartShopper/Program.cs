@@ -60,6 +60,7 @@ builder.Services.AddScoped<IJwtService, JwtManager>();
 builder.Services.AddScoped<IProfileService, ProfileManager>();
 builder.Services.AddScoped<IUserAddressService, UserAddressManager>();
 builder.Services.AddScoped<IFavoriteService, FavoriteManager>();
+builder.Services.AddScoped<ICartService, CartManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 
@@ -153,7 +154,7 @@ app.MapControllerRoute(
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Product}/{action=ProductList}/{id?}")
     .WithStaticAssets();
 
 
