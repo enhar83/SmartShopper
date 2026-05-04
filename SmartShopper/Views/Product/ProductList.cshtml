@@ -12,7 +12,7 @@
 }
 
 <style>
-    /* --- CORE CARD DESIGN --- */
+    /* --- Mevcut Stilleriniz (Korumalı) --- */
     .single-product {
         border: 1px solid #f0f0f0;
         border-radius: 8px;
@@ -30,7 +30,6 @@
             transform: translateY(-5px);
         }
 
-    /* FAVORITE BUTTON */
     .fav-button {
         position: absolute;
         top: 60px;
@@ -62,7 +61,6 @@
             color: #888;
         }
 
-    /* IMAGE CONTAINER */
     .product-img-container {
         height: 300px;
         position: relative;
@@ -85,7 +83,6 @@
         transform: scale(1.1);
     }
 
-    /* BADGES */
     .subcat-badge {
         position: absolute;
         top: 15px;
@@ -110,7 +107,6 @@
         z-index: 3;
     }
 
-    /* INFO AREA */
     .product-info-padding {
         padding: 20px;
         flex-grow: 1;
@@ -135,7 +131,6 @@
         text-decoration: none;
     }
 
-    /* PRICE & CART ANIMATION */
     .price-container {
         position: relative;
         height: 32px;
@@ -175,7 +170,6 @@
         transform: translateY(-32px);
     }
 
-    /* LIST VIEW SPECIALS */
     .list-view-style {
         flex-direction: row !important;
         height: auto !important;
@@ -191,7 +185,6 @@
             right: 15px;
         }
 
-    /* --- ENHANCED PAGINATION DESIGN --- */
     .pagination-wrapper {
         margin-top: 50px;
         margin-bottom: 80px;
@@ -273,7 +266,6 @@
 
                 <div id="product-list-container" class="row" style="min-height: 400px;"></div>
 
-                <!-- PAGINATION AREA -->
                 <div class="pagination-wrapper">
                     <ul class="pagination" id="pagination-container"></ul>
                 </div>
@@ -295,7 +287,15 @@
         const pagination = document.getElementById("pagination-container");
         const filterInfoText = document.getElementById("filter-info-text");
 
-        // --- FAVORITE AJAX ---
+        // --- GÜNCEL TOAST KONFİGÜRASYONU ---
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+
         window.toggleFavorite = async function(productId, btnElement) {
             const icon = btnElement.querySelector('i');
             const token = '@tokens.RequestToken';
@@ -313,19 +313,30 @@
 
                 const data = await response.json();
                 if (data.succeeded) {
+                    // İkon Değişimi
                     icon.className = data.isFavorite ? 'fas fa-heart' : 'far fa-heart';
+
+                    // Hafıza (Memory) Güncellemesi
                     const prod = allProducts.find(p => p.id === productId);
                     if (prod) prod.isFavorite = data.isFavorite;
 
-                    Swal.fire({
-                        toast: true, position: 'top-end', showConfirmButton: false, timer: 2000,
-                        icon: 'success', title: data.message
+                    // Dinamik Toast Bildirimi
+                    Toast.fire({
+                        icon: data.isFavorite ? 'success' : 'info',
+                        title: data.message
+                    });
+                } else {
+                    Toast.fire({
+                        icon: 'error',
+                        title: data.errors ? data.errors[0] : 'Something went wrong!'
                     });
                 }
-            } catch (error) { console.error(error); }
+            } catch (error) {
+                console.error(error);
+                Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+            }
         };
 
-        // --- UNIFIED RENDER ENGINE ---
         function render() {
             container.style.opacity = "0";
             setTimeout(() => {
@@ -381,13 +392,11 @@
                 </div>`;
         }
 
-        // --- ENHANCED PAGINATION LOGIC ---
         function renderPagination() {
             const totalPages = Math.ceil(filteredProducts.length / pageSize);
             pagination.innerHTML = "";
             if (totalPages <= 1) return;
 
-            // Previous Button
             pagination.insertAdjacentHTML('beforeend', `
                 <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
                     <a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage - 1})" aria-label="Previous">
@@ -395,7 +404,6 @@
                     </a>
                 </li>`);
 
-            // Page Numbers
             for (let i = 1; i <= totalPages; i++) {
                 if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
                     pagination.insertAdjacentHTML('beforeend', `
@@ -407,7 +415,6 @@
                 }
             }
 
-            // Next Button
             pagination.insertAdjacentHTML('beforeend', `
                 <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
                     <a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage + 1})" aria-label="Next">
@@ -422,7 +429,6 @@
             window.scrollTo({ top: 200, behavior: 'smooth' });
         };
 
-        // --- SIDEBAR & FILTERING ---
         const subCatColorMap = {};
         const colors = ["#d4a373", "#e67e22", "#2ecc71", "#3498db", "#9b59b6", "#e74c3c", "#1abc9c", "#2c3e50"];
         function getSubCatColor(name) {
@@ -452,7 +458,6 @@
         document.getElementById("gridBtn").onclick = () => { currentView = 'grid'; document.getElementById("gridBtn").style.color = "#222"; document.getElementById("listBtn").style.color = "#ccc"; render(); };
         document.getElementById("listBtn").onclick = () => { currentView = 'list'; document.getElementById("listBtn").style.color = "#222"; document.getElementById("gridBtn").style.color = "#ccc"; render(); };
 
-        // Initial Start
         const urlParams = new URLSearchParams(window.location.search);
         const sub = urlParams.get('subCategory');
         if (sub) {

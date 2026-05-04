@@ -2,23 +2,30 @@
 @model ProductDetailDto
 
 @{
-    ViewData["Title"] = "Product Details";
+    ViewData["Title"] = Model.Name + " - Details";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
+@* CSRF Güvenliği için Token *@
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
+}
+
 <style>
+    /* --- GALERİ VE TASARIM STİLLERİ --- */
     .thumbnail-slider-wrapper {
-        position: relative;
         display: flex;
         flex-direction: column;
         align-items: center;
         width: 100px;
+        flex-shrink: 0;
     }
 
     .p-tap-vertical {
         overflow-y: auto;
         scroll-behavior: smooth;
-        max-height: 450px;
+        max-height: 480px;
         scrollbar-width: none;
     }
 
@@ -31,39 +38,44 @@
         border: 1px solid #eee;
         color: #333;
         width: 100%;
-        padding: 5px 0;
+        padding: 8px 0;
         cursor: pointer;
         transition: 0.3s;
         z-index: 5;
+        display: flex;
+        justify-content: center;
     }
 
         .thumb-arrow:hover {
             background: #f39c12;
             color: #fff;
+            border-color: #f39c12;
         }
 
     .product-thumbnail {
         width: 80px;
         height: 100px;
         object-fit: cover;
-        border: 2px solid transparent;
-        border-radius: 4px;
+        border: 2px solid #f0f0f0;
+        border-radius: 6px;
         transition: 0.3s;
+        background: #fff;
     }
 
     .nav-link.active .product-thumbnail {
         border-color: #f39c12;
+        box-shadow: 0 4px 10px rgba(243, 156, 18, 0.2);
     }
 
     .main-img-container {
         width: 100%;
-        height: 500px;
-        background: #fdfdfd;
+        height: 550px;
+        background: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
         overflow: hidden;
-        border-radius: 8px;
+        border-radius: 12px;
         border: 1px solid #f0f0f0;
         position: relative;
     }
@@ -72,156 +84,179 @@
         max-width: 100%;
         max-height: 100%;
         object-fit: contain;
+        transition: transform 0.5s ease;
     }
 
-    .product-view-tab .nav-link {
-        font-weight: 600;
-        text-transform: uppercase;
-        color: #999;
-        border: none;
-        border-bottom: 2px solid transparent;
-        padding: 10px 25px;
-    }
-
-        .product-view-tab .nav-link.active {
-            color: #333;
-            border-bottom: 2px solid #f39c12;
-        }
-
-    .related-product-card {
-        border: 1px solid #f0f0f0;
-        transition: 0.3s;
-        border-radius: 8px;
+    .no-image-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #bdc3c7;
+        background: #f9f9f9;
+        width: 100%;
         height: 100%;
     }
 
-        .related-product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        .no-image-wrapper i {
+            font-size: 80px;
+            margin-bottom: 15px;
         }
 
-    .related-img-container {
-        height: 250px;
-        width: 100%;
-        overflow: hidden;
+    /* FAVORİ BUTONU ÖZEL TASARIMI */
+    .fav-detail-btn {
+        height: 54px;
+        width: 54px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
         display: flex;
         align-items: center;
         justify-content: center;
-        background: #f9f9f9;
+        font-size: 20px;
+        cursor: pointer;
     }
 
+        .fav-detail-btn.is-fav {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+            color: white !important;
+        }
+
+        .fav-detail-btn:hover {
+            transform: scale(1.05);
+        }
+
+    .product-view-info {
+        padding-left: 40px;
+    }
+
+    .price-tag {
+        font-size: 32px;
+        font-weight: 800;
+        color: #222;
+    }
 
     .stock-badge {
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 14px;
-        font-weight: 600;
+        padding: 6px 16px;
+        border-radius: 50px;
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 </style>
 
-<div class="p-page-area">
+<div class="shop-single-page-area mt-40 over-hidden">
     <div class="container-wrapper extra-padding-15">
         <div class="row">
-            <div class="col-12">
-                <div class="page-title pt-40">
-                    <nav aria-label="breadcrumb">
-                        <ol class="breadcrumb bg-transparent px-0">
-                            <li class="breadcrumb-item"><a href="/">Home</a></li>
-                            <li class="breadcrumb-item"><a href="/Product/ProductList">Shop</a></li>
-                            <li class="breadcrumb-item active">@Model.Name</li>
-                        </ol>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="shop-single-page-area over-hidden">
-    <div class="container-wrapper extra-padding-15">
-        <div class="p-view-position">
-            <div class="row">
-                <div class="col-xl-6 col-lg-6 col-md-12 mt-10">
-                    <div class="product-left-img-tab d-flex">
+            <!-- GÖRSEL ALANI -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
+                <div class="product-left-img-tab d-flex">
+                    @if (Model.ProductImages != null && Model.ProductImages.Any())
+                    {
                         <div class="thumbnail-slider-wrapper">
                             <button class="thumb-arrow" id="scrollUp"><i class="fas fa-chevron-up"></i></button>
                             <div class="nav flex-column nav-pills p-tap-vertical" id="v-pills-tab" role="tablist">
-                                @if (Model.ProductImages != null)
-                                {
+                                @{
                                     int i = 0;
-                                    foreach (var img in Model.ProductImages)
-                                    {
-                                        <a class="nav-link mb-2 @(i == 0 ? "active" : "")" id="tab-@i" data-toggle="pill" href="#img-view-@i" role="tab">
-                                            <img class="product-thumbnail" src="@img.ImageUrl" alt="Thumb">
-                                        </a>
-                                        i++;
-                                    }
+                                }
+                                @foreach (var img in Model.ProductImages)
+                                {
+                                    <a class="nav-link mb-3 @(i == 0 ? "active" : "") p-0" id="tab-@i" data-toggle="pill" href="#img-view-@i" role="tab">
+                                        <img class="product-thumbnail" src="@img.ImageUrl" alt="Thumbnail @i">
+                                    </a>
+                                    i++;
                                 }
                             </div>
                             <button class="thumb-arrow" id="scrollDown"><i class="fas fa-chevron-down"></i></button>
                         </div>
-                        <div class="tab-content width100 text-center ml-20" id="v-pills-tabContent">
-                            @if (Model.ProductImages != null)
-                            {
+
+                        <div class="tab-content width100 text-center ml-20" id="v-pills-tabContent" style="flex-grow: 1;">
+                            @{
                                 int j = 0;
-                                foreach (var img in Model.ProductImages)
-                                {
-                                    <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="img-view-@j" role="tabpanel">
-                                        <div class="main-img-container">
-                                            <div class="product-gallery-btn position-absolute" style="right: 15px; top: 15px; z-index: 10;">
-                                                <a href="@img.ImageUrl" class="zoom-gallery bg-white p-2 shadow-sm rounded-circle" data-fancybox="images">
-                                                    <i class="fas fa-search text-dark"></i>
-                                                </a>
-                                            </div>
-                                            <img class="main-product-img" src="@img.ImageUrl" alt="@Model.Name">
+                            }
+                            @foreach (var img in Model.ProductImages)
+                            {
+                                <div class="tab-pane fade @(j == 0 ? "show active" : "")" id="img-view-@j" role="tabpanel">
+                                    <div class="main-img-container">
+                                        <div class="position-absolute" style="right: 20px; top: 20px; z-index: 10;">
+                                            <a href="@img.ImageUrl" class="bg-white p-3 shadow-sm rounded-circle d-inline-block" data-fancybox="gallery">
+                                                <i class="fas fa-expand-alt text-dark"></i>
+                                            </a>
                                         </div>
+                                        <img class="main-product-img" src="@img.ImageUrl" alt="@Model.Name">
                                     </div>
-                                    j++;
-                                }
+                                </div>
+                                j++;
                             }
                         </div>
-                    </div>
-                </div>
-
-                <div class="col-xl-6 col-lg-6 col-md-12">
-                    <div class="product-view-info mt-20 pl-30">
-                        <div class="single-product-tag mb-10">
-                            <span class="text-muted">@Model.CategoryName / @Model.SubCategoryName</span>
-                        </div>
-                        <h2 class="mb-20">@Model.Name</h2>
-                        <div class="p-info-img-price mb-20">
-                            <h3 class="theme-color">@Model.Price.ToString("C2")</h3>
-                        </div>
-                        <p class="mb-30">@Model.Description</p>
-
-                        <div class="all-info d-sm-flex align-items-center border-t-light-gray border-b-light-gray pb-40 pt-30">
-                            <div class="quick-add-to-cart d-flex align-items-center">
-                                <div class="quantity-field mr-20">
-                                    <input type="number" value="1" min="1" class="form-control text-center" style="width: 70px; height: 50px;"
-                                           @(Model.StockStatus == "Out of Stock" ? "disabled" : "")>
-                                </div>
-
-                                @if (Model.StockStatus == "Out of Stock")
-                                {
-                                    <button class="btn btn-secondary px-5 py-3 text-uppercase" disabled>Out of Stock</button>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-dark px-5 py-3 text-uppercase">Add to Cart</button>
-                                }
+                    }
+                    else
+                    {
+                        <div class="main-img-container">
+                            <div class="no-image-wrapper">
+                                <i class="fas fa-image"></i>
+                                <p class="font-weight-bold">Image Not Available</p>
                             </div>
                         </div>
+                    }
+                </div>
+            </div>
 
-                        <div class="sku mt-25">
-                            <p class="mb-0">
-                                <strong>Availability:</strong>
-                                <span class="@Model.StockStatusClass font-weight-bold ml-2">
-                                    <i class="fas @(Model.StockStatus == "Out of Stock" ? "fa-times-circle" :
-                                                                  (Model.StockStatus.Contains("Limited") ? "fa-exclamation-triangle" : "fa-check-circle")) mr-1"></i>
-                                    @Model.StockStatus
-                                </span>
-                            </p>
+            <!-- ÜRÜN BİLGİ ALANI -->
+            <div class="col-xl-6 col-lg-6 col-md-12">
+                <div class="product-view-info">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb bg-transparent p-0 mb-15">
+                            <li class="breadcrumb-item"><a href="/" class="text-muted">Home</a></li>
+                            <li class="breadcrumb-item"><a href="/Product/ProductList" class="text-muted">Shop</a></li>
+                            <li class="breadcrumb-item active theme-color">@Model.SubCategoryName</li>
+                        </ol>
+                    </nav>
+
+                    <h2 class="mb-15 font-weight-bold">@Model.Name</h2>
+
+                    <div class="d-flex align-items-center mb-25">
+                        <span class="price-tag mr-20">@Model.Price.ToString("C2")</span>
+                        <span class="stock-badge @Model.StockStatusClass">
+                            <i class="fas @(Model.StockStatus == "Out of Stock" ? "fa-times-circle" : "fa-check-circle") mr-1"></i>
+                            @Model.StockStatus
+                        </span>
+                    </div>
+
+                    <p class="text-muted mb-35" style="line-height: 1.8; font-size: 15px;">@Model.Description</p>
+
+                    <div class="border-top border-bottom py-4 mb-30">
+                        <div class="d-flex align-items-center">
+                            <div class="quantity-control mr-20">
+                                <input type="number" value="1" min="1" class="form-control text-center"
+                                       style="width: 80px; height: 54px; font-weight: 700; border-radius: 8px;"
+                                       @(Model.StockStatus == "Out of Stock" ? "disabled" : "")>
+                            </div>
+
+                            @if (Model.StockStatus == "Out of Stock")
+                            {
+                                <button class="btn btn-secondary px-5 py-3 rounded-lg" disabled style="height: 54px; flex-grow: 1;">SOLD OUT</button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-dark px-5 py-3 rounded-lg shadow-sm" style="height: 54px; flex-grow: 1;">
+                                    <i class="fas fa-shopping-cart mr-2"></i> ADD TO CART
+                                </button>
+                            }
+
+                            <!-- DİNAMİK FAVORİ BUTONU -->
+                            <button onclick="toggleFavoriteDetail('@Model.Id', this)"
+                                    class="btn btn-outline-danger ml-15 fav-detail-btn @(Model.IsFavorite ? "is-fav" : "")"
+                                    title="@(Model.IsFavorite ? "Remove from Favorites" : "Add to Favorites")">
+                                <i class="@(Model.IsFavorite ? "fas" : "far") fa-heart"></i>
+                            </button>
                         </div>
+                    </div>
+
+                    <div class="product-metadata">
+                        <p class="mb-1"><strong>Category:</strong> <span class="text-muted ml-1">@Model.CategoryName</span></p>
+                        <p class="mb-0"><strong>Subcategory:</strong> <span class="text-muted ml-1">@Model.SubCategoryName</span></p>
                     </div>
                 </div>
             </div>
@@ -229,25 +264,28 @@
     </div>
 </div>
 
+@* Tab Area ve Benzer Ürünler kısımları aynı kalıyor... *@
 <div class="product-view-tab-area mt-80">
-    <div class="container-wrapper extra-padding-10 border-b-light-gray pt-60 pb-85">
-        <nav class="d-flex justify-content-center">
-            <div class="nav review-tabs product-view-tab" id="nav-tab" role="tablist">
-                <a class="nav-item nav-link active mr-5" id="nav-home-tab" data-toggle="tab" href="#nav-home" role="tab">Description</a>
-                <a class="nav-item nav-link" id="nav-review-tab" data-toggle="tab" href="#nav-review" role="tab">Reviews</a>
-            </div>
-        </nav>
-        <div class="tab-content" id="nav-tabContent">
-            <div class="tab-pane fade show active mt-40" id="nav-home" role="tabpanel">
-                <div class="describe-area px-5">
-                    <h6>Detailed Description</h6>
-                    <p class="mt-20">@Model.Description</p>
+    <div class="container-wrapper extra-padding-10 border-top pt-60 pb-85">
+        <ul class="nav nav-tabs justify-content-center product-view-tab border-0" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="desc-tab" data-toggle="tab" href="#desc-content" role="tab">Description</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="review-tab" data-toggle="tab" href="#review-content" role="tab">Reviews (0)</a>
+            </li>
+        </ul>
+        <div class="tab-content mt-40" id="myTabContent">
+            <div class="tab-pane fade show active" id="desc-content" role="tabpanel">
+                <div class="mx-auto" style="max-width: 900px;">
+                    <h5 class="mb-20 font-weight-bold">Product Specifications</h5>
+                    <p>@Model.Description</p>
                 </div>
             </div>
-            <div class="tab-pane fade mt-40" id="nav-review" role="tabpanel">
-                <div class="review-comments area text-center">
-                    <h6>Customer Reviews</h6>
-                    <p class="text-muted mt-20">There are no reviews for this product yet.</p>
+            <div class="tab-pane fade" id="review-content" role="tabpanel">
+                <div class="text-center py-5">
+                    <i class="far fa-comments fa-3x mb-3 text-muted"></i>
+                    <h6 class="text-muted">There are no reviews yet. Be the first to review!</h6>
                 </div>
             </div>
         </div>
@@ -256,12 +294,62 @@
 
 @await Component.InvokeAsync("_SimilarProductsListInProductDetailComponentPartial", new { subCategoryId = Model.SubCategoryId })
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.getElementById('scrollUp')?.addEventListener('click', function() {
-        document.querySelector('.p-tap-vertical').scrollTop -= 110;
+    document.addEventListener("DOMContentLoaded", function() {
+        const up = document.getElementById('scrollUp');
+        const down = document.getElementById('scrollDown');
+        const slider = document.querySelector('.p-tap-vertical');
+
+        if(up && slider) { up.addEventListener('click', () => slider.scrollTop -= 110); }
+        if(down && slider) { down.addEventListener('click', () => slider.scrollTop += 110); }
     });
 
-    document.getElementById('scrollDown')?.addEventListener('click', function() {
-        document.querySelector('.p-tap-vertical').scrollTop += 110;
-    });
+    // --- FAVORİ EKLEME/ÇIKARMA FONKSİYONU ---
+    async function toggleFavoriteDetail(productId, btnElement) {
+        const icon = btnElement.querySelector('i');
+        const token = '@tokens.RequestToken'; // Antiforgery Token
+
+        // SweetAlert Toast Ayarı
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
+
+        try {
+            const response = await fetch('/Favorite/ToggleFavorite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `productId=${productId}`
+            });
+
+            const data = await response.json();
+
+            if (data.succeeded) {
+                if (data.isFavorite) {
+                    // Favoriye Eklendi
+                    btnElement.classList.add('is-fav');
+                    icon.classList.replace('far', 'fas');
+                    Toast.fire({ icon: 'success', title: data.message });
+                } else {
+                    // Favoriden Çıkarıldı
+                    btnElement.classList.remove('is-fav');
+                    icon.classList.replace('fas', 'far');
+                    Toast.fire({ icon: 'info', title: data.message });
+                }
+            } else {
+                Toast.fire({ icon: 'error', title: data.errors ? data.errors[0] : 'Something went wrong!' });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+        }
+    }
 </script>

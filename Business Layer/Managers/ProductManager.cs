@@ -145,13 +145,32 @@ namespace Business_Layer.Managers
                 .FirstOrDefaultAsync();
 
             if (product == null)
-                throw new LogicException("Id", "The product not found.");
+                throw new LogicException("Id", "The product was not found.");
 
             var dto = _mapper.Map<ProductDetailDto>(product);
 
-            if (product.Stock <= 0) { dto.StockStatus = "Out of Stock"; dto.StockStatusClass = "text-danger"; }
-            else if (product.Stock <= 50) { dto.StockStatus = "Limited Stock!"; dto.StockStatusClass = "text-warning"; }
-            else { dto.StockStatus = "In Stock"; dto.StockStatusClass = "text-success"; }
+            if (product.Stock <= 0)
+            {
+                dto.StockStatus = "Out of Stock";
+                dto.StockStatusClass = "text-danger";
+            }
+            else if (product.Stock <= 50)
+            {
+                dto.StockStatus = "Limited Stock!";
+                dto.StockStatusClass = "text-warning";
+            }
+            else
+            {
+                dto.StockStatus = "In Stock";
+                dto.StockStatusClass = "text-success";
+            }
+
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!string.IsNullOrEmpty(userIdClaim))
+            {
+                var currentUserId = Guid.Parse(userIdClaim);
+                dto.IsFavorite = await _favoriteRepository.AnyAsync(x => x.AppUserId == currentUserId && x.ProductId == id);
+            }
 
             return dto;
         }

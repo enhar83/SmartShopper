@@ -21,5 +21,6 @@ namespace Core_Layer.Dtos.ProductDtos
         public int Stock { get; set; }
         public required string StockStatus { get; set; }
         public required string StockStatusClass { get; set; }
+        public bool IsFavorite { get; set; }
     }
 }
