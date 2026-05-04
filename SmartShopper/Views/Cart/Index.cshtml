@@ -1,0 +1,190 @@
+﻿@using Core_Layer.Dtos.CartDtos
+@model CartDto
+
+@{
+    ViewData["Title"] = "Shopping Cart";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="slider-area over-hidden">
+    <div class="single-page page-height3 d-flex align-items-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 d-flex align-items-center justify-content-center">
+                    <div class="page-title pt-60 pb-70 text-center">
+                        <h2 class="text-capitalize theme-color mb-20">Shopping Cart</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb justify-content-center bg-transparent">
+                                <li class="breadcrumb-item"><a class="primary-color" href="/">Home</a></li>
+                                <li class="breadcrumb-item active text-capitalize" aria-current="page">Cart</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="cart-area">
+    <div class="container-wrapper extra-padding-15 border-b-light-gray pb-100">
+        <div id="cart-content-wrapper">
+            <div class="text-center pt-50 pb-50">
+                <div class="spinner-border theme-color" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p class="mt-15">Fetching your shopping items...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            cartModule.init();
+        });
+
+        const cartModule = (function () {
+
+            const init = function () {
+                fetchCartData();
+            };
+
+            const fetchCartData = function () {
+                $.ajax({
+                    url: '/Cart/GetCartData', 
+                    type: 'GET',
+                    success: function (response) {
+                        renderUI(response);
+                    },
+                    error: function (err) {
+                        console.error("Cart fetch error:", err);
+                        $("#cart-content-wrapper").html('<div class="alert alert-danger text-center">Failed to load cart. Please try again later.</div>');
+                    }
+                });
+            };
+
+            const renderUI = function (data) {
+                const wrapper = $("#cart-content-wrapper");
+
+                if (!data || !data.items || data.items.length === 0) {
+                    wrapper.html(`
+                        <div class="empty-cart-message text-center pt-80 pb-80">
+                            <div class="icon mb-30">
+                                <i class="icon-shopping-cart" style="font-size: 100px; color: #e2e2e2;"></i>
+                            </div>
+                            <h3 class="theme-color">Your shopping cart is empty.</h3>
+                            <p class="text-muted">Explore our latest products to fill your cart!</p>
+                            <a href="/Product/ProductList" class="sub-btn d-inline-block theme-bg text-white mt-30 shadow-sm">RETURN TO SHOP</a>
+                        </div>
+                    `);
+                    return;
+                }
+
+                let itemsRows = '';
+                data.items.forEach(item => {
+                    itemsRows += `
+                        <tr>
+                            <td>
+                                <a href="/Product/Detail/${item.productId}" class="cart-img d-block">
+                                    <img src="${item.productImageUrl || '/images/no-image.jpg'}" alt="${item.productName}">
+                                </a>
+                            </td>
+                            <td>
+                                <a href="/Product/Detail/${item.productId}" class="p-name theme-color font-weight-bold">
+                                    ${item.productName}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="cart-price text-muted">$${item.price.toFixed(2)}</div>
+                            </td>
+                            <td>
+                                <div class="quantity-field position-relative d-inline-block mt-15 mr-15">
+                                    <input type="text" value="${item.quantity}" class="quantity-input-arrow quantity-input-2 border-light-gray2 text-center" readonly>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="cart-price theme-color font-weight-bold">$${(item.price * item.quantity).toFixed(2)}</div>
+                            </td>
+                            <td>
+                                <a href="javascript:void(0)" onclick="cartModule.removeItem('${item.id}')" class="p-remove theme-color" title="Remove Item">
+                                    <span class="icon-clear"></span>
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                wrapper.html(`
+                    <div class="cart-table text-center table-responsive-sm">
+                        <table class="table table-bordered shadow-sm">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th scope="col">Product Image</th>
+                                    <th scope="col">Product Name</th>
+                                    <th scope="col">Unit Price</th>
+                                    <th scope="col">Quantity</th>
+                                    <th scope="col">Subtotal</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsRows}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="coupon-and-update-area pt-20">
+                        <div class="row align-items-center">
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12">
+                                <div class="coupon-code-area">
+                                    <form onsubmit="return false;">
+                                        <input type="text" placeholder="Coupon code" class="pl-15 pr-80 mt-15 mr-2 border-light-gray2 py-2">
+                                        <button class="sub-btn d-inline-block theme-bg text-white mt-15 border-0 rounded">Apply coupon</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-12 col-12 text-md-right">
+                                <div class="update-area">
+                                    <a href="javascript:void(0)" onclick="cartModule.clearCart()" class="sub-btn d-inline-block bg-danger text-white mt-15 mr-2 rounded">CLEAR CART</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row justify-content-end">
+                        <div class="col-xl-5 col-lg-6 col-md-10 col-sm-12 col-12">
+                            <div class="total-price-area mt-80 p-4 border rounded bg-light shadow-sm">
+                                <h2 class="mb-4 theme-color">Cart Totals</h2>
+                                <ul class="list-unstyled">
+                                    <li class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                                        <span class="font-weight-bold">Subtotal</span>
+                                        <span>$${data.grandTotal.toFixed(2)}</span>
+                                    </li>
+                                    <li class="d-flex justify-content-between align-items-center mb-4">
+                                        <span class="h4 theme-color">Grand Total</span>
+                                        <span class="h4 theme-color font-weight-bold">$${data.grandTotal.toFixed(2)}</span>
+                                    </li>
+                                </ul>
+                                <a href="/Checkout/Index" class="sub-btn btn-block text-center theme-bg text-white py-3 rounded h5">PROCEED TO CHECKOUT</a>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            };
+
+            const removeItem = function (id) {
+                console.log("Removing item:", id);
+            };
+
+            const clearCart = function () {
+                console.log("Clearing cart...");
+            };
+
+            return {
+                init: init,
+                removeItem: removeItem,
+                clearCart: clearCart
+            };
+
+        })();
+    </script>
+}
