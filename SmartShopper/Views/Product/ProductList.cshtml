@@ -12,7 +12,6 @@
 }
 
 <style>
-    /* --- Mevcut Stilleriniz (Korumalı) --- */
     .single-product {
         border: 1px solid #f0f0f0;
         border-radius: 8px;
@@ -287,7 +286,6 @@
         const pagination = document.getElementById("pagination-container");
         const filterInfoText = document.getElementById("filter-info-text");
 
-        // --- GÜNCEL TOAST KONFİGÜRASYONU ---
         const Toast = Swal.mixin({
             toast: true,
             position: 'top-end',
@@ -313,14 +311,11 @@
 
                 const data = await response.json();
                 if (data.succeeded) {
-                    // İkon Değişimi
                     icon.className = data.isFavorite ? 'fas fa-heart' : 'far fa-heart';
 
-                    // Hafıza (Memory) Güncellemesi
                     const prod = allProducts.find(p => p.id === productId);
                     if (prod) prod.isFavorite = data.isFavorite;
 
-                    // Dinamik Toast Bildirimi
                     Toast.fire({
                         icon: data.isFavorite ? 'success' : 'info',
                         title: data.message

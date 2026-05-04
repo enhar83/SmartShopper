@@ -1,0 +1,372 @@
+﻿@using Core_Layer.Dtos.FavoriteDtos
+@model List<WishlistDto>
+
+@{
+    ViewData["Title"] = "My Wishlist";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
+}
+
+<style>
+    .single-product {
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        background: #fff;
+        height: 100%;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        display: flex;
+        flex-direction: column;
+    }
+
+        .single-product:hover {
+            box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+            transform: translateY(-5px);
+        }
+
+    .fav-button {
+        position: absolute;
+        top: 60px;
+        right: 15px;
+        z-index: 10;
+        background: #fff;
+        border: none;
+        border-radius: 50%;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        cursor: pointer;
+        transition: 0.3s;
+        color: #e74c3c;
+    }
+
+        .fav-button:hover {
+            transform: scale(1.1);
+            background: #fdfdfd;
+        }
+
+    .product-img-container {
+        height: 300px;
+        position: relative;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+        .product-img-container img {
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .single-product:hover .product-img-container img {
+        transform: scale(1.1);
+    }
+
+    .subcat-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        padding: 4px 12px;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+        border-radius: 4px;
+        z-index: 3;
+    }
+
+    .stock-status-badge {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        padding: 4px 10px;
+        font-size: 10px;
+        color: #fff;
+        font-weight: 700;
+        border-radius: 4px;
+        z-index: 3;
+    }
+
+    .product-info-padding {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-tag {
+        font-size: 12px;
+        color: #999;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        letter-spacing: 0.5px;
+    }
+
+    .product-title {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: block;
+        color: #333;
+        text-decoration: none;
+        height: 44px;
+        overflow: hidden;
+    }
+
+    .price-container {
+        position: relative;
+        height: 32px;
+        overflow: hidden;
+        margin-top: auto;
+    }
+
+    .product-price {
+        font-size: 18px;
+        color: #222;
+        font-weight: 700;
+        transition: transform 0.3s ease;
+        display: block;
+        line-height: 32px;
+    }
+
+    .add-to-cart-btn {
+        position: absolute;
+        top: 32px;
+        left: 0;
+        font-size: 12px;
+        font-weight: 700;
+        color: #e67e22;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: transform 0.3s ease;
+        display: flex;
+        align-items: center;
+        line-height: 32px;
+    }
+
+    .single-product:hover .product-price {
+        transform: translateY(-32px);
+    }
+
+    .single-product:hover .add-to-cart-btn {
+        transform: translateY(-32px);
+    }
+
+    .pagination-wrapper {
+        margin-top: 50px;
+        margin-bottom: 80px;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 8px;
+        list-style: none;
+        padding: 0;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .page-item .page-link {
+        width: 45px;
+        height: 45px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px !important;
+        border: 1px solid #eee !important;
+        color: #555;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        background: #fff;
+        cursor: pointer;
+    }
+
+    .page-item.active .page-link {
+        background: #222 !important;
+        color: #fff !important;
+    }
+
+    .page-item.disabled .page-link {
+        color: #ccc;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+</style>
+
+<div class="slider-area" style="background: #fcfcfc; padding: 60px 0; border-bottom: 1px solid #f0f0f0;">
+    <div class="container text-center">
+        <h2 class="mb-2">My Wishlist</h2>
+        <p class="text-muted">Explore the products you've saved for later</p>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center bg-transparent p-0">
+                <li class="breadcrumb-item"><a href="/" style="color:#e67e22;">Home</a></li>
+                <li class="breadcrumb-item active">Wishlist</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="wishlist-main-area mt-50">
+    <div class="container">
+        <div class="shop-header-area mb-40 d-flex justify-content-between align-items-center">
+            <h6 id="filter-info-text" class="text-muted">Your saved items</h6>
+            <div class="view-mode d-flex align-items-center">
+                <a href="javascript:void(0)" id="gridBtn" class="mr-3 active" style="font-size: 18px; color:#222;"><i class="fas fa-th"></i></a>
+                <a href="javascript:void(0)" id="listBtn" style="font-size: 18px; color:#ccc;"><i class="fas fa-list"></i></a>
+            </div>
+        </div>
+
+        <div id="product-list-container" class="row" style="min-height: 400px;">
+        </div>
+
+        <div class="pagination-wrapper">
+            <ul class="pagination" id="pagination-container"></ul>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const allProducts = @Html.Raw(Json.Serialize(Model));
+        let filteredProducts = [...allProducts];
+        const pageSize = 12;
+        let currentPage = 1;
+        let currentView = 'grid';
+
+        const container = document.getElementById("product-list-container");
+        const pagination = document.getElementById("pagination-container");
+        const filterInfoText = document.getElementById("filter-info-text");
+
+        const Toast = Swal.mixin({
+            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
+        });
+
+        window.toggleFavorite = async function(productId, btnElement) {
+            const token = '@tokens.RequestToken';
+
+            try {
+                const response = await fetch('/Favorite/ToggleFavorite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `productId=${productId}`
+                });
+
+                const data = await response.json();
+
+                if (data.succeeded && !data.isFavorite) {
+                    const index = filteredProducts.findIndex(p => p.productId === productId);
+                    if (index > -1) {
+                        filteredProducts.splice(index, 1);
+
+                        const totalPages = Math.ceil(filteredProducts.length / pageSize);
+                        if (currentPage > totalPages && currentPage > 1) currentPage--;
+
+                        render();
+                    }
+
+                    Toast.fire({ icon: 'info', title: data.message });
+                }
+            } catch (error) {
+                console.error(error);
+                Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+            }
+        };
+
+        function render() {
+            container.style.opacity = "0";
+            setTimeout(() => {
+                const start = (currentPage - 1) * pageSize;
+                const end = Math.min(start + pageSize, filteredProducts.length);
+                const currentItems = filteredProducts.slice(start, end);
+
+                container.innerHTML = "";
+                if (filteredProducts.length === 0) {
+                    container.innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <i class="far fa-heart fa-4x text-muted mb-3"></i>
+                            <h4>Your wishlist is empty.</h4>
+                            <a href="/Product/ProductList" class="btn btn-dark mt-3 rounded-pill px-4">Continue Shopping</a>
+                        </div>`;
+                } else {
+                    currentItems.forEach(item => {
+                        container.insertAdjacentHTML('beforeend', getProductHtml(item, currentView));
+                    });
+                }
+
+                filterInfoText.innerHTML = `Showing <span class="theme-color">${filteredProducts.length}</span> saved products`;
+                renderPagination();
+                container.style.opacity = "1";
+            }, 200);
+        }
+
+        function getProductHtml(item, view) {
+            const isGrid = view === 'grid';
+            const colClass = isGrid ? 'col-xl-3 col-md-4 col-sm-6 mb-4' : 'col-12 mb-4';
+            const subColor = getSubCatColor(item.subCategoryName);
+
+            return `
+                <div class="${colClass}">
+                    <div class="single-product">
+                        <button class="fav-button" onclick="toggleFavorite('${item.productId}', this)" title="Remove from Wishlist">
+                            <i class="fas fa-heart"></i>
+                        </button>
+                        <div class="product-img-container">
+                            <div class="subcat-badge" style="background:${subColor}">${item.subCategoryName}</div>
+                            <div class="stock-status-badge ${item.stockStatusClass}">${item.stockStatus}</div>
+                            <a href="/Product/ProductDetails/${item.productId}" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                ${item.imageUrl && item.imageUrl !== '/img/no-image.png' ? `<img src="${item.imageUrl}">` : `<i class="fas fa-image fa-3x text-muted"></i>`}
+                            </a>
+                        </div>
+                        <div class="product-info-padding">
+                            <div class="product-tag">${item.categoryName}</div>
+                            <a href="/Product/ProductDetails/${item.productId}" class="product-title text-capitalize">${item.productName}</a>
+                            <div class="price-container">
+                                <span class="product-price">$${item.price.toFixed(2)}</span>
+                                <a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket mr-1"></i> ADD TO CART</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+        }
+
+        const colors = ["#d4a373", "#e67e22", "#2ecc71", "#3498db", "#9b59b6", "#e74c3c", "#1abc9c", "#2c3e50"];
+        function getSubCatColor(name) {
+            let hash = 0;
+            for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+            return colors[Math.abs(hash) % colors.length];
+        }
+
+        function renderPagination() {
+            const totalPages = Math.ceil(filteredProducts.length / pageSize);
+            pagination.innerHTML = "";
+            if (totalPages <= 1) return;
+            for (let i = 1; i <= totalPages; i++) {
+                pagination.insertAdjacentHTML('beforeend', `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" onclick="goPage(${i})">${i}</a></li>`);
+            }
+        }
+
+        window.goPage = (p) => { currentPage = p; render(); window.scrollTo({ top: 100, behavior: 'smooth' }); };
+        document.getElementById("gridBtn").onclick = () => { currentView = 'grid'; document.getElementById("gridBtn").style.color = "#222"; document.getElementById("listBtn").style.color = "#ccc"; render(); };
+        document.getElementById("listBtn").onclick = () => { currentView = 'list'; document.getElementById("listBtn").style.color = "#222"; document.getElementById("gridBtn").style.color = "#ccc"; render(); };
+
+        render();
+    });
+</script>

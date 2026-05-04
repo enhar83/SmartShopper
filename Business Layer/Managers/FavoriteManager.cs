@@ -58,17 +58,17 @@ namespace Business_Layer.Managers
 
                 if (originalProduct.Stock <= 0)
                 {
-                    targetDto.StockStatus = "Stokta Yok";
+                    targetDto.StockStatus = "Out of Stock";
                     targetDto.StockStatusClass = "bg-danger";
                 }
                 else if (originalProduct.Stock <= 50)
                 {
-                    targetDto.StockStatus = "Kritik Stok";
+                    targetDto.StockStatus = "Limited";
                     targetDto.StockStatusClass = "bg-warning text-dark";
                 }
                 else
                 {
-                    targetDto.StockStatus = "Stokta Var";
+                    targetDto.StockStatus = "In Stock";
                     targetDto.StockStatusClass = "bg-success";
                 }
             }

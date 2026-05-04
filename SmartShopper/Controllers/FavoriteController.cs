@@ -13,6 +13,25 @@ namespace SmartShopper.Controllers
             _favoriteService = favoriteService;
         }
 
+        public async Task<IActionResult> Index()
+        {
+            try
+            {
+                var wishlist = await _favoriteService.TGetWishListAsync();
+
+                return View(wishlist);
+            }
+            catch (LogicException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+                return RedirectToAction("Login", "Account");
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, "A technical issue occurred while loading the favorites list.");
+            }
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ToggleFavorite(Guid productId)
