@@ -2,7 +2,6 @@
 @model CartDto
 
 <style>
-    /* 1. Görünürlük Kontrolü */
     #miniCartDetails.cart-visible {
         display: block !important;
         opacity: 1 !important;
@@ -23,7 +22,6 @@
         transition: none !important;
     }
 
-    /* 2. Placeholder (Görsel Yok) Tasarımı */
     .mini-cart-no-image {
         width: 60px;
         height: 75px;
@@ -51,7 +49,6 @@
                 <ul class="d-flex pb-20 border-b-light-gray mb-20" style="list-style:none; padding:0;">
                     <li class="h-shop-cart-img pl-0">
                         <a class="d-block" href="/Product/ProductDetails/@item.ProductId">
-                            @* Senior Dokunuş: Görsel Kontrolü *@
                             @if (!string.IsNullOrEmpty(item.ProductImageUrl) && item.ProductImageUrl != "NO_IMAGE" && item.ProductImageUrl != "/img/no-image.png")
                             {
                                 <img src="@item.ProductImageUrl"

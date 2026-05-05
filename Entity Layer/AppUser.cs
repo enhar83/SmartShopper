@@ -17,6 +17,7 @@ namespace Entity_Layer
         public DateTime CreatedDate { get; set; } = DateTime.Now;
         public ICollection<UserAddress>? Addresses { get; set; } 
         public ICollection<Favorite>? Favorites { get; set; }
+        public ICollection<Order>? Orders { get; set; }
 
     }
 }

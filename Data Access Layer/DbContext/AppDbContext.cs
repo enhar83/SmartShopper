@@ -29,28 +29,48 @@ namespace Data_Access_Layer.DbContext
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            // Identity tablolarının temel konfigürasyonu için base çağrısı şarttır.
             base.OnModelCreating(builder);
 
-            //appuser 
+            #region Identity & AppUser Configuration
+            // Varsayılan Identity tablo isimlerini daha profesyonel ve temiz hale getiriyoruz.
             builder.Entity<AppUser>(entity =>
             {
+                entity.ToTable("Users");
                 entity.Property(u => u.Name).HasMaxLength(50).IsRequired();
                 entity.Property(u => u.Surname).HasMaxLength(50).IsRequired();
                 entity.Property(u => u.ImageUrl).HasMaxLength(500);
 
+                // Bir kullanıcı silindiğinde siparişlerinin silinmesini engelleyerek veri geçmişini koruyoruz.[cite: 1, 4]
+                entity.HasMany(u => u.Orders)
+                      .WithOne(o => o.AppUser)
+                      .HasForeignKey(o => o.AppUserId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
-            //product
+            builder.Entity<AppRole>().ToTable("Roles");
+            builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
+            builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
+            builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
+            builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
+            builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+            #endregion
+
+            #region Product & Category Configuration
             builder.Entity<Product>(entity =>
             {
                 entity.Property(p => p.Name).HasMaxLength(150).IsRequired();
                 entity.Property(p => p.Description).HasMaxLength(1000).IsRequired();
+                entity.Property(p => p.Price).HasPrecision(18, 2); 
+                
+                entity.HasIndex(p => p.Name);
 
-                entity.Property(p => p.Price).HasPrecision(18, 2); //virgülden sonra iki basamak getirmesini sağlar.
-
+                entity.HasOne(p => p.SubCategory)
+                      .WithMany(sc => sc.Products)
+                      .HasForeignKey(p => p.SubCategoryId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
-            //category
             builder.Entity<Category>(entity =>
             {
                 entity.Property(c => c.Name).HasMaxLength(100).IsRequired();
@@ -60,21 +80,42 @@ namespace Data_Access_Layer.DbContext
             builder.Entity<SubCategory>(entity =>
             {
                 entity.Property(sc => sc.Name).HasMaxLength(100).IsRequired();
+
+                entity.HasOne(sc => sc.Category)
+                      .WithMany(c => c.SubCategories)
+                      .HasForeignKey(sc => sc.CategoryId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
+            #region Order & OrderItem Configuration
+            builder.Entity<Order>(entity =>
+            {
+                entity.Property(o => o.TotalPrice).HasPrecision(18, 2); 
             });
 
-            //order ve orderitem
             builder.Entity<OrderItem>(entity =>
             {
-                entity.Property(oi => oi.PriceAtPurchase).HasPrecision(18, 2);
-            });
+                entity.Property(oi => oi.PriceAtPurchase).HasPrecision(18, 2); 
 
-            //product image
+                entity.HasOne(oi => oi.Product)
+                      .WithMany(p => p.OrderItems)
+                      .HasForeignKey(oi => oi.ProductId)
+                      .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(oi => oi.Order)
+                      .WithMany(o => o.OrderItems)
+                      .HasForeignKey(oi => oi.OrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
+
+            #region Other Entities (Images, Address, Favorites)
             builder.Entity<ProductImage>(entity =>
             {
                 entity.Property(pi => pi.ImageUrl).HasMaxLength(500).IsRequired();
             });
 
-            //useradress
             builder.Entity<UserAddress>(entity =>
             {
                 entity.Property(a => a.Title).HasMaxLength(50).IsRequired();
@@ -84,15 +125,11 @@ namespace Data_Access_Layer.DbContext
                 entity.Property(a => a.FullAddress).HasMaxLength(500).IsRequired();
             });
 
-            //
-            //varsayılan identity tablolarının isimlerini daha temiz hale getirir.
-            builder.Entity<AppUser>().ToTable("Users");
-            builder.Entity<AppRole>().ToTable("Roles");
-            builder.Entity<IdentityUserRole<Guid>>().ToTable("UserRoles");
-            builder.Entity<IdentityUserClaim<Guid>>().ToTable("UserClaims");
-            builder.Entity<IdentityUserLogin<Guid>>().ToTable("UserLogins");
-            builder.Entity<IdentityRoleClaim<Guid>>().ToTable("RoleClaims");
-            builder.Entity<IdentityUserToken<Guid>>().ToTable("UserTokens");
+            builder.Entity<Favorite>(entity =>
+            {
+                entity.HasIndex(f => new { f.AppUserId, f.ProductId }).IsUnique();
+            });
+            #endregion
         }
     }
 }
