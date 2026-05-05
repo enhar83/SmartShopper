@@ -10,7 +10,7 @@ namespace Entity_Layer
     public class Cart:BaseEntity
     {
         public Guid AppUserId { get; set; }
-        public required AppUser AppUser { get; set; }
+        public virtual AppUser? AppUser { get; set; }
         public ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
     }
 }

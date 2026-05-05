@@ -2,7 +2,7 @@
 @model List<ProductListDto>
 
 @{
-    ViewData["Title"] = "Shop";
+    ViewData["Title"] = "Shop Catalog";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -159,6 +159,7 @@
         display: flex;
         align-items: center;
         line-height: 32px;
+        cursor: pointer;
     }
 
     .single-product:hover .product-price {
@@ -168,21 +169,6 @@
     .single-product:hover .add-to-cart-btn {
         transform: translateY(-32px);
     }
-
-    .list-view-style {
-        flex-direction: row !important;
-        height: auto !important;
-    }
-
-        .list-view-style .product-img-container {
-            width: 300px !important;
-            height: 260px !important;
-        }
-
-        .list-view-style .fav-button {
-            top: 15px;
-            right: 15px;
-        }
 
     .pagination-wrapper {
         margin-top: 50px;
@@ -195,7 +181,6 @@
         list-style: none;
         padding: 0;
         justify-content: center;
-        align-items: center;
     }
 
     .page-item .page-link {
@@ -208,33 +193,11 @@
         border: 1px solid #eee !important;
         color: #555;
         font-weight: 600;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        background: #fff;
     }
-
-        .page-item .page-link:hover {
-            border-color: #e67e22 !important;
-            color: #e67e22;
-            background: #fff9f4;
-        }
 
     .page-item.active .page-link {
         background: #222 !important;
         color: #fff !important;
-        border-color: #222 !important;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .page-item.disabled .page-link {
-        color: #ccc;
-        cursor: not-allowed;
-        pointer-events: none;
-        background: #fafafa;
-    }
-
-    .page-link i {
-        font-size: 14px;
     }
 </style>
 
@@ -254,6 +217,7 @@
     <div class="container">
         <div class="row">
             @await Component.InvokeAsync("_CategoryListInSidebarComponentPartial")
+
             <div class="col-xl-9 col-lg-9 col-md-12">
                 <div class="shop-header-area mb-40 d-flex justify-content-between align-items-center">
                     <h6 id="filter-info-text" class="text-muted">Showing results...</h6>
@@ -263,7 +227,7 @@
                     </div>
                 </div>
 
-                <div id="product-list-container" class="row" style="min-height: 400px;"></div>
+                <div id="product-list-container" class="row" style="min-height: 400px; transition: opacity 0.3s ease;"></div>
 
                 <div class="pagination-wrapper">
                     <ul class="pagination" id="pagination-container"></ul>
@@ -310,9 +274,9 @@
                 });
 
                 const data = await response.json();
-                if (data.succeeded) {
-                    icon.className = data.isFavorite ? 'fas fa-heart' : 'far fa-heart';
 
+                if (response.ok && data.succeeded) {
+                    icon.className = data.isFavorite ? 'fas fa-heart' : 'far fa-heart';
                     const prod = allProducts.find(p => p.id === productId);
                     if (prod) prod.isFavorite = data.isFavorite;
 
@@ -321,14 +285,43 @@
                         title: data.message
                     });
                 } else {
+                    const errorMsg = (data.errors && data.errors.length > 0) ? data.errors[0] : data.message;
                     Toast.fire({
-                        icon: 'error',
-                        title: data.errors ? data.errors[0] : 'Something went wrong!'
+                        icon: 'warning',
+                        title: errorMsg || 'Please sign in to favorite products.'
                     });
                 }
             } catch (error) {
-                console.error(error);
                 Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+            }
+        };
+
+        window.addToCart = async function(productId) {
+            const token = '@tokens.RequestToken';
+
+            try {
+                const response = await fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({
+                        ProductId: productId,
+                        Quantity: 1
+                    })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    Toast.fire({ icon: 'success', title: result.message });
+                } else {
+                    Toast.fire({ icon: 'warning', title: result.message || 'Please sign in.' });
+                }
+            } catch (error) {
+                Toast.fire({ icon: 'error', title: 'Error adding product to cart.' });
             }
         };
 
@@ -341,14 +334,14 @@
 
                 container.innerHTML = "";
                 if (currentItems.length === 0) {
-                    container.innerHTML = '<div class="col-12 text-center py-5"><h4>No products found in this category.</h4></div>';
+                    container.innerHTML = '<div class="col-12 text-center py-5"><h4>No products found.</h4></div>';
                 } else {
                     currentItems.forEach(item => {
                         container.insertAdjacentHTML('beforeend', getProductHtml(item, currentView));
                     });
                 }
 
-                filterInfoText.innerHTML = `Showing <span class="theme-color">${currentItems.length}</span> of <span class="theme-color">${filteredProducts.length}</span> products`;
+                filterInfoText.innerHTML = `Showing <span style="color:#e67e22">${currentItems.length}</span> of <span style="color:#e67e22">${filteredProducts.length}</span> products`;
                 renderPagination();
                 container.style.opacity = "1";
             }, 200);
@@ -357,17 +350,16 @@
         function getProductHtml(item, view) {
             const isGrid = view === 'grid';
             const colClass = isGrid ? 'col-xl-4 col-md-6 col-sm-6 mb-4' : 'col-12 mb-4';
-            const listClass = isGrid ? '' : 'list-view-style';
             const subColor = getSubCatColor(item.subCategoryName);
             const isOutOfStock = item.stockStatus === "Out of Stock";
 
             return `
                 <div class="${colClass}">
-                    <div class="single-product ${listClass}">
+                    <div class="single-product ${!isGrid ? 'flex-row' : ''}">
                         <button class="fav-button" onclick="toggleFavorite('${item.id}', this)">
                             <i class="${item.isFavorite ? 'fas' : 'far'} fa-heart"></i>
                         </button>
-                        <div class="product-img-container">
+                        <div class="product-img-container" style="${!isGrid ? 'width:300px; height:260px;' : ''}">
                             <div class="subcat-badge" style="background:${subColor}">${item.subCategoryName || ''}</div>
                             <div class="stock-status-badge ${item.stockStatusClass || ''}">${item.stockStatus || ''}</div>
                             <a href="/Product/ProductDetails/${item.id}" class="w-100 h-100 d-flex align-items-center justify-content-center">
@@ -380,7 +372,9 @@
                             ${!isGrid ? `<p class="text-muted d-none d-md-block mb-3">${item.description || ''}</p>` : ''}
                             <div class="price-container">
                                 <span class="product-price">$${item.price.toFixed(2)}</span>
-                                ${isOutOfStock ? `<span class="add-to-cart-btn text-muted"><i class="fas fa-ban mr-1"></i> SOLD OUT</span>` : `<a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket mr-1"></i> ADD TO CART</a>`}
+                                ${isOutOfStock
+                                    ? `<span class="add-to-cart-btn text-muted"><i class="fas fa-ban mr-1"></i> SOLD OUT</span>`
+                                    : `<a href="javascript:void(0)" class="add-to-cart-btn" onclick="addToCart('${item.id}')"><i class="fas fa-shopping-basket mr-1"></i> ADD TO CART</a>`}
                             </div>
                         </div>
                     </div>
@@ -394,9 +388,7 @@
 
             pagination.insertAdjacentHTML('beforeend', `
                 <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-                    <a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage - 1})" aria-label="Previous">
-                        <i class="fas fa-chevron-left"></i>
-                    </a>
+                    <a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage - 1})"><i class="fas fa-chevron-left"></i></a>
                 </li>`);
 
             for (let i = 1; i <= totalPages; i++) {
@@ -412,20 +404,17 @@
 
             pagination.insertAdjacentHTML('beforeend', `
                 <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-                    <a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage + 1})" aria-label="Next">
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
+                    <a class="page-link" href="javascript:void(0)" onclick="goPage(${currentPage + 1})"><i class="fas fa-chevron-right"></i></a>
                 </li>`);
         }
 
         window.goPage = function(p) {
-            currentPage = p;
-            render();
+            currentPage = p; render();
             window.scrollTo({ top: 200, behavior: 'smooth' });
         };
 
         const subCatColorMap = {};
-        const colors = ["#d4a373", "#e67e22", "#2ecc71", "#3498db", "#9b59b6", "#e74c3c", "#1abc9c", "#2c3e50"];
+        const colors = ["#d4a373", "#e67e22", "#2ecc71", "#3498db"];
         function getSubCatColor(name) {
             if (!name) return "#999";
             if (!subCatColorMap[name]) subCatColorMap[name] = colors[Object.keys(subCatColorMap).length % colors.length];
@@ -440,18 +429,26 @@
                 subLink.classList.add('active-sub');
                 const target = String(subLink.getAttribute('data-name')).toLowerCase().trim();
                 filteredProducts = allProducts.filter(p => String(p.subCategoryName || "").toLowerCase().trim() === target);
-                currentPage = 1; render();
+                currentPage = 1;
+                render();
             }
+
             const catRow = e.target.closest('.category-row');
             if (catRow) {
+                e.preventDefault();
+                const parent = catRow.parentElement;
                 const panel = catRow.nextElementSibling;
-                catRow.parentElement.classList.toggle('active-cat');
-                panel.style.maxHeight = panel.style.maxHeight ? null : panel.scrollHeight + "px";
+                parent.classList.toggle('active-cat');
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
+                } else {
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
             }
         });
 
-        document.getElementById("gridBtn").onclick = () => { currentView = 'grid'; document.getElementById("gridBtn").style.color = "#222"; document.getElementById("listBtn").style.color = "#ccc"; render(); };
-        document.getElementById("listBtn").onclick = () => { currentView = 'list'; document.getElementById("listBtn").style.color = "#222"; document.getElementById("gridBtn").style.color = "#ccc"; render(); };
+        document.getElementById("gridBtn").onclick = () => { currentView = 'grid'; render(); };
+        document.getElementById("listBtn").onclick = () => { currentView = 'list'; render(); };
 
         const urlParams = new URLSearchParams(window.location.search);
         const sub = urlParams.get('subCategory');
