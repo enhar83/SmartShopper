@@ -124,5 +124,11 @@ namespace SmartShopper.Controllers
                 return Json(new { success = false, message = "An error occurred while clearing the cart." });
             }
         }
+
+        [HttpGet]
+        public IActionResult GetMiniCartComponent()
+        {
+            return ViewComponent("_CartNavbarComponentPartial");
+        }
     }
 }

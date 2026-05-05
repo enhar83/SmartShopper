@@ -1,1 +1,79 @@
-﻿
+﻿@using Core_Layer.Dtos.CartDtos
+@model CartDto
+
+<div class="header-shopping-cart">
+    <span class="icon-shopping-bag"></span>
+    <sup class="s-count">@(Model.TotalQuantity)</sup>
+</div>
+
+<div class="header-shopping-cart-details position-absolute bg-white border-gray pl-30 pr-30 pt-30 pb-30">
+    @if (Model.Items != null && Model.Items.Any())
+    {
+        <div class="h-shop-cart-contetn over-x-heddne over-y-scroll" style="max-height: 350px;">
+            @foreach (var item in Model.Items)
+            {
+                <ul class="d-flex pb-20 border-b-light-gray mb-20">
+                    <li class="h-shop-cart-img pl-0">
+                        <a class="d-block" href="/Product/ProductDetails/@item.ProductId">
+                            <img src="@(item.ProductImageUrl ?? "/assets/images/product/product1.jpg")"
+                                 alt="@item.ProductName"
+                                 style="width: 60px; height: 75px; object-fit: cover; border-radius: 4px;">
+                        </a>
+                    </li>
+                    <li class="pl-3" style="flex-grow: 1;">
+                        <h6 class="single-product-name">
+                            <a href="/Product/ProductDetails/@item.ProductId">@item.ProductName</a>
+                        </h6>
+                        <span class="primary-color">@item.Quantity<span>x</span>$@item.Price.ToString("F2")</span>
+                    </li>
+                    <li class="s-p-remove px-1 pl-0">
+                        <a href="javascript:void(0)" onclick="removeNavbarItem('@item.Id')" class="text-danger">
+                            <span class="icon-clear"></span>
+                        </a>
+                    </li>
+                </ul>
+            }
+        </div>
+        <div class="s-sub-t mt-3 mb-20">
+            <span class="theme-color">Subtotal:</span>
+            <span class="theme-color float-right"> $@Model.GrandTotal.ToString("F2")</span>
+        </div>
+        <a class="more-view-btn d-block theme-color border-light-gray2 text-center white-bg theme-color text-capitalize mb-20"
+           href="/Cart/Index">view cart</a>
+        <a href="/Checkout/Index" class="sub-btn d-inline-block width100 text-white text-uppercase theme-bg border-0 text-center">checkout</a>
+    }
+    else
+    {
+        <div class="text-center py-4">
+            <i class="fas fa-shopping-basket mb-3 text-muted" style="font-size: 40px;"></i>
+            <p class="mb-0">Your cart is empty.</p>
+        </div>
+    }
+</div>
+
+<script>
+    async function removeNavbarItem(itemId) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        try {
+            const response = await fetch(`/Cart/RemoveCartItem?id=${itemId}`, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'RequestVerificationToken': token
+                }
+            });
+
+            const res = await response.json();
+            if (res.success) {
+                if (window.location.pathname.toLowerCase().includes('/cart')) {
+                    location.reload();
+                } else {
+                    refreshMiniCart(); 
+                }
+            }
+        } catch (error) {
+            console.error("Navbar item remove error:", error);
+        }
+    }
+</script>

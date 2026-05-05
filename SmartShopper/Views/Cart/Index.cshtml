@@ -175,7 +175,8 @@
                     data: JSON.stringify({ Id: id, Quantity: newQty }),
                     success: function (res) {
                         if (res.success) {
-                            fetchCartData();
+                            fetchCartData(); // Ana tabloyu tazele
+                            if (typeof refreshMiniCart === "function") refreshMiniCart(); // Navbar sepetini tazele
                         } else {
                             Swal.fire({ icon: 'warning', title: 'Stock Warning', text: res.message });
                         }
@@ -204,7 +205,9 @@
                             headers: { "RequestVerificationToken": requestToken },
                             success: function (res) {
                                 if (res.success) {
-                                    fetchCartData();
+                                    fetchCartData(); // Ana tabloyu tazele
+                                    if (typeof refreshMiniCart === "function") refreshMiniCart(); // Navbar sepetini tazele
+
                                     const Toast = Swal.mixin({
                                         toast: true,
                                         position: 'top-end',
@@ -243,7 +246,9 @@
                             headers: { "RequestVerificationToken": requestToken },
                             success: function (res) {
                                 if (res.success) {
-                                    fetchCartData();
+                                    fetchCartData(); // Ana tabloyu tazele
+                                    if (typeof refreshMiniCart === "function") refreshMiniCart(); // Navbar sepetini tazele
+
                                     Swal.fire({ icon: 'success', title: 'Cleared!', text: res.message, timer: 2000, showConfirmButton: false });
                                 } else {
                                     Swal.fire({ icon: 'error', title: 'Error', text: res.message });
