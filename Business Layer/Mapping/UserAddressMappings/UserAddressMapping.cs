@@ -22,6 +22,8 @@ namespace Business_Layer.Mapping.UserAddressMappings
             CreateMap<UpdateUserAddressDto, UserAddress>()
                 .ForMember(dest => dest.AppUser, opt => opt.Ignore())
                 .ReverseMap();
+
+            CreateMap<UserAddress, UserAddressListForCheckoutDto>().ReverseMap();
         }
     }
 }
