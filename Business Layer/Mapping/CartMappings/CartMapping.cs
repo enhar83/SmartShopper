@@ -32,6 +32,9 @@ namespace Business_Layer.Mapping.CartMappings
             CreateMap<CreateCartItemDto, CartItem>()
                 .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.ProductId))
                 .ForMember(dest => dest.Quantity, opt => opt.MapFrom(src => src.Quantity));
+
+
+            CreateMap<UpdateCartItemDto, CartItem>();
         }
     }
 }
