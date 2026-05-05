@@ -14,12 +14,17 @@ namespace Business_Layer.Mapping.CartMappings
         public CartProfile()
         {
             CreateMap<CartItem, CartItemDto>()
-                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
-                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product.Price))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product!.Name))
+                .ForMember(dest => dest.Price, opt => opt.MapFrom(src => src.Product!.Price))
                 .ForMember(dest => dest.ProductImageUrl, opt => opt.MapFrom(src =>
-                    src.Product.ProductImages != null && src.Product.ProductImages.Any()
-                    ? src.Product.ProductImages.First().ImageUrl
-                    : null));
+                    (src.Product == null || src.Product.ProductImages == null || !src.Product.ProductImages.Any())
+                    ? "/img/no-image.png"
+                    : (
+                        (src.Product.ProductImages.FirstOrDefault(x => x.IsMain) ?? src.Product.ProductImages.First()).ImageUrl != null &&
+                        (src.Product.ProductImages.FirstOrDefault(x => x.IsMain) ?? src.Product.ProductImages.First()).ImageUrl != ""
+                        ? (src.Product.ProductImages.FirstOrDefault(x => x.IsMain) ?? src.Product.ProductImages.First()).ImageUrl
+                        : "/img/no-image.png"
+                      )));
 
             CreateMap<Cart, CartDto>()
                 .ForMember(dest => dest.Items, opt => opt.MapFrom(src => src.CartItems));

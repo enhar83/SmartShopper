@@ -6,14 +6,12 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-@* CSRF Güvenliği için Token *@
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     var tokens = Antiforgery.GetAndStoreTokens(Context);
 }
 
 <style>
-    /* --- GALERİ VE TASARIM STİLLERİ --- */
     .thumbnail-slider-wrapper {
         display: flex;
         flex-direction: column;
@@ -103,7 +101,6 @@
             margin-bottom: 15px;
         }
 
-    /* FAVORİ BUTONU ÖZEL TASARIMI */
     .fav-detail-btn {
         height: 54px;
         width: 54px;
@@ -149,7 +146,6 @@
 <div class="shop-single-page-area mt-40 over-hidden">
     <div class="container-wrapper extra-padding-15">
         <div class="row">
-            <!-- GÖRSEL ALANI -->
             <div class="col-xl-6 col-lg-6 col-md-12">
                 <div class="product-left-img-tab d-flex">
                     @if (Model.ProductImages != null && Model.ProductImages.Any())
@@ -203,7 +199,6 @@
                 </div>
             </div>
 
-            <!-- ÜRÜN BİLGİ ALANI -->
             <div class="col-xl-6 col-lg-6 col-md-12">
                 <div class="product-view-info">
                     <nav aria-label="breadcrumb">
@@ -229,7 +224,7 @@
                     <div class="border-top border-bottom py-4 mb-30">
                         <div class="d-flex align-items-center">
                             <div class="quantity-control mr-20">
-                                <input type="number" value="1" min="1" class="form-control text-center"
+                                <input type="number" id="productQuantity" value="1" min="1" class="form-control text-center"
                                        style="width: 80px; height: 54px; font-weight: 700; border-radius: 8px;"
                                        @(Model.StockStatus == "Out of Stock" ? "disabled" : "")>
                             </div>
@@ -240,12 +235,11 @@
                             }
                             else
                             {
-                                <button class="btn btn-dark px-5 py-3 rounded-lg shadow-sm" style="height: 54px; flex-grow: 1;">
+                                <button onclick="addToCartDetail('@Model.Id')" class="btn btn-dark px-5 py-3 rounded-lg shadow-sm" style="height: 54px; flex-grow: 1;">
                                     <i class="fas fa-shopping-cart mr-2"></i> ADD TO CART
                                 </button>
                             }
 
-                            <!-- DİNAMİK FAVORİ BUTONU -->
                             <button onclick="toggleFavoriteDetail('@Model.Id', this)"
                                     class="btn btn-outline-danger ml-15 fav-detail-btn @(Model.IsFavorite ? "is-fav" : "")"
                                     title="@(Model.IsFavorite ? "Remove from Favorites" : "Add to Favorites")">
@@ -264,7 +258,6 @@
     </div>
 </div>
 
-@* Tab Area ve Benzer Ürünler kısımları aynı kalıyor... *@
 <div class="product-view-tab-area mt-80">
     <div class="container-wrapper extra-padding-10 border-top pt-60 pb-85">
         <ul class="nav nav-tabs justify-content-center product-view-tab border-0" id="myTab" role="tablist">
@@ -305,19 +298,48 @@
         if(down && slider) { down.addEventListener('click', () => slider.scrollTop += 110); }
     });
 
-    // --- FAVORİ EKLEME/ÇIKARMA FONKSİYONU ---
+    const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+
+    async function addToCartDetail(productId) {
+        const quantity = document.getElementById('productQuantity').value;
+        const token = '@tokens.RequestToken';
+
+        try {
+            const response = await fetch('/Cart/AddToCart', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': token,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    ProductId: productId,
+                    Quantity: parseInt(quantity)
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                Toast.fire({ icon: 'success', title: result.message });
+            } else {
+                Toast.fire({ icon: 'warning', title: result.message || 'Please sign in.' });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+        }
+    }
+
     async function toggleFavoriteDetail(productId, btnElement) {
         const icon = btnElement.querySelector('i');
-        const token = '@tokens.RequestToken'; // Antiforgery Token
-
-        // SweetAlert Toast Ayarı
-        const Toast = Swal.mixin({
-            toast: true,
-            position: 'top-end',
-            showConfirmButton: false,
-            timer: 3000,
-            timerProgressBar: true
-        });
+        const token = '@tokens.RequestToken';
 
         try {
             const response = await fetch('/Favorite/ToggleFavorite', {
@@ -332,20 +354,19 @@
 
             const data = await response.json();
 
-            if (data.succeeded) {
+            if (response.ok && data.succeeded) {
                 if (data.isFavorite) {
-                    // Favoriye Eklendi
                     btnElement.classList.add('is-fav');
                     icon.classList.replace('far', 'fas');
                     Toast.fire({ icon: 'success', title: data.message });
                 } else {
-                    // Favoriden Çıkarıldı
                     btnElement.classList.remove('is-fav');
                     icon.classList.replace('fas', 'far');
                     Toast.fire({ icon: 'info', title: data.message });
                 }
             } else {
-                Toast.fire({ icon: 'error', title: data.errors ? data.errors[0] : 'Something went wrong!' });
+                const errorMsg = (data.errors && data.errors.length > 0) ? data.errors[0] : (data.message || 'Please sign in.');
+                Toast.fire({ icon: 'warning', title: errorMsg });
             }
         } catch (error) {
             console.error('Error:', error);
