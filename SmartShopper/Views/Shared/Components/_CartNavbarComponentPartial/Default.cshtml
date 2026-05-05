@@ -2,31 +2,41 @@
 @model CartDto
 
 <style>
-    /* 1. Tüm tema kurallarını ezen en üst düzey stil */
+    /* 1. Görünürlük Kontrolü */
     #miniCartDetails.cart-visible {
         display: block !important;
         opacity: 1 !important;
         visibility: visible !important;
         z-index: 999999 !important;
         transform: none !important;
-        /* Sağdan veya soldan taşmasını önlemek için */
         right: 0;
         top: 100%;
         min-width: 320px;
     }
 
-    /* 2. Sepet detay konteynerinin temel hali */
     .header-shopping-cart-details {
-        display: none; /* Varsayılan olarak gizle */
+        display: none;
         background: #fff;
         box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         border: 1px solid #eee;
         border-radius: 4px;
-        transition: none !important; /* Animasyon kaynaklı hataları önlemek için */
+        transition: none !important;
+    }
+
+    /* 2. Placeholder (Görsel Yok) Tasarımı */
+    .mini-cart-no-image {
+        width: 60px;
+        height: 75px;
+        background: #f5f5f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        color: #ccc;
+        border: 1px solid #eee;
     }
 </style>
 
-@* Tetikleyici: ID bazlı ve inline onclick ile garantiye alıyoruz *@
 <div class="header-shopping-cart" id="miniCartTrigger" onclick="toggleMyCart(event)" style="cursor:pointer; position:relative;">
     <span class="icon-shopping-bag"></span>
     <sup class="s-count">@(Model.TotalQuantity)</sup>
@@ -41,9 +51,19 @@
                 <ul class="d-flex pb-20 border-b-light-gray mb-20" style="list-style:none; padding:0;">
                     <li class="h-shop-cart-img pl-0">
                         <a class="d-block" href="/Product/ProductDetails/@item.ProductId">
-                            <img src="@(item.ProductImageUrl ?? "/assets/images/product/product1.jpg")"
-                                 alt="@item.ProductName"
-                                 style="width: 60px; height: 75px; object-fit: cover; border-radius: 4px;">
+                            @* Senior Dokunuş: Görsel Kontrolü *@
+                            @if (!string.IsNullOrEmpty(item.ProductImageUrl) && item.ProductImageUrl != "NO_IMAGE" && item.ProductImageUrl != "/img/no-image.png")
+                            {
+                                <img src="@item.ProductImageUrl"
+                                     alt="@item.ProductName"
+                                     style="width: 60px; height: 75px; object-fit: cover; border-radius: 4px;">
+                            }
+                            else
+                            {
+                                <div class="mini-cart-no-image">
+                                    <i class="fas fa-image"></i>
+                                </div>
+                            }
                         </a>
                     </li>
                     <li class="pl-3" style="flex-grow: 1;">
@@ -76,27 +96,23 @@
 </div>
 
 <script>
-    // 1. Fonksiyonu doğrudan window objesine bağlayarak her yerden erişilebilir kılıyoruz
     window.toggleMyCart = function(event) {
         event.preventDefault();
         event.stopPropagation();
 
         const details = document.getElementById('miniCartDetails');
         details.classList.toggle('cart-visible');
-        console.log("Cart Toggle Clicked. Visible:", details.classList.contains('cart-visible'));
     };
 
-    // 2. Sayfanın herhangi bir yerine tıklandığında sepeti kapat
     document.addEventListener('click', function(event) {
         const details = document.getElementById('miniCartDetails');
         const trigger = document.getElementById('miniCartTrigger');
 
-        if (!details.contains(event.target) && !trigger.contains(event.target)) {
+        if (details && trigger && !details.contains(event.target) && !trigger.contains(event.target)) {
             details.classList.remove('cart-visible');
         }
     });
 
-    // 3. Silme fonksiyonu
     async function removeNavbarItem(event, itemId) {
         event.stopPropagation();
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;

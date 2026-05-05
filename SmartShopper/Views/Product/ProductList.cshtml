@@ -317,7 +317,6 @@
 
                 if (response.ok && result.success) {
                     Toast.fire({ icon: 'success', title: result.message });
-                    // Senior Notu: Sepete ürün başarıyla eklendiğinde Navbar'daki bileşeni tazeliyoruz
                     if (typeof refreshMiniCart === "function") {
                         refreshMiniCart();
                     }

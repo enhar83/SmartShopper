@@ -328,7 +328,6 @@
 
             if (response.ok && result.success) {
                 Toast.fire({ icon: 'success', title: result.message });
-                // Senior Notu: Navbar sepetini anlık güncellemek için tetikliyoruz
                 if (typeof refreshMiniCart === "function") {
                     refreshMiniCart();
                 }

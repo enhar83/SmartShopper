@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <Folder Include="ViewComponents\Layout\" />
-    <Folder Include="wwwroot\images\products\" />
   </ItemGroup>
 
 </Project>
