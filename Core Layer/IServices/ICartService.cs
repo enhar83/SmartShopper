@@ -12,5 +12,7 @@ namespace Core_Layer.IServices
         Task<CartDto> TGetUserCartAsync(Guid userId);
         Task TAddToCartAsync(Guid userId, CreateCartItemDto createCartItemDto);
         Task TUpdateCartItemAsync(UpdateCartItemDto updateCartItemDto);
+        Task TRemoveCartItemAsync(Guid cartItemId);
+        Task TClearCartAsync(Guid userId);
     }
 }

@@ -63,6 +63,20 @@ namespace Business_Layer.Managers
             await _uow.SaveAsync();
         }
 
+        public async Task TClearCartAsync(Guid userId)
+        {
+            var cart = await _cartRepository.Where(x => x.AppUserId == userId)
+                                   .Include(x => x.CartItems)
+                                   .FirstOrDefaultAsync();
+
+            if (cart != null && cart.CartItems.Any())
+            {
+                _cartItemRepository.RemoveRange(cart.CartItems.ToList());
+
+                await _uow.SaveAsync();
+            }
+        }
+
         public async Task<CartDto> TGetUserCartAsync(Guid userId)
         {
             var query = _cartRepository.Where(x => x.AppUserId == userId);
@@ -82,6 +96,17 @@ namespace Business_Layer.Managers
             }
 
             return _mapper.Map<CartDto>(cart);
+        }
+
+        public async Task TRemoveCartItemAsync(Guid cartItemId)
+        {
+            var cartItem = await _cartItemRepository.GetByIdAsync(cartItemId);
+
+            if (cartItem == null)
+                throw new LogicException("CartItem", "The item to be deleted was not found.");
+
+            _cartItemRepository.Remove(cartItem);
+            await _uow.SaveAsync();
         }
 
         public async Task TUpdateCartItemAsync(UpdateCartItemDto updateCartItemDto)

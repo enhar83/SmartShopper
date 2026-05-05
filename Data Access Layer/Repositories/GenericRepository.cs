@@ -39,5 +39,9 @@ namespace Data_Access_Layer.Repositories
         {
             return await _dbSet.FirstOrDefaultAsync(expression);
         }
+        public void RemoveRange(IEnumerable<T> entities)
+        {
+            _context.Set<T>().RemoveRange(entities);
+        }
     }
 }

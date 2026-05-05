@@ -18,5 +18,6 @@ namespace Core_Layer.IRepositories
         Task AddAsync(T entity);
         void Update(T entity);
         void Remove(T entity);
+        void RemoveRange(IEnumerable<T> entities);
     }
 }

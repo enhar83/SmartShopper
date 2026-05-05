@@ -84,5 +84,45 @@ namespace SmartShopper.Controllers
                 return Json(new { success = false, message = "An error occurred while updating the cart." });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveCartItem(Guid id)
+        {
+            if (id == Guid.Empty)
+                return Json(new { success = false, message = "Invalid item identification." });
+
+            try
+            {
+                await _cartService.TRemoveCartItemAsync(id);
+                return Json(new { success = true, message = "Item removed from cart." });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An error occurred while removing the item." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ClearCart()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdString == null)
+                return Json(new { success = false, message = "Please sign in." });
+
+            try
+            {
+                var userId = Guid.Parse(userIdString);
+                await _cartService.TClearCartAsync(userId);
+                return Json(new { success = true, message = "Your cart has been cleared." });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An error occurred while clearing the cart." });
+            }
+        }
     }
 }
