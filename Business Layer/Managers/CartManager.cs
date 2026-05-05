@@ -31,7 +31,7 @@ namespace Business_Layer.Managers
             _mapper = mapper;
         }
 
-        public async Task AddToCartAsync(Guid userId, CreateCartItemDto createCartItemDto)
+        public async Task TAddToCartAsync(Guid userId, CreateCartItemDto createCartItemDto)
         {
             var product = await _productRepository.GetByIdAsync(createCartItemDto.ProductId);
             if (product == null || product.Stock < createCartItemDto.Quantity)
@@ -66,12 +66,12 @@ namespace Business_Layer.Managers
         public async Task<CartDto> TGetUserCartAsync(Guid userId)
         {
             var query = _cartRepository.Where(x => x.AppUserId == userId);
-
-        var cart = await query
-            .Include(c => c.CartItems)           
-                .ThenInclude(ci => ci.Product)     
-                    .ThenInclude(p => p!.ProductImages) 
-            .FirstOrDefaultAsync();
+                
+            var cart = await query
+                .Include(c => c.CartItems)           
+                    .ThenInclude(ci => ci.Product)     
+                        .ThenInclude(p => p!.ProductImages) 
+                .FirstOrDefaultAsync();
 
             if (cart == null)
             {
@@ -82,6 +82,27 @@ namespace Business_Layer.Managers
             }
 
             return _mapper.Map<CartDto>(cart);
+        }
+
+        public async Task TUpdateCartItemAsync(UpdateCartItemDto updateCartItemDto)
+        {
+            var cartItem = await _cartItemRepository.Where(x => x.Id == updateCartItemDto.Id)
+                                            .Include(x => x.Product)
+                                            .FirstOrDefaultAsync();
+
+            if (cartItem == null)
+                throw new LogicException("CartItem", "Cart item not found.");
+
+            if (cartItem.Product != null && cartItem.Product.Stock < updateCartItemDto.Quantity)
+                throw new LogicException("Quantity", $"Insufficient stock. Current stock.: {cartItem.Product.Stock}");
+
+            if (updateCartItemDto.Quantity <= 0)
+                throw new LogicException("Quantity", "The quantity cannot be less than 1.");
+
+            _mapper.Map(updateCartItemDto, cartItem);
+
+            _cartItemRepository.Update(cartItem);
+            await _uow.SaveAsync();
         }
     }
 }

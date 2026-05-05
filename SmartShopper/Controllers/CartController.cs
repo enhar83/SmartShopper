@@ -44,7 +44,7 @@ namespace SmartShopper.Controllers
             {
                 var userId = Guid.Parse(userIdString);
 
-                await _cartService.AddToCartAsync(userId, createCartItemDto);
+                await _cartService.TAddToCartAsync(userId, createCartItemDto);
 
                 return Json(new { success = true, message = "The product has been successfully added to the cart." });
             }
@@ -55,6 +55,33 @@ namespace SmartShopper.Controllers
             catch (Exception ex)
             {
                 return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateCartItem([FromBody] UpdateCartItemDto updateCartItemDto)
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userIdString == null)
+                return Json(new { success = false, message = "Please sign in to update your cart." });
+
+            try
+            {
+                await _cartService.TUpdateCartItemAsync(updateCartItemDto);
+
+                return Json(new
+                {
+                    success = true,
+                    message = "Cart updated successfully."
+                });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An error occurred while updating the cart." });
             }
         }
     }

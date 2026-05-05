@@ -10,6 +10,7 @@ namespace Core_Layer.IServices
     public interface ICartService
     {
         Task<CartDto> TGetUserCartAsync(Guid userId);
-        Task AddToCartAsync(Guid userId, CreateCartItemDto createCartItemDto);
+        Task TAddToCartAsync(Guid userId, CreateCartItemDto createCartItemDto);
+        Task TUpdateCartItemAsync(UpdateCartItemDto updateCartItemDto);
     }
 }
