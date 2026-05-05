@@ -1,18 +1,44 @@
 ﻿@using Core_Layer.Dtos.CartDtos
 @model CartDto
 
-<div class="header-shopping-cart">
+<style>
+    /* 1. Tüm tema kurallarını ezen en üst düzey stil */
+    #miniCartDetails.cart-visible {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 999999 !important;
+        transform: none !important;
+        /* Sağdan veya soldan taşmasını önlemek için */
+        right: 0;
+        top: 100%;
+        min-width: 320px;
+    }
+
+    /* 2. Sepet detay konteynerinin temel hali */
+    .header-shopping-cart-details {
+        display: none; /* Varsayılan olarak gizle */
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border: 1px solid #eee;
+        border-radius: 4px;
+        transition: none !important; /* Animasyon kaynaklı hataları önlemek için */
+    }
+</style>
+
+@* Tetikleyici: ID bazlı ve inline onclick ile garantiye alıyoruz *@
+<div class="header-shopping-cart" id="miniCartTrigger" onclick="toggleMyCart(event)" style="cursor:pointer; position:relative;">
     <span class="icon-shopping-bag"></span>
     <sup class="s-count">@(Model.TotalQuantity)</sup>
 </div>
 
-<div class="header-shopping-cart-details position-absolute bg-white border-gray pl-30 pr-30 pt-30 pb-30">
+<div class="header-shopping-cart-details position-absolute pl-30 pr-30 pt-30 pb-30" id="miniCartDetails">
     @if (Model.Items != null && Model.Items.Any())
     {
         <div class="h-shop-cart-contetn over-x-heddne over-y-scroll" style="max-height: 350px;">
             @foreach (var item in Model.Items)
             {
-                <ul class="d-flex pb-20 border-b-light-gray mb-20">
+                <ul class="d-flex pb-20 border-b-light-gray mb-20" style="list-style:none; padding:0;">
                     <li class="h-shop-cart-img pl-0">
                         <a class="d-block" href="/Product/ProductDetails/@item.ProductId">
                             <img src="@(item.ProductImageUrl ?? "/assets/images/product/product1.jpg")"
@@ -21,59 +47,75 @@
                         </a>
                     </li>
                     <li class="pl-3" style="flex-grow: 1;">
-                        <h6 class="single-product-name">
+                        <h6 class="single-product-name" style="font-size:14px; margin-bottom:5px;">
                             <a href="/Product/ProductDetails/@item.ProductId">@item.ProductName</a>
                         </h6>
-                        <span class="primary-color">@item.Quantity<span>x</span>$@item.Price.ToString("F2")</span>
+                        <span class="primary-color" style="font-size:13px;">@item.Quantity x $@item.Price.ToString("F2")</span>
                     </li>
                     <li class="s-p-remove px-1 pl-0">
-                        <a href="javascript:void(0)" onclick="removeNavbarItem('@item.Id')" class="text-danger">
-                            <span class="icon-clear"></span>
+                        <a href="javascript:void(0)" onclick="removeNavbarItem(event, '@item.Id')" class="text-danger">
+                            <i class="fas fa-times"></i>
                         </a>
                     </li>
                 </ul>
             }
         </div>
-        <div class="s-sub-t mt-3 mb-20">
-            <span class="theme-color">Subtotal:</span>
-            <span class="theme-color float-right"> $@Model.GrandTotal.ToString("F2")</span>
+        <div class="s-sub-t mt-3 mb-20 d-flex justify-content-between">
+            <span class="theme-color font-weight-bold">Subtotal:</span>
+            <span class="theme-color font-weight-bold"> $@Model.GrandTotal.ToString("F2")</span>
         </div>
-        <a class="more-view-btn d-block theme-color border-light-gray2 text-center white-bg theme-color text-capitalize mb-20"
-           href="/Cart/Index">view cart</a>
-        <a href="/Checkout/Index" class="sub-btn d-inline-block width100 text-white text-uppercase theme-bg border-0 text-center">checkout</a>
+        <a class="btn btn-outline-dark btn-block mb-2" href="/Cart/Index">VIEW CART</a>
+        <a href="/Checkout/Index" class="btn btn-warning btn-block text-white font-weight-bold">CHECKOUT</a>
     }
     else
     {
         <div class="text-center py-4">
-            <i class="fas fa-shopping-basket mb-3 text-muted" style="font-size: 40px;"></i>
-            <p class="mb-0">Your cart is empty.</p>
+            <p class="mb-0 text-muted">Your cart is empty.</p>
         </div>
     }
 </div>
 
 <script>
-    async function removeNavbarItem(itemId) {
+    // 1. Fonksiyonu doğrudan window objesine bağlayarak her yerden erişilebilir kılıyoruz
+    window.toggleMyCart = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const details = document.getElementById('miniCartDetails');
+        details.classList.toggle('cart-visible');
+        console.log("Cart Toggle Clicked. Visible:", details.classList.contains('cart-visible'));
+    };
+
+    // 2. Sayfanın herhangi bir yerine tıklandığında sepeti kapat
+    document.addEventListener('click', function(event) {
+        const details = document.getElementById('miniCartDetails');
+        const trigger = document.getElementById('miniCartTrigger');
+
+        if (!details.contains(event.target) && !trigger.contains(event.target)) {
+            details.classList.remove('cart-visible');
+        }
+    });
+
+    // 3. Silme fonksiyonu
+    async function removeNavbarItem(event, itemId) {
+        event.stopPropagation();
         const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
 
         try {
             const response = await fetch(`/Cart/RemoveCartItem?id=${itemId}`, {
                 method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'RequestVerificationToken': token
-                }
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'RequestVerificationToken': token }
             });
 
-            const res = await response.json();
-            if (res.success) {
+            if ((await response.json()).success) {
                 if (window.location.pathname.toLowerCase().includes('/cart')) {
                     location.reload();
                 } else {
-                    refreshMiniCart(); 
+                    refreshMiniCart();
                 }
             }
         } catch (error) {
-            console.error("Navbar item remove error:", error);
+            console.error("Remove error:", error);
         }
     }
 </script>
