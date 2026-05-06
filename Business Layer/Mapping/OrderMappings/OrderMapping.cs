@@ -26,6 +26,18 @@ namespace Business_Layer.Mapping.OrderMappings
                      src.Product.ProductImages != null && src.Product.ProductImages.Any(x => x.IsMain)
                      ? src.Product.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
                      : "NO_IMAGE"));
+
+            CreateMap<Order, OrderListDtoAdminPanel>()
+                .ForMember(dest => dest.CustomerFullName, opt =>
+                    opt.MapFrom(src => $"{src.AppUser.Name} {src.AppUser.Surname}"))
+                .ForMember(dest => dest.CustomerEmail, opt =>
+                    opt.MapFrom(src => src.AppUser.Email))
+                .ForMember(dest => dest.ItemCount, opt =>
+                    opt.MapFrom(src => src.OrderItems.Count));
+
+            CreateMap<OrderStatusUpdateDto, Order>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.OrderId))
+                .ForMember(dest => dest.Status, opt => opt.MapFrom(src => src.NewStatus));
         }
     }
 }
