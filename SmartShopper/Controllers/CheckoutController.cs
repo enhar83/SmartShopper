@@ -67,6 +67,9 @@ namespace SmartShopper.Controllers
         [HttpGet]
         public IActionResult OrderSuccess()
         {
+            if (TempData["SuccessMessage"] == null)
+                return RedirectToAction("Index", "Home");
+
             return View();
         }
     }
