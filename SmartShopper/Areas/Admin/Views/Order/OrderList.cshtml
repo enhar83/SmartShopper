@@ -1,0 +1,211 @@
+﻿@using Core_Layer.Dtos.OrderDtos
+@model List<OrderListDtoAdminPanel>
+
+@{
+    ViewData["Title"] = "Order Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int count = 1;
+}
+
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <div class="breadcrumb-title pe-3">Sales & Logistics</div>
+    <div class="ps-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+                <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-cart"></i></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Order Management</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<h6 class="mb-0 text-uppercase">System Orders</h6>
+<hr />
+
+<div class="card border-top border-0 border-4 border-primary">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="orderDataTable" class="table table-striped table-bordered align-middle" style="width:100%">
+                <thead>
+                    <tr>
+                        <th style="width: 5%">#</th>
+                        <th>Reference</th>
+                        <th>Customer</th>
+                        <th>Total Amount</th>
+                        <th class="text-center">Status</th>
+                        <th>Order Date</th>
+                        <th class="text-center">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>@count</td>
+                            <td><span class="fw-bold">#@item.OrderReference</span></td>
+                            <td>
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold text-dark">@item.CustomerFullName</span>
+                                    <small class="text-muted">@item.CustomerEmail</small>
+                                </div>
+                            </td>
+                            <td class="fw-bold text-dark">@item.TotalPrice.ToString("C2")</td>
+                            <td class="text-center">
+                                @{
+                                    var badgeClass = item.StatusDescription switch
+                                    {
+                                        "Pending" => "bg-light-warning text-warning",
+                                        "Completed" => "bg-light-success text-success",
+                                        "Cancelled" => "bg-light-danger text-danger",
+                                        _ => "bg-light-info text-info"
+                                    };
+                                }
+                                <div class="badge rounded-pill @badgeClass p-2 text-uppercase px-3">
+                                    <i class='bx bxs-circle me-1'></i>@item.StatusDescription
+                                </div>
+                            </td>
+                            <td>@item.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+                            <td class="text-center">
+                                <div class="d-flex order-actions justify-content-center">
+                                    <a href="javascript:;" class="text-info bg-light-info border-0 me-2" onclick="showOrderDetails('@item.Id')" title="View Details">
+                                        <i class='bx bx-show-alt'></i>
+                                    </a>
+                                    <a href="javascript:;" class="text-primary bg-light-primary border-0" onclick="openStatusModal('@item.Id', '@item.Status')" title="Update Status">
+                                        <i class='bx bx-refresh'></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        count++;
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-top border-0 border-4 border-info">
+            <div class="modal-header">
+                <h5 class="modal-title text-info"><i class="bx bx-receipt me-1"></i> Order Items</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="orderDetailsContent">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="statusModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-top border-0 border-4 border-primary">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary">Update Order Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="statusForm">
+                <input type="hidden" name="OrderId" id="statusOrderId" />
+                <div class="modal-body">
+                    <div class="col-12 mb-3">
+                        <label class="form-label fw-bold">Select New Status</label>
+                        <select name="NewStatus" id="statusSelect" class="form-select border-3">
+                            @foreach (var status in Enum.GetValues(typeof(OrderStatus)))
+                            {
+                                <option value="@((int)status)">@status.ToString()</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="alert alert-info border-0 bg-light-info text-info small">
+                        <i class="bx bx-info-circle me-1"></i> Changing status to 'Cancelled' will trigger stock rollback.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" id="btnUpdateStatus" class="btn btn-primary px-4">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#orderDataTable').DataTable({
+                order: [[5, 'desc']] // Tarihe göre sıralı başlasın
+            });
+
+            // Durum Güncelleme Form Submit
+            $("#statusForm").on("submit", function (e) {
+                e.preventDefault();
+                const $btn = $("#btnUpdateStatus");
+                $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+
+                const formData = {
+                    OrderId: $("#statusOrderId").val(),
+                    NewStatus: parseInt($("#statusSelect").val())
+                };
+
+                $.ajax({
+                    url: '/Admin/Order/UpdateStatus',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function (res) {
+                        if (res.success) {
+                            $("#statusModal").modal('hide');
+                            Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false })
+                                .then(() => location.reload());
+                        } else {
+                            Swal.fire('Error!', res.message, 'error');
+                            $btn.prop("disabled", false).text("Save Changes");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire('Error!', 'Unexpected error.', 'error');
+                        $btn.prop("disabled", false).text("Save Changes");
+                    }
+                });
+            });
+        });
+
+        function showOrderDetails(orderId) {
+            $("#orderDetailsContent").html('<div class="text-center py-5"><div class="spinner-border text-info"></div><p>Fetching details...</p></div>');
+            $("#orderDetailsModal").modal('show');
+
+            $.get('/Order/Details/' + orderId, function (data) {
+                const items = data.orderItems || data.OrderItems;
+                let html = `
+                    <div class="row mb-3 border-bottom pb-2">
+                        <div class="col-6 small text-muted text-uppercase">Product</div>
+                        <div class="col-2 small text-muted text-uppercase text-center">Qty</div>
+                        <div class="col-4 small text-muted text-uppercase text-end">Price</div>
+                    </div>`;
+
+                items.forEach(item => {
+                    html += `
+                        <div class="row mb-2 align-items-center">
+                            <div class="col-6 fw-bold text-dark">${item.productName || item.ProductName}</div>
+                            <div class="col-2 text-center">${item.quantity || item.Quantity}</div>
+                            <div class="col-4 text-end">${new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(item.priceAtPurchase || item.PriceAtPurchase)}</div>
+                        </div>`;
+                });
+
+                $("#orderDetailsContent").html(html);
+            });
+        }
+
+        function openStatusModal(orderId, currentStatus) {
+            $("#statusOrderId").val(orderId);
+            $("#statusSelect").val(currentStatus); 
+            $("#statusModal").modal('show');
+        }
+    </script>
+}
