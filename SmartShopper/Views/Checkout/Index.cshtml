@@ -5,7 +5,6 @@
     var addresses = ViewBag.Addresses as List<Core_Layer.Dtos.UserAddressDtos.UserAddressListForCheckoutDto>;
 }
 
-<!-- Page Title Area -->
 <div class="slider-area over-hidden">
     <div class="single-page page-height3 d-flex align-items-center">
         <div class="container">
@@ -36,7 +35,6 @@
 
         <form asp-controller="Checkout" asp-action="PlaceOrder" method="post">
             <div class="row">
-                <!-- Left Side: Address Selection -->
                 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                     <div class="checkbox-form">
                         <h4 class="pb-10 mb-20 border-b-light-gray">Delivery Address</h4>
@@ -78,7 +76,6 @@
                     </div>
                 </div>
 
-                <!-- Right Side: Your Order Summary -->
                 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                     <div class="your-order mb-30 pt-30 pr-40 pb-45 pl-40">
                         <h4 class="pb-10 mb-20 border-b-light-gray">Your Order</h4>
