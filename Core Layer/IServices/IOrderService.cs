@@ -11,5 +11,7 @@ namespace Core_Layer.IServices
     {
         Task<List<OrderListDto>> TGetOrdersByUserIdAsync(Guid userId);
         Task<OrderListDto?> TGetOrderDetailsAsync(Guid orderId);
+        Task<List<OrderListDtoAdminPanel>> TGetOrdersForAdminAsync();
+        Task<bool> TUpdateOrderStatusAsync(OrderStatusUpdateDto updateDto);
     }
 }
