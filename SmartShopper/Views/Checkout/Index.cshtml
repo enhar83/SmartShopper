@@ -1,0 +1,128 @@
+﻿@model Core_Layer.Dtos.OrderDtos.CheckoutSummaryDto
+@{
+    ViewData["Title"] = "Checkout";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var addresses = ViewBag.Addresses as List<Core_Layer.Dtos.UserAddressDtos.UserAddressListForCheckoutDto>;
+}
+
+<!-- Page Title Area -->
+<div class="slider-area over-hidden">
+    <div class="single-page page-height3 d-flex align-items-center">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 d-flex align-items-center justify-content-center">
+                    <div class="page-title pt-60 pb-70 text-center">
+                        <h2 class="text-capitalize theme-color mb-20">Checkout</h2>
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb justify-content-center bg-transparent">
+                                <li class="breadcrumb-item"><a class="primary-color" asp-controller="Home" asp-action="Index">Home</a></li>
+                                <li class="breadcrumb-item active text-capitalize">Checkout</li>
+                            </ol>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="checkout-area pb-60">
+    <div class="container-wrapper extra-padding-15">
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger mb-30">@TempData["ErrorMessage"]</div>
+        }
+
+        <form asp-controller="Checkout" asp-action="PlaceOrder" method="post">
+            <div class="row">
+                <!-- Left Side: Address Selection -->
+                <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                    <div class="checkbox-form">
+                        <h4 class="pb-10 mb-20 border-b-light-gray">Delivery Address</h4>
+
+                        @if (addresses != null && addresses.Any())
+                        {
+                            <div class="row">
+                                @foreach (var addr in addresses)
+                                {
+                                    <div class="col-12 mb-20">
+                                        <div class="card border-gray p-3" style="cursor:pointer;">
+                                            <div class="custom-control custom-radio">
+                                                <input type="radio" id="addr-@addr.Id" name="selectedAddressId" value="@addr.Id" class="custom-control-input" required>
+                                                <label class="custom-control-label w-100" for="addr-@addr.Id">
+                                                    <span class="d-block font-weight-bold primary-color">@addr.Title</span>
+                                                    <small class="text-muted">@addr.FullAddress</small>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                No registered address found.
+                                <a asp-controller="UserAddress" asp-action="AddAddress" class="primary-color font-weight-bold">Click here to add a new address.</a>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Right Side: Your Order Summary -->
+                <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
+                    <div class="your-order mb-30 pt-30 pr-40 pb-45 pl-40">
+                        <h4 class="pb-10 mb-20 border-b-light-gray">Your Order</h4>
+                        <div class="your-order-table table-responsive">
+                            <table class="width100">
+                                <thead>
+                                    <tr>
+                                        <th class="product-name text-left">Product</th>
+                                        <th class="product-total text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var item in Model.Items)
+                                    {
+                                        <tr class="cart_item border-b-light-gray">
+                                            <td class="product-name py-3">
+                                                @item.ProductName <strong class="product-quantity"> × @item.Quantity</strong>
+                                            </td>
+                                            <td class="product-total text-right">
+                                                <span class="amount">@item.Price.ToString("C")</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot>
+                                    <tr class="cart-subtotal border-b-light-gray">
+                                        <th class="py-3">Cart Subtotal</th>
+                                        <td class="text-right"><strong>@Model.SubTotal.ToString("C")</strong></td>
+                                    </tr>
+                                    <tr class="order-total">
+                                        <th class="py-3">Order Total</th>
+                                        <td class="text-right">
+                                            <strong><span class="amount text-danger h4">@Model.TotalPrice.ToString("C")</span></strong>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+
+                        <div class="payment-method mt-40">
+                            <p class="mb-20 text-muted small">
+                                * Your order will be prepared as soon as you complete the checkout. Cash on delivery or Bank Transfer details will be provided in the next step.
+                            </p>
+                            <div class="order-button-payment mt-20">
+                                <button type="submit" class="sub-btn d-inline-block text-white theme-bg border-0 width100 py-3 font-weight-bold">
+                                    PLACE ORDER
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
