@@ -112,8 +112,8 @@ namespace Business_Layer.Managers
         public async Task TUpdateCartItemAsync(UpdateCartItemDto updateCartItemDto)
         {
             var cartItem = await _cartItemRepository.Where(x => x.Id == updateCartItemDto.Id)
-                                            .Include(x => x.Product)
-                                            .FirstOrDefaultAsync();
+                .Include(x => x.Product)
+                .FirstOrDefaultAsync();
 
             if (cartItem == null)
                 throw new LogicException("CartItem", "Cart item not found.");

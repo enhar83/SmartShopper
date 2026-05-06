@@ -15,6 +15,7 @@ namespace Entity_Layer
         public string? District { get; set; }
         public required string FullAddress { get; set; }
         public Guid AppUserId { get; set; }
-        public required AppUser AppUser { get; set; }
+        public virtual AppUser AppUser { get; set; } = null!;
+        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

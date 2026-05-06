@@ -10,9 +10,9 @@ namespace Entity_Layer
     public class OrderItem:BaseEntity
     {
         public Guid OrderId { get; set; }
-        public required Order Order { get; set; }
+        public virtual Order Order { get; set; } = null!;
         public Guid ProductId { get; set; }
-        public required Product Product { get; set; }
+        public virtual Product Product { get; set; } = null!;
         public int Quantity { get; set; }
         public decimal PriceAtPurchase { get; set; }
     }

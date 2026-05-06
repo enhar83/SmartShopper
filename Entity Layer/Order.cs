@@ -9,11 +9,13 @@ namespace Entity_Layer
 {
     public class Order:BaseEntity
     {
-        public DateTime OrderDate { get; set; }
         public Guid AppUserId { get; set; }
-        public required AppUser AppUser { get; set; }
+        public virtual AppUser AppUser { get; set; } = null!;
         public decimal TotalPrice { get; set; }
         public OrderStatus Status { get; set; } = OrderStatus.Pending;
+        public Guid AddressId { get; set; }
+        public virtual UserAddress UserAddress { get; set; } = null!;
+        public string DeliveryAddressSnapshot { get; set; } = null!;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     }
 }

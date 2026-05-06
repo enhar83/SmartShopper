@@ -94,6 +94,15 @@ namespace Business_Layer.Managers
             return _mapper.Map<List<UserAddressListDto>>(addresses);
         }
 
+        public async Task<List<UserAddressListForCheckoutDto>> TGetUserAddressListCheckoutAsync(Guid userId)
+        {
+            var addresses = await _userAddressRepository
+                .Where(x => x.AppUserId == userId && !x.IsDeleted)
+                .ToListAsync();
+
+            return _mapper.Map<List<UserAddressListForCheckoutDto>>(addresses);
+        }
+
         public async Task TUpdateUserAddressAsync(UpdateUserAddressDto updateUserAddressDto)
         {
             var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);

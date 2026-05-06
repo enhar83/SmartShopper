@@ -29,11 +29,9 @@ namespace Data_Access_Layer.DbContext
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            // Identity tablolarının temel konfigürasyonu için base çağrısı şarttır.
             base.OnModelCreating(builder);
 
             #region Identity & AppUser Configuration
-            // Varsayılan Identity tablo isimlerini daha profesyonel ve temiz hale getiriyoruz.
             builder.Entity<AppUser>(entity =>
             {
                 entity.ToTable("Users");
@@ -41,7 +39,6 @@ namespace Data_Access_Layer.DbContext
                 entity.Property(u => u.Surname).HasMaxLength(50).IsRequired();
                 entity.Property(u => u.ImageUrl).HasMaxLength(500);
 
-                // Bir kullanıcı silindiğinde siparişlerinin silinmesini engelleyerek veri geçmişini koruyoruz.[cite: 1, 4]
                 entity.HasMany(u => u.Orders)
                       .WithOne(o => o.AppUser)
                       .HasForeignKey(o => o.AppUserId)
@@ -61,8 +58,7 @@ namespace Data_Access_Layer.DbContext
             {
                 entity.Property(p => p.Name).HasMaxLength(150).IsRequired();
                 entity.Property(p => p.Description).HasMaxLength(1000).IsRequired();
-                entity.Property(p => p.Price).HasPrecision(18, 2); 
-                
+                entity.Property(p => p.Price).HasPrecision(18, 2);
                 entity.HasIndex(p => p.Name);
 
                 entity.HasOne(p => p.SubCategory)
@@ -70,33 +66,22 @@ namespace Data_Access_Layer.DbContext
                       .HasForeignKey(p => p.SubCategoryId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
-
-            builder.Entity<Category>(entity =>
-            {
-                entity.Property(c => c.Name).HasMaxLength(100).IsRequired();
-                entity.Property(c => c.Description).HasMaxLength(500);
-            });
-
-            builder.Entity<SubCategory>(entity =>
-            {
-                entity.Property(sc => sc.Name).HasMaxLength(100).IsRequired();
-
-                entity.HasOne(sc => sc.Category)
-                      .WithMany(c => c.SubCategories)
-                      .HasForeignKey(sc => sc.CategoryId)
-                      .OnDelete(DeleteBehavior.Cascade);
-            });
             #endregion
 
             #region Order & OrderItem Configuration
             builder.Entity<Order>(entity =>
             {
-                entity.Property(o => o.TotalPrice).HasPrecision(18, 2); 
+                entity.Property(o => o.TotalPrice).HasPrecision(18, 2);
+                entity.Property(o => o.DeliveryAddressSnapshot).HasMaxLength(1000).IsRequired();
+                entity.HasOne(o => o.UserAddress)
+                      .WithMany(a => a.Orders)
+                      .HasForeignKey(o => o.AddressId)
+                      .OnDelete(DeleteBehavior.Restrict);
             });
 
             builder.Entity<OrderItem>(entity =>
             {
-                entity.Property(oi => oi.PriceAtPurchase).HasPrecision(18, 2); 
+                entity.Property(oi => oi.PriceAtPurchase).HasPrecision(18, 2);
 
                 entity.HasOne(oi => oi.Product)
                       .WithMany(p => p.OrderItems)
@@ -111,11 +96,6 @@ namespace Data_Access_Layer.DbContext
             #endregion
 
             #region Other Entities (Images, Address, Favorites)
-            builder.Entity<ProductImage>(entity =>
-            {
-                entity.Property(pi => pi.ImageUrl).HasMaxLength(500).IsRequired();
-            });
-
             builder.Entity<UserAddress>(entity =>
             {
                 entity.Property(a => a.Title).HasMaxLength(50).IsRequired();
@@ -123,6 +103,11 @@ namespace Data_Access_Layer.DbContext
                 entity.Property(a => a.City).HasMaxLength(50).IsRequired();
                 entity.Property(a => a.District).HasMaxLength(50);
                 entity.Property(a => a.FullAddress).HasMaxLength(500).IsRequired();
+
+                entity.HasOne(a => a.AppUser)
+                      .WithMany(u => u.Addresses)
+                      .HasForeignKey(a => a.AppUserId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
 
             builder.Entity<Favorite>(entity =>
