@@ -154,6 +154,10 @@
         display: flex;
         align-items: center;
         line-height: 32px;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        padding: 0;
     }
 
     .single-product:hover .product-price {
@@ -204,32 +208,36 @@
         cursor: not-allowed;
         pointer-events: none;
     }
+
+    .theme-color {
+        color: #e67e22 !important;
+    }
 </style>
 
 <div class="slider-area" style="background: #fcfcfc; padding: 60px 0; border-bottom: 1px solid #f0f0f0;">
     <div class="container text-center">
-        <h2 class="mb-2">My Wishlist</h2>
+        <h2 class="mb-2 text-dark font-weight-bold">My Wishlist</h2>
         <p class="text-muted">Explore the products you've saved for later</p>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb justify-content-center bg-transparent p-0">
-                <li class="breadcrumb-item"><a href="/" style="color:#e67e22;">Home</a></li>
+                <li class="breadcrumb-item"><a href="/" class="theme-color font-weight-bold">Home</a></li>
                 <li class="breadcrumb-item active">Wishlist</li>
             </ol>
         </nav>
     </div>
 </div>
 
-<div class="wishlist-main-area mt-50">
+<div class="wishlist-main-area mt-50 pb-80">
     <div class="container">
         <div class="shop-header-area mb-40 d-flex justify-content-between align-items-center">
-            <h6 id="filter-info-text" class="text-muted">Your saved items</h6>
+            <h6 id="filter-info-text" class="text-muted font-weight-bold ls-1 text-uppercase small">Your saved items</h6>
             <div class="view-mode d-flex align-items-center">
                 <a href="javascript:void(0)" id="gridBtn" class="mr-3 active" style="font-size: 18px; color:#222;"><i class="fas fa-th"></i></a>
                 <a href="javascript:void(0)" id="listBtn" style="font-size: 18px; color:#ccc;"><i class="fas fa-list"></i></a>
             </div>
         </div>
 
-        <div id="product-list-container" class="row" style="min-height: 400px;">
+        <div id="product-list-container" class="row" style="min-height: 400px; transition: opacity 0.3s ease;">
         </div>
 
         <div class="pagination-wrapper">
@@ -255,9 +263,9 @@
             toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true
         });
 
+        // ACTION: Toggle Favorite (Remove)
         window.toggleFavorite = async function(productId, btnElement) {
             const token = '@tokens.RequestToken';
-
             try {
                 const response = await fetch('/Favorite/ToggleFavorite', {
                     method: 'POST',
@@ -275,18 +283,41 @@
                     const index = filteredProducts.findIndex(p => p.productId === productId);
                     if (index > -1) {
                         filteredProducts.splice(index, 1);
-
                         const totalPages = Math.ceil(filteredProducts.length / pageSize);
                         if (currentPage > totalPages && currentPage > 1) currentPage--;
-
                         render();
                     }
-
-                    Toast.fire({ icon: 'info', title: data.message });
+                    Toast.fire({ icon: 'info', title: 'Product removed from wishlist' });
                 }
             } catch (error) {
-                console.error(error);
                 Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+            }
+        };
+
+        // ACTION: Add to Cart
+        window.addToCart = async function(productId) {
+            const token = '@tokens.RequestToken';
+            try {
+                const response = await fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ ProductId: productId, Quantity: 1 })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    Toast.fire({ icon: 'success', title: result.message || 'Product added to cart!' });
+                    if (typeof refreshMiniCart === "function") refreshMiniCart();
+                } else {
+                    Toast.fire({ icon: 'warning', title: result.message || 'Could not add product to cart.' });
+                }
+            } catch (error) {
+                Toast.fire({ icon: 'error', title: 'Error while adding to cart.' });
             }
         };
 
@@ -302,8 +333,8 @@
                     container.innerHTML = `
                         <div class="col-12 text-center py-5">
                             <i class="far fa-heart fa-4x text-muted mb-3"></i>
-                            <h4>Your wishlist is empty.</h4>
-                            <a href="/Product/ProductList" class="btn btn-dark mt-3 rounded-pill px-4">Continue Shopping</a>
+                            <h4 class="text-dark">Your wishlist is empty.</h4>
+                            <a href="/Product/ProductList" class="btn btn-dark mt-3 rounded-pill px-5 font-weight-bold">Continue Shopping</a>
                         </div>`;
                 } else {
                     currentItems.forEach(item => {
@@ -311,7 +342,7 @@
                     });
                 }
 
-                filterInfoText.innerHTML = `Showing <span class="theme-color">${filteredProducts.length}</span> saved products`;
+                filterInfoText.innerHTML = `Showing <span class="theme-color font-weight-bold">${filteredProducts.length}</span> saved products`;
                 renderPagination();
                 container.style.opacity = "1";
             }, 200);
@@ -321,6 +352,7 @@
             const isGrid = view === 'grid';
             const colClass = isGrid ? 'col-xl-3 col-md-4 col-sm-6 mb-4' : 'col-12 mb-4';
             const subColor = getSubCatColor(item.subCategoryName);
+            const isOutOfStock = item.stockStatus === "Out of Stock";
 
             return `
                 <div class="${colClass}">
@@ -337,18 +369,22 @@
                         </div>
                         <div class="product-info-padding">
                             <div class="product-tag">${item.categoryName}</div>
-                            <a href="/Product/ProductDetails/${item.productId}" class="product-title text-capitalize">${item.productName}</a>
+                            <a href="/Product/ProductDetails/${item.productId}" class="product-title text-capitalize font-weight-bold">${item.productName}</a>
                             <div class="price-container">
                                 <span class="product-price">$${item.price.toFixed(2)}</span>
-                                <a href="javascript:void(0)" class="add-to-cart-btn"><i class="fas fa-shopping-basket mr-1"></i> ADD TO CART</a>
+                                ${isOutOfStock
+                                    ? `<button class="add-to-cart-btn text-muted" style="cursor: not-allowed;"><i class="fas fa-ban mr-1"></i> SOLD OUT</button>`
+                                    : `<button class="add-to-cart-btn font-weight-bold" onclick="addToCart('${item.productId}')"><i class="fas fa-shopping-basket mr-1"></i> ADD TO CART</button>`
+                                }
                             </div>
                         </div>
                     </div>
                 </div>`;
         }
 
-        const colors = ["#d4a373", "#e67e22", "#2ecc71", "#3498db", "#9b59b6", "#e74c3c", "#1abc9c", "#2c3e50"];
+        const colors = ["#222", "#333", "#444", "#555"];
         function getSubCatColor(name) {
+            if (!name) return "#222";
             let hash = 0;
             for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
             return colors[Math.abs(hash) % colors.length];
