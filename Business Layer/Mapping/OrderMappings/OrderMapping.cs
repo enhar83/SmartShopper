@@ -21,11 +21,11 @@ namespace Business_Layer.Mapping.OrderMappings
                 .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems));
 
             CreateMap<OrderItem, OrderItemListDto>()
-                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
-                .ForMember(dest => dest.ProductImageUrl, opt => opt.MapFrom(src =>
-                    src.Product.ProductImages != null && src.Product.ProductImages.Any()
-                    ? src.Product.ProductImages.FirstOrDefault()!.ImageUrl
-                    : "/images/no-image.png"));
+                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+                 .ForMember(dest => dest.ProductImageUrl, opt => opt.MapFrom(src =>
+                     src.Product.ProductImages != null && src.Product.ProductImages.Any(x => x.IsMain)
+                     ? src.Product.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
+                     : "NO_IMAGE"));
         }
     }
 }

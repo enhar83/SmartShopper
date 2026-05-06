@@ -27,6 +27,7 @@ namespace Business_Layer.Managers
             var order = await _orderRepository.Where(o => o.Id == orderId)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
+                        .ThenInclude(p => p.ProductImages)
                 .FirstOrDefaultAsync();
 
             return _mapper.Map<OrderListDto>(order);

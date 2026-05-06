@@ -62,6 +62,7 @@ builder.Services.AddScoped<IUserAddressService, UserAddressManager>();
 builder.Services.AddScoped<IFavoriteService, FavoriteManager>();
 builder.Services.AddScoped<ICartService, CartManager>();
 builder.Services.AddScoped<ICheckoutService, CheckoutManager>();
+builder.Services.AddScoped<IOrderService, OrderManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 

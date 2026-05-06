@@ -11,12 +11,12 @@
     initials = initials.ToUpper();
 }
 
-<div class="contact-area bg-light pt-50">
+<div class="contact-area bg-light pt-80 pb-100">
     <div class="container-wrapper extra-padding-15">
-        <div class="row pb-100">
-            @* --- Left Side: Profile Card --- *@
+        <div class="row">
+            <!-- Sidebar: Navigation & Profile Summary -->
             <div class="col-xl-4 col-lg-5 col-md-12">
-                <div class="contact-form-left mt-60 text-center rounded bg-white shadow-sm p-5 border">
+                <div class="contact-form-left text-center rounded bg-white shadow-sm p-5 border">
                     <div class="section-title text-center">
                         <div class="profile-avatar-container mb-30 d-flex justify-content-center">
                             @if (!string.IsNullOrEmpty(Model.ImageUrl))
@@ -26,36 +26,47 @@
                             else
                             {
                                 <div id="initialsAvatar" class="rounded-circle shadow d-flex align-items-center justify-content-center text-white fw-bold"
-                                     style="width: 150px; height: 150px; background: linear-gradient(135deg, #FF5722 0%, #FF9800 100%); font-size: 64px; border: 5px solid #fff;">
+                                     style="width: 150px; height: 150px; background: #222222; font-size: 64px; border: 5px solid #fff;">
                                     @initials
                                 </div>
                             }
                         </div>
-                        <h3 class="mb-10">@Model.Name @Model.Surname</h3>
-                        <p class="theme-color mb-30">@@@Model.UserName</p>
-                        <div class="bottom-line mb-30"></div>
+                        <h3 class="mb-10 font-weight-bold">@Model.Name @Model.Surname</h3>
+                        <p class="text-dark mb-30">@@@Model.UserName</p>
+
+                        <!-- Dashboard Navigation Menu -->
+                        <div class="nav flex-column nav-pills custom-dashboard-tabs text-left">
+                            <a class="nav-link active mb-2" asp-controller="Profile" asp-action="ViewProfile">
+                                <i class="fas fa-user-circle mr-10"></i>My Profile
+                            </a>
+                            <a class="nav-link mb-2" asp-controller="Order" asp-action="Index">
+                                <i class="fas fa-shopping-bag mr-10"></i>My Orders
+                            </a>
+                        </div>
+
+                        <div class="bottom-line mt-30 mb-20"></div>
                         <p class="text-muted small">Your profile information is securely stored.</p>
                     </div>
                 </div>
             </div>
 
-            @* --- Right Side: Account Details --- *@
-            <div class="col-xl-8 col-lg-7 col-md-12">
-                <div class="contact-form-right mt-60 rounded bg-white shadow-sm p-5 border">
-                    <div class="d-flex justify-content-between align-items-center mb-35">
-                        <h3 class="mb-0">Account Details</h3>
+            <!-- Main Content: Account Details -->
+            <div class="col-xl-8 col-lg-7 col-md-12 mt-md-30">
+                <div class="contact-form-right rounded bg-white shadow-sm p-5 border">
+                    <div class="d-flex justify-content-between align-items-center mb-40 border-bottom pb-3">
+                        <h3 class="mb-0 font-weight-bold">Account Details</h3>
                         <div class="d-flex gap-2">
                             <button type="button" id="btnManageAddresses" class="btn btn-outline-dark transition text-uppercase btn-sm mr-2" style="padding: 10px 20px; font-size: 12px; font-weight: 600;">
                                 <i class="fas fa-map-marked-alt mr-2"></i>My Addresses
                             </button>
-                            <button type="button" id="btnEditProfile" class="review-btn d-inline-block text-white theme-bg transition text-uppercase btn-sm border-0" style="padding: 10px 20px; font-size: 12px; cursor:pointer;">
+                            <button type="button" id="btnEditProfile" class="btn btn-dark text-white transition text-uppercase btn-sm border-0 shadow-sm" style="padding: 10px 20px; font-size: 12px;">
                                 <i class="fas fa-user-edit mr-10"></i>Edit Profile
                             </button>
                         </div>
                     </div>
 
                     <div class="contact-form profile-view-form">
-                        <div class="row">
+                        <div class="row text-left">
                             <div class="col-md-6 mb-25">
                                 <label class="fw-bold text-dark text-uppercase small">First Name</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.Name</div>
@@ -65,7 +76,7 @@
                                 <div class="p-3 border rounded bg-light text-muted">@Model.Surname</div>
                             </div>
                         </div>
-                        <div class="row">
+                        <div class="row text-left">
                             <div class="col-md-6 mb-25">
                                 <label class="fw-bold text-dark text-uppercase small">Email Address</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.Email</div>
@@ -75,8 +86,8 @@
                                 <div class="p-3 border rounded bg-light text-muted">@(Model.PhoneNumber ?? "Not Provided")</div>
                             </div>
                         </div>
-                        <div class="row justify-content-center">
-                            <div class="col-md-6 mb-25 text-center">
+                        <div class="row text-left">
+                            <div class="col-md-12 mb-25">
                                 <label class="fw-bold text-dark text-uppercase small">Username</label>
                                 <div class="p-3 border rounded bg-light text-muted">@Model.UserName</div>
                             </div>
@@ -88,127 +99,115 @@
     </div>
 </div>
 
-@* --- MODAL: EDIT PROFILE --- *@
+<!-- Modal: Edit Profile -->
 <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header theme-bg text-white">
-                <h5 class="modal-title text-white"><i class="fas fa-user-edit mr-2"></i> Update My Information</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        <div class="modal-content border-0 shadow-lg rounded-0">
+            <div class="modal-header bg-dark text-white rounded-0">
+                <h5 class="modal-title text-white font-weight-bold ls-1 text-uppercase small"><i class="fas fa-user-edit mr-2"></i> Update Profile</h5>
+                <button type="button" class="close text-white outline-none" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <form id="profileUpdateForm" enctype="multipart/form-data">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" id="editUserId" value="@Model.Id" />
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 text-left">
                     <div id="profileErrorList" class="alert alert-danger d-none"></div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">First Name</label>
-                            <input type="text" name="Name" id="editName" class="form-control" required />
+                            <label class="small text-uppercase fw-bold text-muted">Name</label>
+                            <input type="text" name="Name" id="editName" class="form-control rounded-0" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">Last Name</label>
-                            <input type="text" name="Surname" id="editSurname" class="form-control" required />
+                            <label class="small text-uppercase fw-bold text-muted">Surname</label>
+                            <input type="text" name="Surname" id="editSurname" class="form-control rounded-0" required />
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="small text-uppercase fw-bold">Username</label>
-                        <input type="text" name="UserName" id="editUserName" class="form-control" required />
+                        <label class="small text-uppercase fw-bold text-muted">Username</label>
+                        <input type="text" name="UserName" id="editUserName" class="form-control rounded-0" required />
                     </div>
                     <div class="mb-3">
-                        <label class="small text-uppercase fw-bold">Phone Number</label>
-                        <input type="text" name="PhoneNumber" id="editPhone" class="form-control" />
+                        <label class="small text-uppercase fw-bold text-muted">Phone Number</label>
+                        <input type="text" name="PhoneNumber" id="editPhone" class="form-control rounded-0" />
                     </div>
                     <div class="mb-3">
-                        <label class="small text-uppercase fw-bold">Profile Picture</label>
+                        <label class="small text-uppercase fw-bold text-muted">Profile Picture</label>
                         <div class="custom-file">
                             <input type="file" name="ImageFile" id="editImageFile" class="custom-file-input" accept="image/*" />
-                            <label class="custom-file-label" for="editImageFile">Choose image...</label>
+                            <label class="custom-file-label rounded-0" for="editImageFile">Choose image...</label>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Cancel</button>
-                    <button type="submit" id="btnSubmitProfile" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Update Profile</button>
+                <div class="modal-footer bg-light rounded-0">
+                    <button type="button" class="btn btn-secondary py-2 px-4 small font-weight-bold" data-dismiss="modal">CANCEL</button>
+                    <button type="submit" id="btnSubmitProfile" class="btn btn-dark py-2 px-4 small font-weight-bold ml-2">UPDATE</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-@* --- MODAL: ADDRESS LIST --- *@
+<!-- Modal: Address List -->
 <div class="modal fade" id="addressListModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-dark text-white">
-                <h5 class="modal-title text-white"><i class="fas fa-map-marker-alt mr-2"></i> My Registered Addresses</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        <div class="modal-content border-0 shadow-lg rounded-0">
+            <div class="modal-header bg-dark text-white rounded-0">
+                <h5 class="modal-title text-white font-weight-bold ls-1 text-uppercase small"><i class="fas fa-map-marker-alt mr-2"></i> Address Book</h5>
+                <button type="button" class="close text-white outline-none" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body p-0">
                 <div id="addressContainer" class="p-4" style="max-height: 400px; overflow-y: auto;">
                     <div class="text-center p-5">
-                        <div class="spinner-border theme-color" role="status"></div>
-                        <p class="mt-2 text-muted">Refreshing Address Book...</p>
+                        <div class="spinner-border text-dark" role="status"></div>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Close</button>
-                <button type="button" id="btnOpenAddAddress" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Add New</button>
+            <div class="modal-footer bg-light rounded-0">
+                <button type="button" class="btn btn-secondary py-2 px-4 small font-weight-bold" data-dismiss="modal">CLOSE</button>
+                <button type="button" id="btnOpenAddAddress" class="btn btn-dark py-2 px-4 small font-weight-bold ml-2">ADD NEW</button>
             </div>
         </div>
     </div>
 </div>
 
-@* --- MODAL: ADDRESS FORM (ADD/EDIT) --- *@
+<!-- Modal: Address Form -->
 <div class="modal fade" id="addressFormModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header theme-bg text-white">
-                <h5 class="modal-title text-white" id="addressModalTitle"><i class="fas fa-plus mr-2"></i> Add New Address</h5>
-                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+        <div class="modal-content border-0 shadow-lg rounded-0">
+            <div class="modal-header bg-dark text-white rounded-0">
+                <h5 class="modal-title text-white font-weight-bold ls-1 text-uppercase small" id="addressModalTitle">Address Details</h5>
+                <button type="button" class="close text-white outline-none" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <form id="addressForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" id="addrId" />
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 text-left">
                     <div id="addressErrorList" class="alert alert-danger d-none"></div>
                     <div class="mb-3">
-                        <label class="small text-uppercase fw-bold">Address Title</label>
-                        <input type="text" name="Title" id="addrTitle" class="form-control" placeholder="Home, Office etc." required />
+                        <label class="small text-uppercase fw-bold text-muted">Title</label>
+                        <input type="text" name="Title" id="addrTitle" class="form-control rounded-0" required />
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">Country</label>
-                            <input type="text" name="Country" id="addrCountry" class="form-control" required />
+                            <label class="small text-uppercase fw-bold text-muted">Country</label>
+                            <input type="text" name="Country" id="addrCountry" class="form-control rounded-0" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="small text-uppercase fw-bold">City</label>
-                            <input type="text" name="City" id="addrCity" class="form-control" required />
+                            <label class="small text-uppercase fw-bold text-muted">City</label>
+                            <input type="text" name="City" id="addrCity" class="form-control rounded-0" required />
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="small text-uppercase fw-bold">District</label>
-                        <input type="text" name="District" id="addrDistrict" class="form-control" />
+                        <label class="small text-uppercase fw-bold text-muted">District</label>
+                        <input type="text" name="District" id="addrDistrict" class="form-control rounded-0" />
                     </div>
                     <div class="mb-3">
-                        <label class="small text-uppercase fw-bold">Full Address</label>
-                        <textarea name="FullAddress" id="addrFull" class="form-control" rows="3" required></textarea>
-                    </div>
-                    <div class="mb-3 form-check" id="isDeletedSection" style="display:none;">
-                        <input type="checkbox" class="form-check-input" name="IsDeleted" id="addrIsDeleted">
-                        <label class="form-check-label text-danger fw-bold" for="addrIsDeleted">Archive this address</label>
+                        <label class="small text-uppercase fw-bold text-muted">Full Address</label>
+                        <textarea name="FullAddress" id="addrFull" class="form-control rounded-0" rows="3" required></textarea>
                     </div>
                 </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary btn-fixed-size" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="review-btn text-white theme-bg border-0 btn-fixed-size ml-2">Save Address</button>
+                <div class="modal-footer bg-light rounded-0">
+                    <button type="submit" class="btn btn-dark py-2 px-4 small font-weight-bold">SAVE ADDRESS</button>
                 </div>
             </form>
         </div>
@@ -217,77 +216,70 @@
 
 @section Styles {
     <style>
+        .custom-dashboard-tabs .nav-link {
+            color: #666;
+            border: 1px solid #f0f0f0;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+
+            .custom-dashboard-tabs .nav-link.active {
+                background-color: #222 !important;
+                border-color: #222;
+                color: #fff !important;
+            }
+
+            .custom-dashboard-tabs .nav-link:hover:not(.active) {
+                color: #000;
+                border-color: #222;
+            }
+
         .profile-view-form label {
             margin-bottom: 8px;
-            font-size: 13px;
-            letter-spacing: 0.5px;
-            color: #777;
+            font-size: 11px;
+            letter-spacing: 1px;
+            color: #888;
         }
 
-        .profile-view-form .bg-light {
-            background-color: #fcfcfc !important;
-            border-color: #f0f0f0 !important;
-            min-height: 50px;
-            display: flex;
-            align-items: center;
+        .btn-dark {
+            background-color: #222 !important;
+            border: none;
         }
 
-        .theme-color {
-            color: #FF5722 !important;
+        .btn-outline-dark {
+            border: 1px solid #222 !important;
+            color: #222 !important;
         }
 
-        .theme-bg {
-            background-color: #FF5722 !important;
+            .btn-outline-dark:hover {
+                background-color: #222 !important;
+                color: #fff !important;
+            }
+
+        .ls-1 {
+            letter-spacing: 1px;
         }
 
-        .btn-fixed-size {
-            min-width: 140px;
-            height: 45px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
+        .outline-none {
+            outline: none !important;
+            box-shadow: none !important;
         }
 
         .address-card {
-            border-left: 4px solid #FF5722;
-            transition: all 0.3s ease;
+            border-left: 4px solid #222;
+            transition: 0.3s;
+            border-top: 1px solid #eee;
+            border-right: 1px solid #eee;
+            border-bottom: 1px solid #eee;
         }
 
             .address-card:hover {
-                transform: translateX(8px);
-                background-color: #fafafa;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+                transform: translateX(5px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.05);
             }
-
-            .address-card.is-deleted {
-                border-left-color: #6c757d;
-                opacity: 0.65;
-                background-color: #f8f9fa;
-            }
-
-        .badge-status {
-            font-size: 10px;
-            padding: 4px 10px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-            border-radius: 20px;
-        }
-
-        .modal-header .close {
-            outline: none;
-            opacity: 1;
-            text-shadow: none;
-            font-size: 28px;
-        }
-
-        .custom-file-label::after {
-            content: "Browse";
-            background-color: #eee;
-        }
     </style>
 }
 
@@ -297,39 +289,29 @@
         let cachedAddresses = [];
 
         $(document).ready(function () {
-            // Update file input label
             $('.custom-file-input').on('change', function() {
                 let fileName = $(this).val().split('\\').pop();
                 $(this).next('.custom-file-label').addClass("selected").html(fileName);
             });
 
-            // --- PROFILE EDIT LOGIC ---
             $('#btnEditProfile').on('click', function() {
-                $('#profileErrorList').addClass('d-none').html('');
-                $.ajax({
-                    url: '/Profile/GetProfileForEdit',
-                    type: 'GET',
-                    success: function(res) {
-                        $('#editUserId').val(res.id);
-                        $('#editName').val(res.name);
-                        $('#editSurname').val(res.surname);
-                        $('#editUserName').val(res.userName);
-                        $('#editPhone').val(res.phoneNumber);
-                        $('.custom-file-label').html("Choose image...");
-                        $('#editProfileModal').modal('show');
-                    }
+                $.get('/Profile/GetProfileForEdit', function(res) {
+                    $('#editUserId').val(res.id);
+                    $('#editName').val(res.name);
+                    $('#editSurname').val(res.surname);
+                    $('#editUserName').val(res.userName);
+                    $('#editPhone').val(res.phoneNumber);
+                    $('#editProfileModal').modal('show');
                 });
             });
 
             $('#profileUpdateForm').on('submit', function(e) {
                 e.preventDefault();
                 const submitBtn = $('#btnSubmitProfile');
-                const errorList = $('#profileErrorList');
                 const token = $('input[name="__RequestVerificationToken"]').val();
-
                 let formData = new FormData(this);
 
-                submitBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm mr-2"></span>Updating...');
+                submitBtn.prop('disabled', true).html('Updating...');
 
                 $.ajax({
                     url: '/Profile/EditProfile',
@@ -341,23 +323,8 @@
                     success: function(res) {
                         if(res.succeeded) {
                             $('#editProfileModal').modal('hide');
-                            Swal.fire({ icon: 'success', title: 'Success!', text: res.message, timer: 1500, showConfirmButton: false }).then(() => {
-                                window.location.reload();
-                            });
+                            Swal.fire({ icon: 'success', title: 'Success', timer: 1500, showConfirmButton: false }).then(() => location.reload());
                         }
-                    },
-                    error: function(xhr) {
-                        submitBtn.prop('disabled', false).text('Update Profile');
-                        errorList.removeClass('d-none').html('');
-                        const res = xhr.responseJSON;
-                        let errorHtml = '<ul class="mb-0 text-left small">';
-                        if (res && res.errors) {
-                            res.errors.forEach(err => { errorHtml += `<li><i class="fas fa-exclamation-triangle mr-2"></i>${err}</li>`; });
-                        } else {
-                            errorHtml += '<li>An unexpected error occurred.</li>';
-                        }
-                        errorHtml += '</ul>';
-                        errorList.html(errorHtml);
                     }
                 });
             });
@@ -369,114 +336,37 @@
 
             function loadAddresses() {
                 const container = $('#addressContainer');
-                container.html('<div class="text-center p-5"><div class="spinner-border theme-color" role="status"></div><p class="mt-2 text-muted">Loading Addresses...</p></div>');
+                container.html('<div class="text-center p-5"><div class="spinner-border text-dark"></div></div>');
 
-                $.ajax({
-                    url: '/UserAddress/GetUserAddresses',
-                    type: 'GET',
-                    success: function (res) {
-                        let html = '';
-                        if (res.succeeded && res.data && res.data.length > 0) {
-                            cachedAddresses = res.data;
-                            res.data.forEach(addr => {
-                                const statusClass = addr.isDeleted ? 'is-deleted' : 'is-active';
-                                const badge = addr.isDeleted
-                                    ? '<span class="badge badge-secondary badge-status ml-2">Passive</span>'
-                                    : '<span class="badge badge-success badge-status ml-2" style="background-color: #28a745;">Active</span>';
-
-                                html += `<div class="address-card p-4 mb-3 border rounded bg-white shadow-sm ${statusClass}">
-                                            <div class="d-flex justify-content-between align-items-start">
-                                                <div style="flex: 1;">
-                                                    <div class="d-flex align-items-center mb-2">
-                                                        <h6 class="fw-bold mb-0 text-dark">${addr.title}</h6>
-                                                        ${badge}
-                                                    </div>
-                                                    <p class="small text-muted mb-1">${addr.fullAddress}</p>
-                                                    <p class="small mb-0 font-weight-bold" style="color: #FF5722;">${addr.city} / ${addr.country}</p>
-                                                </div>
-                                                <div class="btn-group ml-3">
-                                                    <button class="btn btn-sm btn-outline-primary border-0 btn-edit-address" data-id="${addr.id}"><i class="fas fa-edit"></i></button>
-                                                    <button class="btn btn-sm btn-outline-danger border-0 btn-delete-address" data-id="${addr.id}"><i class="fas fa-trash-alt"></i></button>
-                                                </div>
+                $.get('/UserAddress/GetUserAddresses', function (res) {
+                    let html = '';
+                    if (res.succeeded && res.data.length > 0) {
+                        cachedAddresses = res.data;
+                        res.data.forEach(addr => {
+                            html += `<div class="address-card p-4 mb-3 bg-white">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="fw-bold mb-0 text-dark">${addr.title}</h6>
+                                                <p class="small text-muted mb-0">${addr.fullAddress}</p>
+                                                <p class="small font-weight-bold text-dark mt-1">${addr.city} / ${addr.country}</p>
                                             </div>
-                                        </div>`;
-                            });
-                        } else {
-                            html = '<div class="text-center p-5 text-muted"><p>No addresses found.</p></div>';
-                        }
-                        container.html(html);
+                                            <div class="btn-group">
+                                                <button class="btn btn-sm btn-outline-dark border-0 btn-edit-address" data-id="${addr.id}"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-danger border-0 btn-delete-address" data-id="${addr.id}"><i class="fas fa-trash-alt"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>`;
+                        });
+                    } else {
+                        html = '<div class="text-center p-5 text-muted">No addresses found.</div>';
                     }
+                    container.html(html);
                 });
             }
 
-            $(document).on('click', '.btn-edit-address', function () {
-                const id = $(this).data('id');
-                const addr = cachedAddresses.find(x => x.id === id);
-                if (addr) {
-                    $('#addressModalTitle').text('Edit Address');
-                    $('#addrId').val(addr.id);
-                    $('#addrTitle').val(addr.title);
-                    $('#addrCountry').val(addr.country);
-                    $('#addrCity').val(addr.city);
-                    $('#addrDistrict').val(addr.district);
-                    $('#addrFull').val(addr.fullAddress);
-                    $('#addrIsDeleted').prop('checked', addr.isDeleted);
-                    $('#isDeletedSection').show();
-                    $('#addressFormModal').modal('show');
-                }
-            });
-
-            $('#btnOpenAddAddress').on('click', function () {
-                $('#addressForm')[0].reset();
-                $('#addrId').val('');
-                $('#addressModalTitle').text('Add New Address');
-                $('#isDeletedSection').hide();
-                $('#addressFormModal').modal('show');
-            });
-
-            $('#addressForm').on('submit', function (e) {
-                e.preventDefault();
-                const id = $('#addrId').val();
-                const url = id ? '/UserAddress/UpdateAddress' : '/UserAddress/AddAddress';
-                $.ajax({
-                    url: url,
-                    type: 'POST',
-                    data: $(this).serialize(),
-                    success: function (res) {
-                        if (res.succeeded) {
-                            $('#addressFormModal').modal('hide');
-                            Swal.fire({ icon: 'success', title: 'Saved!', timer: 1500, showConfirmButton: false });
-                            loadAddresses();
-                        }
-                    }
-                });
-            });
-
-            $(document).on('click', '.btn-delete-address', function () {
-                const id = $(this).data('id');
-                const token = $('input[name="__RequestVerificationToken"]').val();
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: "This address will be archived!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#FF5722',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: '/UserAddress/DeleteAddress',
-                            type: 'POST',
-                            data: { id: id, __RequestVerificationToken: token },
-                            success: function (res) {
-                                if (res.succeeded) {
-                                    Swal.fire({ icon: 'success', title: 'Deleted!', timer: 1500, showConfirmButton: false });
-                                    loadAddresses();
-                                }
-                            }
-                        });
-                    }
-                });
+            // Global modal close helper
+            $(document).on('click', '[data-dismiss="modal"]', function() {
+                $(this).closest('.modal').modal('hide');
             });
         });
     </script>
