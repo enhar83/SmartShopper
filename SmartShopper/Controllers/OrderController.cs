@@ -36,7 +36,7 @@ namespace SmartShopper.Controllers
 
                 return Ok(order);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return StatusCode(500, new { message = "An error occurred on the server side." });
             }
