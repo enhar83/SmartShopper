@@ -117,15 +117,12 @@ builder.Services.AddHttpContextAccessor(); //httpcontextaccessor'a business katm
 
 var app = builder.Build();
 
-// --- SEEDING OPERASYONU (YENÝ HALÝ) ---
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     try
     {
         var seeder = services.GetRequiredService<DataSeeder>();
-        // Kontrol artýk metodun içinde yapýlýyor, direkt çaðýrýyoruz.
-        await seeder.SeedOnlyProductsAsync();
 
     }
     catch (Exception ex)

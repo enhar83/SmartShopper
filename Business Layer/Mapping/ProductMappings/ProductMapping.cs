@@ -52,6 +52,13 @@ namespace Business_Layer.Mapping.ProductMappings
                     ? src.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
                     : "NO_IMAGE"))
                 .ReverseMap();
+
+            CreateMap<Product, TopSellingProductListDto>()
+                .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src =>
+                    src.ProductImages != null && src.ProductImages.Any(x => x.IsMain)
+                    ? src.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
+                    : "NO_IMAGE"))
+                .ReverseMap();
         }
     }
 }

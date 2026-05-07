@@ -19,6 +19,7 @@ namespace Business_Layer.Managers
     {
         private readonly IProductRepository _productRepository;
         private readonly IFavoriteRepository _favoriteRepository;
+        private readonly IOrderItemRepository _orderItemRepository;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -26,12 +27,14 @@ namespace Business_Layer.Managers
         public ProductManager(
             IProductRepository productRepository,
             IFavoriteRepository favoriteRepository,
+            IOrderItemRepository orderItemRepository,
             IUnitOfWork uow,
             IMapper mapper,
             IHttpContextAccessor httpContextAccessor)
         {
             _productRepository = productRepository;
             _favoriteRepository = favoriteRepository;
+            _orderItemRepository = orderItemRepository;
             _uow = uow;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
@@ -194,6 +197,39 @@ namespace Business_Layer.Managers
                 else if (p.Stock <= 50) { d.StockStatus = "Limited"; d.StockStatusClass = "bg-warning text-dark"; }
                 else { d.StockStatus = "In Stock"; d.StockStatusClass = "bg-success"; }
             }
+
+            return mappedList;
+        }
+
+        public async Task<List<TopSellingProductListDto>> TTopSellingProductListAsync()
+        {
+            var topSellingProductIds = await _orderItemRepository.GetAll()
+                .GroupBy(x => x.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    TotalQuantity = g.Sum(x => x.Quantity)
+                })
+                .OrderByDescending(x => x.TotalQuantity)
+                .Take(12)
+                .ToListAsync();
+
+            if (!topSellingProductIds.Any())
+                return new List<TopSellingProductListDto>();
+
+            var ids = topSellingProductIds.Select(x => x.ProductId).ToList();
+
+            var products = await _productRepository.Where(p => ids.Contains(p.Id) && !p.IsDeleted)
+                .Include(p => p.ProductImages)
+                .Include(p => p.SubCategory)
+                .ToListAsync();
+
+            var mappedList = products.Select(p => {
+                var dto = _mapper.Map<TopSellingProductListDto>(p);
+                dto.TotalSalesCount = topSellingProductIds.FirstOrDefault(x => x.ProductId == p.Id)?.TotalQuantity ?? 0;
+
+                return dto;
+            }).OrderByDescending(x => x.TotalSalesCount).ToList();
 
             return mappedList;
         }
