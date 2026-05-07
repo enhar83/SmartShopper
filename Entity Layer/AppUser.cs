@@ -18,6 +18,7 @@ namespace Entity_Layer
         public ICollection<UserAddress>? Addresses { get; set; } 
         public ICollection<Favorite>? Favorites { get; set; }
         public ICollection<Order>? Orders { get; set; }
+        public ICollection<CustomerSegmentationResult>? SegmentationResults { get; set; }
 
     }
 }

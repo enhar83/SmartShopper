@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Entity_Layer;
+using Entity_Layer.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -115,6 +116,25 @@ namespace Data_Access_Layer.DbContext
                 entity.HasIndex(f => new { f.AppUserId, f.ProductId }).IsUnique();
             });
             #endregion
+
+            #region CustomerSegmentation
+            builder.Entity<CustomerSegmentationResult>(entity =>
+            {
+                entity.Property(e => e.SegmentLabel)
+                .IsRequired()
+                .HasMaxLength(50);
+
+                entity.Property(e => e.ConfidenceScore)
+                    .HasDefaultValue(0.0);
+
+                entity.HasOne(d => d.AppUser)
+                    .WithMany(p => p.SegmentationResults)
+                    .HasForeignKey(d => d.AppUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasIndex(e => e.AppUserId);
+            });
+            #endregion 
         }
     }
 }
