@@ -54,6 +54,8 @@ namespace Business_Layer.Mapping.ProductMappings
                 .ReverseMap();
 
             CreateMap<Product, TopSellingProductListDto>()
+                .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.SubCategory != null ? src.SubCategory.Category.Name : null))
+                .ForMember(dest => dest.SubCategoryName, opt => opt.MapFrom(src => src.SubCategory != null ? src.SubCategory.Name : null))
                 .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src =>
                     src.ProductImages != null && src.ProductImages.Any(x => x.IsMain)
                     ? src.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl

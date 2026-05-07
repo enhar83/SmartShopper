@@ -203,30 +203,46 @@ namespace Business_Layer.Managers
 
         public async Task<List<TopSellingProductListDto>> TTopSellingProductListAsync()
         {
-            var topSellingProductIds = await _orderItemRepository.GetAll()
-                .GroupBy(x => x.ProductId)
-                .Select(g => new
-                {
-                    ProductId = g.Key,
-                    TotalQuantity = g.Sum(x => x.Quantity)
-                })
-                .OrderByDescending(x => x.TotalQuantity)
-                .Take(12)
-                .ToListAsync();
+            var topSellingProductData = await _orderItemRepository.GetAll()
+        .GroupBy(x => x.ProductId)
+        .Select(g => new
+        {
+            ProductId = g.Key,
+            TotalQuantity = g.Sum(x => x.Quantity)
+        })
+        .OrderByDescending(x => x.TotalQuantity)
+        .Take(12)
+        .ToListAsync();
 
-            if (!topSellingProductIds.Any())
+            if (!topSellingProductData.Any())
                 return new List<TopSellingProductListDto>();
 
-            var ids = topSellingProductIds.Select(x => x.ProductId).ToList();
-
+            var ids = topSellingProductData.Select(x => x.ProductId).ToList();
             var products = await _productRepository.Where(p => ids.Contains(p.Id) && !p.IsDeleted)
-                .Include(p => p.ProductImages)
                 .Include(p => p.SubCategory)
+                    .ThenInclude(c => c!.Category)
+                .Include(p => p.ProductImages)
                 .ToListAsync();
 
-            var mappedList = products.Select(p => {
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid? currentUserId = string.IsNullOrEmpty(userIdClaim) ? null : Guid.Parse(userIdClaim);
+
+            HashSet<Guid> userFavoriteIds = new HashSet<Guid>();
+            if (currentUserId.HasValue)
+            {
+                var favs = await _favoriteRepository
+                    .Where(x => x.AppUserId == currentUserId.Value && ids.Contains(x.ProductId))
+                    .Select(x => x.ProductId)
+                    .ToListAsync();
+                userFavoriteIds = new HashSet<Guid>(favs);
+            }
+
+            var mappedList = products.Select(p =>
+            {
                 var dto = _mapper.Map<TopSellingProductListDto>(p);
-                dto.TotalSalesCount = topSellingProductIds.FirstOrDefault(x => x.ProductId == p.Id)?.TotalQuantity ?? 0;
+
+                dto.TotalSalesCount = topSellingProductData.FirstOrDefault(x => x.ProductId == p.Id)?.TotalQuantity ?? 0;
+                dto.IsFavorite = userFavoriteIds.Contains(p.Id);
 
                 return dto;
             }).OrderByDescending(x => x.TotalSalesCount).ToList();
