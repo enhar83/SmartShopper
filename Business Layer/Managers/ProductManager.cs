@@ -249,5 +249,48 @@ namespace Business_Layer.Managers
 
             return mappedList;
         }
+
+        public async Task<List<MostFavoritedProductListDto>> TGetMostFavoritedProductsAsync()
+        {
+            var popularFavData = await _favoriteRepository.GetAll()
+                .GroupBy(x => x.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    Count = g.Count()
+                })
+                .OrderByDescending(x => x.Count)
+                .Take(12)
+                .ToListAsync();
+
+                if (!popularFavData.Any()) return new List<MostFavoritedProductListDto>();
+
+                var ids = popularFavData.Select(x => x.ProductId).ToList();
+                var products = await _productRepository.Where(p => ids.Contains(p.Id) && !p.IsDeleted)
+                    .Include(p => p.SubCategory)
+                        .ThenInclude(c => c!.Category)
+                    .Include(p => p.ProductImages)
+                    .ToListAsync();
+    
+                var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+                Guid? currentUserId = string.IsNullOrEmpty(userIdClaim) ? null : Guid.Parse(userIdClaim);
+                HashSet<Guid> currentUserFavs = new HashSet<Guid>();
+    
+                if (currentUserId.HasValue)
+                {
+                    var favs = await _favoriteRepository.Where(x => x.AppUserId == currentUserId.Value).Select(x => x.ProductId).ToListAsync();
+                    currentUserFavs = new HashSet<Guid>(favs);
+                }
+    
+                var mappedList = products.Select(p =>
+                {
+                    var dto = _mapper.Map<MostFavoritedProductListDto>(p);
+                    dto.FavoriteCount = popularFavData.FirstOrDefault(x => x.ProductId == p.Id)?.Count ?? 0;
+                    dto.IsFavorite = currentUserFavs.Contains(p.Id);
+                    return dto;
+                }).OrderByDescending(x => x.FavoriteCount).ToList();
+    
+                return mappedList;
+        }
     }
 }

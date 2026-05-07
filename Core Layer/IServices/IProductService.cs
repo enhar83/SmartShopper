@@ -18,5 +18,6 @@ namespace Core_Layer.IServices
         Task<ProductDetailDto> TGetProductDetailsAsync(Guid id);
         Task<List<SimilarProductsForProductDetailDto>> TGetSimilarProductsForProductDetailAsync(Guid subCategoryId);
         Task<List<TopSellingProductListDto>> TTopSellingProductListAsync();
+        Task<List<MostFavoritedProductListDto>> TGetMostFavoritedProductsAsync();
     }
 }

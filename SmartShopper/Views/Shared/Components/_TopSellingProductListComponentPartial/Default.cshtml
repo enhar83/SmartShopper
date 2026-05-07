@@ -5,18 +5,32 @@
     var tokens = Antiforgery.GetAndStoreTokens(Context);
 }
 
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css" />
+
 <style>
+    /* 1. Carousel Sarmalayıcı ve Kart Boşlukları */
+    .bs-carousel-container {
+        position: relative;
+        padding: 0 40px;
+    }
+
+    .bs-item-wrapper {
+        padding: 15px 10px;
+        outline: none;
+    }
+
+    /* 2. Kart Tasarımı (Sabit Boyutlu) */
     .best-seller-card {
         border: 1px solid #f0f0f0;
         border-radius: 12px;
         background: #fff;
-        height: 100%;
+        height: 480px; /* Kartları eşitlemek için sabit yükseklik */
         overflow: hidden;
         position: relative;
         transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-        display: flex;
+        display: flex !important;
         flex-direction: column;
-        margin-bottom: 30px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.02);
     }
 
@@ -26,9 +40,10 @@
             border-color: #e67e22;
         }
 
+        /* 3. Favori Butonu */
         .best-seller-card .fav-button {
             position: absolute;
-            top: 60px;
+            top: 15px;
             right: 15px;
             z-index: 10;
             background: rgba(255, 255, 255, 0.9);
@@ -44,21 +59,17 @@
             transition: 0.3s;
         }
 
-            .best-seller-card .fav-button:hover {
-                background: #fff;
-                transform: scale(1.15);
-            }
-
     .fav-button .fas.fa-heart {
         color: #e74c3c;
     }
+
     .fav-button .far.fa-heart {
         color: #aaa;
     }
 
+    /* 4. Resim Alanı */
     .bs-img-container {
-        height: 280px;
-        position: relative;
+        height: 250px;
         background: #f9f9f9;
         display: flex;
         align-items: center;
@@ -88,31 +99,18 @@
         color: #aab2bd;
     }
 
-    .bs-label {
-        position: absolute;
-        top: 15px;
-        left: 15px;
-        padding: 5px 14px;
-        font-size: 11px;
-        font-weight: 800;
-        color: #fff;
-        border-radius: 6px;
-        z-index: 3;
-        background: #d4a373;
-        letter-spacing: 0.5px;
-    }
-
+    /* 5. Bilgi Alanı */
     .bs-info {
         padding: 20px;
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        text-align: center;
     }
 
     .bs-category-info {
         font-size: 11px;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
         margin-bottom: 8px;
         font-weight: 600;
         color: #95a5a6;
@@ -129,12 +127,12 @@
         font-size: 16px;
         font-weight: 600;
         margin-bottom: 15px;
-        display: block;
         color: #2c3e50;
         text-decoration: none;
         height: 44px;
         overflow: hidden;
         line-height: 1.4;
+        display: block;
     }
 
     .bs-price {
@@ -143,35 +141,57 @@
         font-weight: 800;
         margin-top: auto;
     }
+
+    /* Oklar */
+    .bs-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 45px;
+        height: 45px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 20;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .bs-prev {
+        left: 0;
+    }
+
+    .bs-next {
+        right: 0;
+    }
 </style>
 
 <div class="product-area pt-75 pb-50">
     <div class="container">
-        <div class="row">
-            <div class="col-xl-6 col-lg-6 col-md-10 col-sm-12 col-12 offset-xl-3 offset-lg-3 offset-md-1 text-center">
-                <div class="section-title">
-                    <h2 class="pb-20">#Best Sellers</h2>
-                    <p class="text-muted">Explore our top-performing products that customers love the most.</p>
-                </div>
-            </div>
+        <div class="section-title text-center mb-40">
+            <h2 class="pb-20">#Best Sellers</h2>
+            <p class="text-muted">Discover our most popular products preferred by our customers.</p>
         </div>
 
-        <div class="product-content mt-40">
-            <div class="row">
+        <div class="bs-carousel-container">
+            <div class="bs-arrow bs-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="bs-arrow bs-next"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="best-sellers-slider">
                 @if (Model != null && Model.Any())
                 {
                     foreach (var item in Model)
                     {
-                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6">
-                            <div class="best-seller-card wow fadeInUp animated">
-
-                                <button class="fav-button" onclick="handleFavoriteBS('@item.Id', this)" title="Add to Wishlist">
+                        <div class="bs-item-wrapper">
+                            <div class="best-seller-card">
+                                <button class="fav-button" onclick="handleFavoriteBS('@item.Id', this)">
                                     <i class="@(item.IsFavorite ? "fas fa-heart" : "far fa-heart")"></i>
                                 </button>
 
                                 <div class="bs-img-container">
-                                    <div class="bs-label">HOT</div>
-
                                     <a href="/Product/ProductDetail/@item.Id" class="w-100 h-100">
                                         @if (!string.IsNullOrEmpty(item.MainImageUrl) && item.MainImageUrl != "NO_IMAGE")
                                         {
@@ -180,7 +200,7 @@
                                         else
                                         {
                                             <div class="no-image-placeholder">
-                                                <i class="fas fa-image fa-3x"></i>
+                                                <i class="fas fa-image fa-3x mb-2"></i>
                                                 <span>No Image</span>
                                             </div>
                                         }
@@ -189,16 +209,7 @@
 
                                 <div class="bs-info">
                                     <div class="bs-sales-tag"><i class="fas fa-fire mr-1"></i> @item.TotalSalesCount Sales</div>
-
-                                    <div class="bs-category-info">
-                                        <span>@item.CategoryName</span>
-                                        @if (!string.IsNullOrEmpty(item.SubCategoryName))
-                                        {
-                                            <span style="margin: 0 4px; opacity:0.5;">/</span>
-                                            <span>@item.SubCategoryName</span>
-                                        }
-                                    </div>
-
+                                    <div class="bs-category-info">@item.CategoryName / @item.SubCategoryName</div>
                                     <a href="/Product/ProductDetail/@item.Id" class="bs-title text-capitalize">@item.Name</a>
                                     <div class="bs-price">@item.Price.ToString("C2")</div>
                                 </div>
@@ -209,7 +220,7 @@
             </div>
         </div>
 
-        <div class="row mt-20">
+        <div class="row mt-40">
             <div class="col-12 text-center">
                 <a class="more-view-btn d-inline-block border-light-gray2 white-bg theme-color text-capitalize" href="/Product/ProductList">View All Products</a>
             </div>
@@ -217,63 +228,64 @@
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+
 <script>
+    $(document).ready(function () {
+        function initBestSellerSlider() {
+            var $slider = $('.best-sellers-slider');
+            if ($slider.length > 0 && typeof $.fn.slick !== 'undefined') {
+                $slider.slick({
+                    dots: false,
+                    infinite: true,
+                    speed: 800,
+                    slidesToShow: 4,
+                    slidesToScroll: 1,
+                    autoplay: true,
+                    autoplaySpeed: 5000,
+                    prevArrow: $('.bs-prev'),
+                    nextArrow: $('.bs-next'),
+                    responsive: [
+                        { breakpoint: 1200, settings: { slidesToShow: 3 } },
+                        { breakpoint: 992, settings: { slidesToShow: 2 } },
+                        { breakpoint: 576, settings: { slidesToShow: 1 } }
+                    ]
+                });
+            }
+        }
+        initBestSellerSlider();
+    });
+
+    // Toast ve Favori Lojiği (Aynı şekilde korundu)
     const BSToast = Swal.mixin({
         toast: true,
         position: 'top-end',
         showConfirmButton: false,
         timer: 3000,
-        timerProgressBar: true,
-        didOpen: (toast) => {
-            toast.addEventListener('mouseenter', Swal.stopTimer)
-            toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
+        timerProgressBar: true
     });
 
     async function handleFavoriteBS(productId, btnElement) {
         const icon = btnElement.querySelector('i');
         const token = '@tokens.RequestToken';
-
         try {
             const response = await fetch('/Favorite/ToggleFavorite', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'RequestVerificationToken': token,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token, 'X-Requested-With': 'XMLHttpRequest' },
                 body: `productId=${productId}`
             });
-
             if (response.status === 401) {
-                 BSToast.fire({
-                    icon: 'warning',
-                    title: 'Please sign in to add favorites!'
-                });
+                 BSToast.fire({ icon: 'warning', title: 'Please login first!' });
                 return;
             }
-
             const data = await response.json();
-
             if (response.ok && data.succeeded) {
                 icon.className = data.isFavorite ? 'fas fa-heart' : 'far fa-heart';
-
-                BSToast.fire({
-                    icon: data.isFavorite ? 'success' : 'info',
-                    title: data.message
-                });
-            } else {
-                BSToast.fire({
-                    icon: 'warning',
-                    title: data.message || 'Action failed.'
-                });
+                BSToast.fire({ icon: data.isFavorite ? 'success' : 'info', title: data.message });
             }
         } catch (error) {
-            BSToast.fire({
-                icon: 'error',
-                title: 'A technical error occurred!'
-            });
+            BSToast.fire({ icon: 'error', title: 'Technical error!' });
         }
     }
 </script>

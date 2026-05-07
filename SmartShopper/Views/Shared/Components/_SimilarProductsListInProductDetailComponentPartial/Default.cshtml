@@ -2,7 +2,6 @@
 @model List<SimilarProductsForProductDetailDto>
 
 <style>
-    /* Carousel Konteynırı */
     .related-slider-wrapper {
         position: relative;
         padding: 0 45px;
@@ -42,7 +41,6 @@
         transform: scale(1.1);
     }
 
-    /* Badge'ler */
     .badge-subcat {
         position: absolute;
         top: 12px;
@@ -71,7 +69,6 @@
         z-index: 2;
     }
 
-    /* Sağ Alt Buton Tasarımı */
     .view-all-wrapper {
         text-align: right;
         margin-top: 10px;
@@ -96,7 +93,6 @@
             color: #fff;
         }
 
-    /* Oklar */
     .rel-arrow {
         position: absolute;
         top: 50%;
@@ -141,7 +137,6 @@
         </div>
 
         <div class="related-slider-wrapper">
-            <!-- Özel Oklar -->
             <div class="rel-arrow rel-prev"><i class="fas fa-chevron-left"></i></div>
             <div class="rel-arrow rel-next"><i class="fas fa-chevron-right"></i></div>
 
@@ -177,7 +172,6 @@
                 }
             </div>
 
-            @* Sağ Alt Köşedeki Buton *@
             @if (Model != null && Model.Any())
             {
                 <div class="view-all-wrapper">
@@ -190,7 +184,6 @@
     </div>
 </div>
 
-<!-- Scripts Bölümü -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>

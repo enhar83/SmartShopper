@@ -1,0 +1,265 @@
+﻿@using Core_Layer.Dtos.ProductDtos
+@model List<MostFavoritedProductListDto>
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    var tokens = Antiforgery.GetAndStoreTokens(Context);
+}
+
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css" />
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css" />
+
+<style>
+    .mw-slider-container {
+        position: relative;
+        padding: 0 40px;
+    }
+
+    .mw-product-card {
+        border: 1px solid #f0f0f0;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        border-radius: 12px;
+        background: #fff;
+        margin: 15px 10px;
+        height: 480px; 
+        display: flex !important;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .mw-product-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 12px 30px rgba(0,0,0,0.1);
+            border-color: #d4a373;
+        }
+
+    .mw-img-wrapper {
+        height: 260px;
+        width: 100%;
+        background: #f9f9f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+        .mw-img-wrapper img {
+            transition: transform 0.5s ease;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .mw-btn-fav {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        z-index: 10;
+        width: 38px;
+        height: 38px;
+        border: none;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .mw-card-body {
+        padding: 20px;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .mw-cat-name {
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #999;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .mw-prod-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        text-decoration: none;
+        height: 44px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .mw-prod-price {
+        font-size: 19px;
+        font-weight: 800;
+        color: #e67e22;
+        margin-top: auto;
+    }
+
+    .mw-nav-arrow {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 45px;
+        height: 45px;
+        background: #fff;
+        border: 1px solid #eee;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 20;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: 0.3s;
+    }
+
+        .mw-nav-arrow:hover {
+            background: #222;
+            color: #fff;
+        }
+
+    .mw-prev {
+        left: 0;
+    }
+
+    .mw-next {
+        right: 0;
+    }
+
+    .most-wanted-carousel .slick-track {
+        display: flex !important;
+    }
+</style>
+
+<div class="most-wanted-area mt-80 mb-100">
+    <div class="container">
+        <div class="section-title text-center mb-50">
+            <h2 style="font-weight:800; font-size:32px;">#Most Wanted</h2>
+            <p class="text-muted">The items our community loves the most.</p>
+        </div>
+
+        <div class="mw-slider-container">
+            <div class="mw-nav-arrow mw-prev"><i class="fas fa-chevron-left"></i></div>
+            <div class="mw-nav-arrow mw-next"><i class="fas fa-chevron-right"></i></div>
+
+            <div class="most-wanted-carousel">
+                @if (Model != null)
+                {
+                    @foreach (var item in Model)
+                    {
+                        <div>
+                            <div class="mw-product-card">
+                                <button class="mw-btn-fav" onclick="handleFavMW('@item.Id', this)">
+                                    <i class="@(item.IsFavorite ? "fas fa-heart text-danger" : "far fa-heart")"></i>
+                                </button>
+
+                                <div class="mw-img-wrapper">
+                                    <a href="/Product/ProductDetail/@item.Id" class="w-100 h-100 d-flex align-items-center justify-content-center">
+                                        @if (!string.IsNullOrEmpty(item.MainImageUrl) && item.MainImageUrl != "NO_IMAGE")
+                                        {
+                                            <img src="@item.MainImageUrl" alt="@item.Name">
+                                        }
+                                        else
+                                        {
+                                            <div class="text-center text-muted">
+                                                <i class="fas fa-image fa-3x mb-1"></i><br>
+                                                <small>No Image</small>
+                                            </div>
+                                        }
+                                    </a>
+                                </div>
+
+                                <div class="mw-card-body">
+                                    <div class="mw-cat-name">@item.CategoryName / @item.SubCategoryName</div>
+                                    <a href="/Product/ProductDetail/@item.Id" class="mw-prod-name text-capitalize">@item.Name</a>
+                                    <div class="mw-prod-price">@item.Price.ToString("C2")</div>
+                                    <div class="mt-2 small text-muted">
+                                        <i class="fas fa-heart text-danger mr-1"></i> @item.FavoriteCount likes
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    $(document).ready(function () {
+        function initMWSlider() {
+            var $carousel = $('.most-wanted-carousel');
+            if ($carousel.length > 0 && typeof $.fn.slick !== 'undefined') {
+                $carousel.slick({
+                    dots: false,
+                    infinite: true,
+                    speed: 800,
+                    slidesToShow: 4,
+                    slidesToScroll: 1,
+                    autoplay: true,
+                    autoplaySpeed: 4000,
+                    prevArrow: $('.mw-prev'),
+                    nextArrow: $('.mw-next'),
+                    responsive: [
+                        { breakpoint: 1200, settings: { slidesToShow: 3 } },
+                        { breakpoint: 992, settings: { slidesToShow: 2 } },
+                        { breakpoint: 576, settings: { slidesToShow: 1 } }
+                    ]
+                });
+            }
+        }
+
+        initMWSlider();
+    });
+
+    const MWToast = Swal.mixin({
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true
+    });
+
+    async function handleFavMW(productId, btnElement) {
+        const icon = btnElement.querySelector('i');
+        const token = '@tokens.RequestToken';
+
+        try {
+            const response = await fetch('/Favorite/ToggleFavorite', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': token,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: `productId=${productId}`
+            });
+
+            if (response.status === 401) {
+                MWToast.fire({ icon: 'warning', title: 'Please login first!' });
+                return;
+            }
+
+            const data = await response.json();
+            if (data.succeeded) {
+                icon.className = data.isFavorite ? 'fas fa-heart text-danger' : 'far fa-heart';
+                MWToast.fire({ icon: 'success', title: data.message });
+            }
+        } catch (e) {
+            MWToast.fire({ icon: 'error', title: 'Action failed!' });
+        }
+    }
+</script>
