@@ -292,5 +292,56 @@ namespace Business_Layer.Managers
     
                 return mappedList;
         }
+
+        public async Task<List<BestSellerOfMonthProductListDto>> TGetBestSellersOfMonthAsync()
+        {
+            var firstDayOfMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+
+            var monthlyData = await _orderItemRepository.GetAll()
+                .Include(x => x.Order)
+                .Where(x => x.Order.CreatedDate >= firstDayOfMonth)
+                .GroupBy(x => x.ProductId)
+                .Select(g => new
+                {
+                    ProductId = g.Key,
+                    TotalQty = g.Sum(x => x.Quantity)
+                })
+                .OrderByDescending(x => x.TotalQty)
+                .Take(12)
+                .ToListAsync();
+
+            if (!monthlyData.Any())
+                return new List<BestSellerOfMonthProductListDto>();
+
+            var ids = monthlyData.Select(x => x.ProductId).ToList();
+            var products = await _productRepository.Where(p => ids.Contains(p.Id) && !p.IsDeleted)
+                .Include(p => p.SubCategory)
+                    .ThenInclude(c => c!.Category)
+                .Include(p => p.ProductImages)
+                .ToListAsync();
+
+            var userIdClaim = _httpContextAccessor.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+            Guid? currentUserId = string.IsNullOrEmpty(userIdClaim) ? null : Guid.Parse(userIdClaim);
+            HashSet<Guid> userFavs = new HashSet<Guid>();
+
+            if (currentUserId.HasValue)
+            {
+                var favList = await _favoriteRepository
+                    .Where(x => x.AppUserId == currentUserId.Value && ids.Contains(x.ProductId))
+                    .Select(x => x.ProductId)
+                    .ToListAsync();
+                userFavs = new HashSet<Guid>(favList);
+            }
+
+            var mappedList = products.Select(p =>
+            {
+                var dto = _mapper.Map<BestSellerOfMonthProductListDto>(p);
+                dto.MonthlySalesCount = monthlyData.FirstOrDefault(x => x.ProductId == p.Id)?.TotalQty ?? 0;
+                dto.IsFavorite = userFavs.Contains(p.Id);
+                return dto;
+            }).OrderByDescending(x => x.MonthlySalesCount).ToList();
+
+            return mappedList;
+        }
     }
 }
