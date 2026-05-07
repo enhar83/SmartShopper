@@ -10,7 +10,7 @@ namespace Business_Layer.MLModels.CustomerSegmentationModels
     public class CustomerSegmentationModelOutput
     {
         [ColumnName("PredictedLabel")]
-        public string? Prediction { get; set; }
+        public uint PredictedClusterId { get; set; }
         public float[]? Score { get; set; }
     }
 }

@@ -12,6 +12,9 @@ namespace Core_Layer.Dtos.CustomerSegmentationDtos
         public required string UserFullName { get; set; }
         public required string SegmentLabel { get; set; } 
         public double ConfidenceScore { get; set; }
+        public float Recency { get; set; }    
+        public float Frequency { get; set; } 
+        public float Monetary { get; set; } 
         public DateTime LastUpdated { get; set; }
     }
 }

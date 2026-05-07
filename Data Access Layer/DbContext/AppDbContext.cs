@@ -27,7 +27,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<UserAddress> UserAddresses { get; set; }
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
-
+        public DbSet<CustomerSegmentationResult> CustomerSegmentationResults { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

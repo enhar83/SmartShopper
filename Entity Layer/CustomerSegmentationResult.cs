@@ -13,7 +13,6 @@ namespace Entity_Layer
         public required string SegmentLabel { get; set; } 
         public double ConfidenceScore { get; set; } 
         public DateTime LastUpdated { get; set; }
-
         public virtual AppUser AppUser { get; set; } = null!;
     }
 }
