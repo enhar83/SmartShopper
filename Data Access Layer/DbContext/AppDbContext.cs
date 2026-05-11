@@ -188,6 +188,30 @@ namespace Data_Access_Layer.DbContext
                       .HasDatabaseName("IX_DemandForecast_Location_Date");
             });
             #endregion
+
+            #region ProductSalesForecast Configuration
+            builder.Entity<ProductSalesForecast>(entity =>
+            {
+                entity.ToTable("ProductSalesForecasts");
+
+                entity.HasOne(e => e.Product)
+                      .WithMany() // Ürün entity'sinde listesini tutmak istersen .WithMany(p => p.Forecasts) yapabilirsin
+                      .HasForeignKey(e => e.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(e => e.ExpectedRevenue)
+                      .HasPrecision(18, 2)
+                      .IsRequired();
+
+                entity.Property(e => e.ConfidenceScore)
+                      .HasDefaultValue(0.0);
+
+                // 🔥 SENIOR TOUCH: Aynı ürün için aynı yıl ve ayda sadece 1 tahmin kaydı olabilir!
+                entity.HasIndex(e => new { e.ProductId, e.TargetYear, e.TargetMonth })
+                      .IsUnique()
+                      .HasDatabaseName("IX_ProductForecast_Product_Date");
+            });
+            #endregion
         }
     }
 }

@@ -19,6 +19,7 @@ namespace Entity_Layer
         public SubCategory? SubCategory { get; set; }
         public ICollection<Favorite>? Favorites { get; set; }
         public ICollection<OrderItem>? OrderItems { get; set; }
+        public virtual ICollection<ProductSalesForecast>? SalesForecasts { get; set; }
     }
 }
 
