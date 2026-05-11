@@ -12,10 +12,10 @@ namespace Entity_Layer
         public Guid AppUserId { get; set; }
         public virtual AppUser AppUser { get; set; } = null!;
         public bool IsChurn { get; set; }
-        public double ChurnProbability { get; set; }
+        public decimal ChurnProbability { get; set; }
         public float Recency { get; set; }
         public float Frequency { get; set; }
-        public float Monetary { get; set; }
+        public decimal Monetary { get; set; }
         public DateTime LastUpdated { get; set; }
     }
 }

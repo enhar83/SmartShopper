@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Entity_Layer;
@@ -28,6 +29,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<CustomerSegmentationResult> CustomerSegmentationResults { get; set; }
+        public DbSet<CustomerChurnResult> CustomerChurnResults { get; set; }
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -134,7 +136,30 @@ namespace Data_Access_Layer.DbContext
 
                 entity.HasIndex(e => e.AppUserId);
             });
-            #endregion 
+            #endregion
+
+            #region CustomerChurnResult
+            builder.Entity<CustomerChurnResult>(entity =>
+            {
+                entity.ToTable("CustomerChurnResults");
+
+                entity.HasOne(x => x.AppUser)
+                    .WithOne(u => u.CustomerChurnResult)
+                    .HasForeignKey<CustomerChurnResult>(x => x.AppUserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(e => e.ChurnProbability)
+                    .HasPrecision(18, 4) 
+                    .IsRequired();
+
+                entity.Property(e => e.Monetary)
+                    .HasPrecision(18, 2) 
+                    .IsRequired();
+
+                entity.HasIndex(e => e.AppUserId).IsUnique();
+                entity.HasIndex(e => e.IsChurn); 
+            });
+            #endregion
         }
     }
 }
