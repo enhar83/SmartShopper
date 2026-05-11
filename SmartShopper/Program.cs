@@ -69,6 +69,7 @@ builder.Services.AddScoped<IOrderService, OrderManager>();
 builder.Services.AddScoped<ICustomerSegmentationService, CustomerSegmentationManager>();
 builder.Services.AddScoped<ISalesForecastingService, SalesForecastingManager>();
 builder.Services.AddScoped<ICustomerChurnResultService, CustomerChurnResultManager>();
+builder.Services.AddScoped<IRegionalDemandForecastService, RegionalDemandForecastManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 

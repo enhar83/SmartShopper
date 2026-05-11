@@ -1,0 +1,241 @@
+﻿@using Core_Layer.Dtos.DemandForecastDtos
+@model List<RegionalDemandForecastDto>
+
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+
+@{
+    ViewData["Title"] = "AI Regional Demand Forecast";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    decimal totalExpectedRevenue = Model?.Sum(x => x.PredictedRevenue) ?? 0;
+    int totalExpectedOrders = Model?.Sum(x => x.PredictedOrderCount) ?? 0;
+    var topRegion = Model?.OrderByDescending(x => x.PredictedRevenue).FirstOrDefault();
+}
+
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
+    <div class="breadcrumb-title pe-3">SmartShopper AI</div>
+    <div class="ps-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+                <li class="breadcrumb-item">
+                    <a href="javascript:;"><i class="bx bx-trending-up"></i></a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">
+                    Regional Demand Forecasting
+                </li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<div class="row row-cols-1 row-cols-md-3 row-cols-xl-3 mb-4">
+
+    <div class="col">
+        <div class="card radius-10 border-start border-0 border-3 border-info shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">AI Forecasting Engine</p>
+                        <h4 class="my-1 text-info">SDCA Linear Regression</h4>
+                        <p class="mb-0 font-13 text-success">
+                            <i class='bx bxs-check-shield'></i> Algorithm Ready
+                        </p>
+                    </div>
+                    <div class="widgets-icons-2 rounded-circle bg-light-info text-info ms-auto">
+                        <i class='bx bx-brain'></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button onclick="executeDemandForecast()" class="btn btn-info text-white btn-sm px-4 radius-30 shadow-sm w-100">
+                        <i class='bx bx-refresh'></i> Generate Next Month Forecast
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card radius-10 border-start border-0 border-3 border-success shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">Total Projected Revenue</p>
+                        <h4 class="my-1 text-success">
+                            $ @totalExpectedRevenue.ToString("N2")
+                        </h4>
+                        <p class="mb-0 font-13">
+                            Across @(Model?.Count ?? 0) Regions
+                        </p>
+                    </div>
+                    <div class="widgets-icons-2 rounded-circle bg-light-success text-success ms-auto">
+                        <i class='bx bx-dollar'></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card radius-10 border-start border-0 border-3 border-primary shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">Top Growth Region</p>
+                        <h4 class="my-1 text-primary">
+                            @(topRegion != null ? topRegion.City : "N/A")
+                        </h4>
+                        <p class="mb-0 font-13">
+                            Expected: $ @(topRegion?.PredictedRevenue.ToString("N2") ?? "0.00")
+                        </p>
+                    </div>
+                    <div class="widgets-icons-2 rounded-circle bg-light-primary text-primary ms-auto">
+                        <i class='bx bx-map-pin'></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="card radius-10 shadow-none border">
+    <div class="card-header bg-transparent border-bottom">
+        <div class="d-flex align-items-center">
+            <div>
+                <h6 class="mb-0 fw-bold">
+                    Predicted Regional Demands
+                </h6>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-body">
+        <div class="table-responsive">
+            <table id="forecastDataTable" class="table align-middle mb-0 table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Location</th>
+                        <th>Target Period</th>
+                        <th>Expected Orders</th>
+                        <th>Projected Revenue</th>
+                        <th>Market Potential</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-sm bg-light-primary text-primary rounded-circle p-2 me-2 text-center" style="width:35px; height:35px">
+                                            <i class='bx bx-buildings fs-5'></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 font-14 fw-bold">@item.City</h6>
+                                            <small class="text-muted">@item.Country</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light-secondary text-secondary border">
+                                        <i class='bx bx-calendar'></i> @item.Period
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="fw-bold text-dark">@item.PredictedOrderCount</span>
+                                    <small class="text-muted">orders</small>
+                                </td>
+                                <td>
+                                    <h6 class="mb-0 font-14 text-success fw-bold">
+                                        $ @item.PredictedRevenue.ToString("N2")
+                                    </h6>
+                                </td>
+                                <td>
+                                    @if (item.RevenueLevel == "High Potential")
+                                    {
+                                        <span class="badge bg-light-success text-success border border-success px-3 radius-30">@item.RevenueLevel</span>
+                                    }
+                                    else if (item.RevenueLevel == "Medium Potential")
+                                    {
+                                        <span class="badge bg-light-warning text-warning border border-warning px-3 radius-30">@item.RevenueLevel</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-light-info text-info border border-info px-3 radius-30">@item.RevenueLevel</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center py-5">
+                                <h6>No forecast data available.</h6>
+                                <p class="text-muted">Click "Generate Next Month Forecast" to run the ML.NET prediction engine.</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function () {
+            $('#forecastDataTable').DataTable({
+                order: [[3, "desc"]],
+                pageLength: 10
+            });
+        });
+
+        function executeDemandForecast() {
+            Swal.fire({
+                title: 'Training ML Model...',
+                html: 'Analyzing historical regional data and building FastTree regression model.<br><br><b>Please wait.</b>',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $.ajax({
+                url: '@Url.Action("RunForecast", "RegionalDemandForecast", new { area = "Admin" })',
+                type: 'POST',
+                data: {
+                    __RequestVerificationToken: token
+                },
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Forecast Generated!',
+                            text: res.message,
+                            timer: 2500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            location.reload();
+                        });
+                    } else {
+                        Swal.fire('Warning', res.message, 'warning');
+                    }
+                },
+                error: function (xhr) {
+                    Swal.fire('Server Error', 'Could not run the analysis. Check console for details.', 'error');
+                }
+            });
+        }
+    </script>
+}

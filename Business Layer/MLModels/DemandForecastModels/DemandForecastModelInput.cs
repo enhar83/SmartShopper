@@ -18,6 +18,8 @@ namespace Business_Layer.MLModels.DemandForecastModels
         [LoadColumn(3)]
         public float Year { get; set; }
         [LoadColumn(4)]
+        public float CityAOV { get; set; }
+        [LoadColumn(5)]
         [ColumnName("Label")]
         public float TotalRevenue { get; set; }
     }
