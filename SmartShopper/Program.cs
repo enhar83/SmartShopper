@@ -49,6 +49,7 @@ builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 builder.Services.AddScoped<ICustomerSegmentationResultRepository, CustomerSegmentationRepository>();
 builder.Services.AddScoped<ICustomerChurnResultRepository, CustomerChurnResultRepository>();
+builder.Services.AddScoped<IRegionalDemandForecastRepository, RegionalDemandForecastRepository>();
 
 
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
