@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Entity_Layer.Common;
 
 namespace Entity_Layer
 {
-    public class ProductSalesForecast
+    public class ProductSalesForecast:BaseEntity
     {
         public Guid ProductId { get; set; }
         public virtual Product Product { get; set; } = null!;

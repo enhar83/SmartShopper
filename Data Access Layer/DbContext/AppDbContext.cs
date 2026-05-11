@@ -31,6 +31,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<CustomerSegmentationResult> CustomerSegmentationResults { get; set; }
         public DbSet<CustomerChurnResult> CustomerChurnResults { get; set; }
         public DbSet<RegionalDemandForecast> RegionalDemansForecasts { get; set; }
+        public DbSet<ProductSalesForecast> ProductSalesForecasts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -197,6 +198,12 @@ namespace Data_Access_Layer.DbContext
                 entity.HasOne(e => e.Product)
                       .WithMany() // Ürün entity'sinde listesini tutmak istersen .WithMany(p => p.Forecasts) yapabilirsin
                       .HasForeignKey(e => e.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // BİRE-ÇOK İLİŞKİ KURULUMU
+                entity.HasOne(f => f.Product)             // 1 Tahminin -> 1 Ürünü vardır
+                      .WithMany(p => p.SalesForecasts)    // 1 Ürünün -> Birden Çok Tahmini vardır
+                      .HasForeignKey(f => f.ProductId)
                       .OnDelete(DeleteBehavior.Cascade);
 
                 entity.Property(e => e.ExpectedRevenue)
