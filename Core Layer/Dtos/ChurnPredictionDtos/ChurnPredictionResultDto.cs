@@ -14,7 +14,7 @@ namespace Core_Layer.Dtos.ChurnPredictionDtos
         public double ChurnProbability { get; set; }
         public float Recency { get; set; }
         public float Frequency { get; set; }
-        public float Monetary { get; set; }
+        public decimal Monetary { get; set; }
         public DateTime LastUpdated { get; set; }
         public string RiskLevel => ChurnProbability switch
         {

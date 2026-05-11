@@ -30,6 +30,8 @@ namespace Data_Access_Layer.DbContext
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<CustomerSegmentationResult> CustomerSegmentationResults { get; set; }
         public DbSet<CustomerChurnResult> CustomerChurnResults { get; set; }
+        public DbSet<RegionalDemandForecast> RegionalDemansForecasts { get; set; }
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -158,6 +160,32 @@ namespace Data_Access_Layer.DbContext
 
                 entity.HasIndex(e => e.AppUserId).IsUnique();
                 entity.HasIndex(e => e.IsChurn); 
+            });
+            #endregion
+
+            #region RegionalDemandForecast
+            builder.Entity<RegionalDemandForecast>(entity =>
+            {
+                entity.ToTable("RegionalDemandForecasts");
+
+                entity.Property(e => e.Country)
+                      .HasMaxLength(100)
+                      .IsRequired();
+
+                entity.Property(e => e.City)
+                      .HasMaxLength(100)
+                      .IsRequired();
+
+                entity.Property(e => e.PredictedRevenue)
+                      .HasPrecision(18, 2)
+                      .IsRequired();
+
+                entity.Property(e => e.ModelAccuracyScore)
+                      .HasDefaultValue(0.0);
+
+                entity.HasIndex(e => new { e.Country, e.City, e.TargetYear, e.TargetMonth })
+                      .IsUnique()
+                      .HasDatabaseName("IX_DemandForecast_Location_Date");
             });
             #endregion
         }

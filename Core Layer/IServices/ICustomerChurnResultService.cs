@@ -10,6 +10,7 @@ namespace Core_Layer.IServices
     public interface ICustomerChurnResultService
     {
         Task<List<ChurnPredictionResultDto>> TProcessAllCustomersChurnAsync();
+        Task<List<ChurnPredictionResultDto>> TGetAllChurnResultsAsync();
         Task<bool> TTrainChurnModelAsync();
     }
 }

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Business_Layer.MLModels.ChurnPredictionModels;
@@ -12,8 +12,9 @@ using Entity_Layer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
+using Microsoft.ML.Data;
 
-namespace Business_Layer.Managers
+namespace Business_Layer.Managers 
 {
     public class CustomerChurnResultManager : ICustomerChurnResultService
     {
@@ -24,6 +25,7 @@ namespace Business_Layer.Managers
         private readonly IMapper _mapper;
         private readonly MLContext _mlContext;
         private readonly string _modelPath;
+
         private readonly DateTime _referenceDate = new DateTime(2026, 5, 11);
 
         public CustomerChurnResultManager(
@@ -38,96 +40,154 @@ namespace Business_Layer.Managers
             _churnRepo = churnRepo;
             _uow = uow;
             _mapper = mapper;
-            _mlContext = new MLContext(seed: 1);
+
+            _mlContext = new MLContext(seed: 42);
+
             _modelPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "MLModels", "ChurnModel.zip");
+            var directory = Path.GetDirectoryName(_modelPath);
+
+            if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+            {
+                Directory.CreateDirectory(directory);
+            }
         }
 
-        private ChurnPredictionModelInput GetInputData(AppUser user)
+        public async Task<List<ChurnPredictionResultDto>> TGetAllChurnResultsAsync()
         {
-            var orders = user.Orders ?? new List<Order>();
+            var churnResults = await _churnRepo.GetAll()
+                .Include(x => x.AppUser)
+                .OrderByDescending(x => x.ChurnProbability) 
+                .ToListAsync();
 
-            var lastOrder = orders.OrderByDescending(o => o.CreatedDate).FirstOrDefault();
+            var resultList = new List<ChurnPredictionResultDto>();
+
+            foreach (var item in churnResults)
+            {
+                var dto = _mapper.Map<ChurnPredictionResultDto>(item);
+                dto.UserFullName = item.AppUser != null ? $"{item.AppUser.Name} {item.AppUser.Surname}" : "Bilinmeyen Kullanıcı";
+                resultList.Add(dto);
+            }
+
+            return resultList;
+        }
+
+        private ChurnPredictionModelInput GetInputData(AppUser user, List<Order> userOrders)
+        {
+            var lastOrder = userOrders.OrderByDescending(x => x.CreatedDate).FirstOrDefault();
 
             float recency = lastOrder != null ? (float)(_referenceDate - lastOrder.CreatedDate).TotalDays : 365f;
-            float frequency = orders.Count;
-            float monetary = (float)orders.Sum(o => (double)o.TotalPrice);
+            float frequency = userOrders.Count;
+            float monetary = (float)userOrders.Sum(x => (double)x.TotalPrice);
+            float averageOrderValue = frequency > 0 ? monetary / frequency : 0f;
+            bool label = recency > 120;
 
             return new ChurnPredictionModelInput
             {
                 TotalSpend = monetary,
                 OrderCount = frequency,
                 DaysSinceLastOrder = recency,
-                AverageOrderValue = frequency > 0 ? monetary / frequency : 0f,
-                Label = recency > 180
+                AverageOrderValue = averageOrderValue,
+                Label = label
             };
+        }
+
+        public async Task<bool> TTrainChurnModelAsync()
+        {
+            var users = await _userManager.Users.ToListAsync();
+            var allOrders = await _orderRepository.GetAll().ToListAsync();
+
+            var userOrdersDict = allOrders.GroupBy(x => x.AppUserId).ToDictionary(g => g.Key, g => g.ToList());
+
+            var trainingData = users.Select(user => GetInputData(user, userOrdersDict.ContainsKey(user.Id) ? userOrdersDict[user.Id] : new List<Order>())).ToList();
+
+            if (trainingData.Count < 5) return false;
+
+            int churnedCount = trainingData.Count(x => x.Label == true);
+            if (churnedCount == 0 || churnedCount == trainingData.Count)
+            {
+                throw new Exception("Modelin öğrenebilmesi için veritabanında hem inaktif (120 günden eski) hem de aktif müşteriler birlikte bulunmalıdır.");
+            }
+
+            IDataView dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
+
+            var pipeline = _mlContext.Transforms.Concatenate("Features",
+                    nameof(ChurnPredictionModelInput.TotalSpend),
+                    nameof(ChurnPredictionModelInput.OrderCount),
+                    nameof(ChurnPredictionModelInput.AverageOrderValue))
+                .Append(_mlContext.Transforms.NormalizeMinMax("Features")) 
+                .Append(_mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(labelColumnName: "Label", featureColumnName: "Features"));
+
+            var model = pipeline.Fit(dataView);
+
+            _mlContext.Model.Save(model, dataView.Schema, _modelPath);
+            return true;
         }
 
         public async Task<List<ChurnPredictionResultDto>> TProcessAllCustomersChurnAsync()
         {
-            await TTrainChurnModelAsync();
-            ITransformer trainedModel = _mlContext.Model.Load(_modelPath, out _);
+            bool isTrained = await TTrainChurnModelAsync();
+            if (!isTrained) throw new Exception("Yeterli veri olmadığı için analiz gerçekleştirilemedi.");
+
+            ITransformer trainedModel;
+            using (var stream = new FileStream(_modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
+            {
+                trainedModel = _mlContext.Model.Load(stream, out _);
+            }
+
             var predictionEngine = _mlContext.Model.CreatePredictionEngine<ChurnPredictionModelInput, ChurnPredictionModelOutput>(trainedModel);
 
-            var users = await _userManager.Users
-                .Include(x => x.Orders)
-                .Include(x => x.CustomerChurnResult)
-                .ToListAsync();
+            var usersWithOrders = await _userManager.Users.Include(x => x.CustomerChurnResult).ToListAsync();
+            var allOrders = await _orderRepository.GetAll().ToListAsync();
+            var userOrdersDict = allOrders.GroupBy(x => x.AppUserId).ToDictionary(g => g.Key, g => g.ToList());
 
-            var results = new List<ChurnPredictionResultDto>();
+            var resultList = new List<ChurnPredictionResultDto>();
 
-            foreach (var user in users)
+            foreach (var user in usersWithOrders)
             {
-                var input = GetInputData(user);
+                var userOrders = userOrdersDict.ContainsKey(user.Id) ? userOrdersDict[user.Id] : new List<Order>();
+                var input = GetInputData(user, userOrders);
+
+                var churnEntity = user.CustomerChurnResult ?? new CustomerChurnResult
+                {
+                    AppUserId = user.Id,
+                    CreatedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                };
 
                 var prediction = predictionEngine.Predict(input);
 
-                var churnEntity = user.CustomerChurnResult;
+                decimal timeRisk = Math.Min((decimal)(input.DaysSinceLastOrder / 180f) * 100m, 100m);
 
-                if (churnEntity == null)
-                {
-                    churnEntity = new CustomerChurnResult { AppUserId = user.Id };
-                    await _churnRepo.AddAsync(churnEntity);
-                }
+                decimal behaviorRisk = (decimal)(prediction.Probability * 100);
 
-                _mapper.Map(prediction, churnEntity);
+                decimal finalRisk = (timeRisk * 0.6m) + (behaviorRisk * 0.4m);
+
+                finalRisk = Math.Clamp(finalRisk, 1.5m, 99.0m);
+
+                churnEntity.IsChurn = finalRisk > 50m;
+                churnEntity.ChurnProbability = finalRisk;
 
                 churnEntity.Recency = input.DaysSinceLastOrder;
                 churnEntity.Frequency = input.OrderCount;
                 churnEntity.Monetary = (decimal)input.TotalSpend;
                 churnEntity.LastUpdated = DateTime.Now;
 
-                _churnRepo.Update(churnEntity);
+                if (user.CustomerChurnResult == null)
+                    await _churnRepo.AddAsync(churnEntity);
+                else
+                {
+                    churnEntity.UpdatedDate = DateTime.UtcNow;
+                    _churnRepo.Update(churnEntity);
+                }
 
                 var dto = _mapper.Map<ChurnPredictionResultDto>(churnEntity);
                 dto.UserFullName = $"{user.Name} {user.Surname}";
-                results.Add(dto);
+
+                resultList.Add(dto);
             }
 
             await _uow.SaveAsync();
-
-            return results;
-        }
-
-        public async Task<bool> TTrainChurnModelAsync()
-        {
-            var users = await _userManager.Users.Include(x => x.Orders).ToListAsync();
-            var trainingData = users.Select(u => GetInputData(u)).ToList();
-
-            if (trainingData.Count < 5) return false;
-
-            IDataView dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
-
-            var pipeline = _mlContext.Transforms.Concatenate("Features",
-                nameof(ChurnPredictionModelInput.TotalSpend),
-                nameof(ChurnPredictionModelInput.OrderCount),
-                nameof(ChurnPredictionModelInput.DaysSinceLastOrder),
-                nameof(ChurnPredictionModelInput.AverageOrderValue))
-                .Append(_mlContext.BinaryClassification.Trainers.FastTree());
-
-            var model = pipeline.Fit(dataView);
-            _mlContext.Model.Save(model, dataView.Schema, _modelPath);
-
-            return true;
+            return resultList;
         }
     }
 }

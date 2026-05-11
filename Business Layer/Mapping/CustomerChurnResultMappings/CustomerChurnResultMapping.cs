@@ -14,13 +14,8 @@ namespace Business_Layer.Mapping.CustomerChurnResultMappings
     {
         public CustomerChurnResultMapping()
         {
-            CreateMap<ChurnPredictionModelOutput, CustomerChurnResult>()
-                .ForMember(dest => dest.IsChurn, opt => opt.MapFrom(src => src.Prediction))
-                .ForMember(dest => dest.ChurnProbability, opt => opt.MapFrom(src => (decimal)(src.Probability * 100)))
-                .ForMember(dest => dest.LastUpdated, opt => opt.MapFrom(_ => DateTime.Now));
-
             CreateMap<CustomerChurnResult, ChurnPredictionResultDto>()
-                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.AppUser.Name + " " + src.AppUser.Surname))
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => $"{src.AppUser.Name} {src.AppUser.Surname}"))
                 .ForMember(dest => dest.ChurnProbability, opt => opt.MapFrom(src => (double)src.ChurnProbability));
         }
     }
