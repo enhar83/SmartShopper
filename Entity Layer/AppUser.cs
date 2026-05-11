@@ -19,6 +19,7 @@ namespace Entity_Layer
         public ICollection<Favorite>? Favorites { get; set; }
         public ICollection<Order>? Orders { get; set; }
         public ICollection<CustomerSegmentationResult>? SegmentationResults { get; set; }
+        public virtual CustomerChurnResult CustomerChurnResult { get; set; } = null!;
 
     }
 }
