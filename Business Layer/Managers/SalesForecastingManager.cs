@@ -4,6 +4,7 @@ using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
+using Microsoft.ML.Transforms.TimeSeries;
 using System.Globalization;
 
 namespace Business_Layer.Managers
@@ -13,7 +14,7 @@ namespace Business_Layer.Managers
         private readonly IOrderRepository _orderRepository;
         private readonly string _modelPath;
         private readonly MLContext _mlContext;
-        private readonly DateTime _referenceDate = new DateTime(2026, 5, 1);
+        private readonly DateTime _referenceDate = new DateTime(2026, 5, 1); 
 
         public SalesForecastingManager(IOrderRepository orderRepository)
         {
@@ -24,56 +25,70 @@ namespace Business_Layer.Managers
 
         public async Task<List<SalesForecastResultDto>> TGetSalesForecastAsync(int horizonMonths = 12)
         {
-            var orders = await _orderRepository.GetAll().AsNoTracking().ToListAsync();
+            var allOrders = await _orderRepository.GetAll().AsNoTracking().ToListAsync();
 
-            var monthlyData = orders
-                .Where(x => x.CreatedDate < _referenceDate)
-                .GroupBy(x => new { x.CreatedDate.Year, x.CreatedDate.Month })
-                .OrderBy(x => x.Key.Year).ThenBy(x => x.Key.Month)
-                .Select((g, index) => new SalesForecastingModelInput
+            var oneYearAgo = _referenceDate.AddMonths(-13); // son 13 ay esas alındı, 12 olmamasının nedeni window size değerini 6 yapabilmek için.
+
+            var monthlyData = allOrders
+                .Where(x => x.CreatedDate < _referenceDate && x.CreatedDate >= oneYearAgo)
+                .GroupBy(x => new { x.CreatedDate.Year, x.CreatedDate.Month }) // yıla ve aya göre gruplandırma işlemi yapılıyor.
+                .OrderBy(x => x.Key.Year).ThenBy(x => x.Key.Month) // ilk olarak yıla ardından ise aya göre bir sıralama işlemi gerçekleştiliyor.
+                .Select(g => new SalesForecastingModelInput
                 {
-                    MonthIndex = (float)(index + 1),
                     TotalSales = (float)g.Sum(s => (double)s.TotalPrice)
                 })
                 .ToList();
 
-            if (monthlyData.Count < 3)
-                throw new Exception("Sales forecasting requires at least 3 months of historical data.");
+            if (monthlyData.Count < 5)
+                throw new Exception("Insufficient up-to-date data was found. Verification of at least 5 months' worth of transactions from the last year is required.");
 
-            await TTrainForecastModelAsync();
+            IDataView dataView = _mlContext.Data.LoadFromEnumerable(monthlyData);
 
-            ITransformer trainedModel = _mlContext.Model.Load(_modelPath, out _);
-            var predictionEngine = _mlContext.Model.CreatePredictionEngine<SalesForecastingModelInput, SalesForecastingModelOutput>(trainedModel);
+            //ssa kullanılmasının sebebi zaman serisi verilerini trend, mevsimsellik ve gürültü olarak parçalara ayırabilmesidir.
+            var pipeline = _mlContext.Forecasting.ForecastBySsa(
+                outputColumnName: nameof(SalesForecastingModelOutput.Score),
+                inputColumnName: nameof(SalesForecastingModelInput.TotalSales),
+                windowSize: 6, // 6 aylık periyotlara bakarak döngüleri yakalar.         
+                seriesLength: monthlyData.Count,
+                trainSize: monthlyData.Count,
+                horizon: horizonMonths, //gelecekte kaç ay sonrasına bakılacağını belirler.
+                confidenceLevel: 0.95f, //tahminler %95 güven aralığında hesaplanır.
+                variableHorizon: true);
+
+            var model = pipeline.Fit(dataView); //hazırlanan veri seti algoritmaya verilir.
+            var forecastingEngine = model.CreateTimeSeriesEngine<SalesForecastingModelInput, SalesForecastingModelOutput>(_mlContext);
+            var forecasts = forecastingEngine.Predict();
 
             var results = new List<SalesForecastResultDto>();
 
-            foreach (var item in monthlyData)
+            for (int i = 0; i < monthlyData.Count; i++)
             {
-                int monthsDiff = (int)(item.MonthIndex - monthlyData.Count - 1);
-                var dateOfIndex = _referenceDate.AddMonths(monthsDiff);
-
+                var date = _referenceDate.AddMonths(i - monthlyData.Count);
                 results.Add(new SalesForecastResultDto
                 {
-                    Period = dateOfIndex.ToString("MMM yyyy", CultureInfo.InvariantCulture),
-                    ActualAmount = Math.Round((double)item.TotalSales, 2),
-                    ForecastAmount = 0,
+                    Period = date.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+                    ActualAmount = Math.Round((double)monthlyData[i].TotalSales, 2),
                     IsForecast = false
                 });
             }
 
-            int lastIndex = monthlyData.Count;
-            for (int i = 1; i <= horizonMonths; i++)
+            var lastActual = results.Last();
+            results.Add(new SalesForecastResultDto
             {
-                float nextIndex = (float)(lastIndex + i);
-                var prediction = predictionEngine.Predict(new SalesForecastingModelInput { MonthIndex = nextIndex });
+                Period = lastActual.Period,
+                ActualAmount = 0,
+                ForecastAmount = lastActual.ActualAmount,
+                IsForecast = true
+            });
 
-                var forecastDate = _referenceDate.AddMonths(i - 1); 
-
+            for (int i = 0; i < horizonMonths; i++)
+            {
+                var forecastDate = _referenceDate.AddMonths(i);
                 results.Add(new SalesForecastResultDto
                 {
                     Period = forecastDate.ToString("MMM yyyy", CultureInfo.InvariantCulture),
                     ActualAmount = 0,
-                    ForecastAmount = Math.Round((double)prediction.Score, 2),
+                    ForecastAmount = Math.Round((double)forecasts.Score[i], 2),
                     IsForecast = true
                 });
             }
@@ -81,43 +96,6 @@ namespace Business_Layer.Managers
             return results;
         }
 
-        public async Task<bool> TTrainForecastModelAsync()
-        {
-            try
-            {
-                var orders = await _orderRepository.GetAll().AsNoTracking().ToListAsync();
-
-                var trainingData = orders
-                    .Where(x => x.CreatedDate < _referenceDate)
-                    .GroupBy(x => new { x.CreatedDate.Year, x.CreatedDate.Month })
-                    .OrderBy(x => x.Key.Year).ThenBy(x => x.Key.Month)
-                    .Select((g, index) => new SalesForecastingModelInput
-                    {
-                        MonthIndex = (float)(index + 1),
-                        TotalSales = (float)g.Sum(s => (double)s.TotalPrice)
-                    }).ToList();
-
-                if (trainingData.Count < 3) return false;
-
-                IDataView dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
-
-                var pipeline = _mlContext.Transforms.CopyColumns("Label", nameof(SalesForecastingModelInput.TotalSales))
-                    .Append(_mlContext.Transforms.Concatenate("Features", nameof(SalesForecastingModelInput.MonthIndex)))
-                    .Append(_mlContext.Regression.Trainers.FastTree(labelColumnName: "Label", featureColumnName: "Features"));
-
-                var model = pipeline.Fit(dataView);
-
-                var directory = Path.GetDirectoryName(_modelPath);
-                if (!Directory.Exists(directory)) Directory.CreateDirectory(directory!);
-
-                _mlContext.Model.Save(model, dataView.Schema, _modelPath);
-
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+        public Task<bool> TTrainForecastModelAsync() => Task.FromResult(true);
     }
 }

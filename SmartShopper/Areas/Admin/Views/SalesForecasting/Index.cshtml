@@ -1,0 +1,223 @@
+﻿@{
+    ViewData["Title"] = "Sales Forecasting Analysis";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+    <div class="breadcrumb-title pe-3">SmartShopper AI</div>
+    <div class="ps-3">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0 p-0">
+                <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-line-chart"></i></a></li>
+                <li class="breadcrumb-item active" aria-current="page">Revenue Forecasting & Projections</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 mb-4">
+    <div class="col">
+        <div class="card radius-10 border-start border-0 border-3 border-primary">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">AI Forecasting Engine</p>
+                        <h4 class="my-1 text-primary">Singular Spectrum Analysis (SSA)</h4>
+                        <p class="mb-0 font-13 text-success"><i class='bx bxs-zap'></i> Real-time time series analysis active.</p>
+                    </div>
+                    <div class="widgets-icons-2 rounded-circle bg-light-primary text-primary ms-auto">
+                        <i class='bx bx-trending-up'></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card radius-10 border-start border-0 border-3 border-warning">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">Simulation Horizon</p>
+                        <h4 class="my-1 text-warning" id="horizonTitle">Next 6 Months</h4>
+                        <p class="mb-0 font-13">Reference Date: <b>May 01, 2026</b></p>
+                    </div>
+                    <div class="widgets-icons-2 rounded-circle bg-light-warning text-warning ms-auto">
+                        <i class='bx bx-calendar-event'></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card radius-10">
+    <div class="card-header bg-transparent">
+        <div class="d-flex align-items-center">
+            <div>
+                <h6 class="mb-0 text-uppercase fw-bold"><i class='bx bx-chart me-1'></i>Sales Performance & AI Predictions</h6>
+            </div>
+            <div class="ms-auto">
+                <div class="btn-group shadow-0">
+                    <select class="form-select form-select-sm radius-30" id="monthSelector" onchange="loadForecast()">
+                        <option value="3">3 Months Prediction</option>
+                        <option value="6" selected>6 Months Prediction</option>
+                        <option value="12">12 Months Prediction</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="chart-container-0" style="height: 450px;">
+            <canvas id="salesForecastChart"></canvas>
+        </div>
+    </div>
+    <div class="card-footer bg-transparent border-top">
+        <div class="d-flex align-items-center justify-content-center gap-4 py-2">
+            <div class="d-flex align-items-center"><i class='bx bxs-circle me-1 text-primary'></i> <span class="small">Historical Actuals</span></div>
+            <div class="d-flex align-items-center"><i class='bx bxs-circle me-1 text-warning'></i> <span class="small">AI Predicted Revenue</span></div>
+        </div>
+    </div>
+</div>
+
+<div class="card radius-10">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <h6 class="mb-0 text-uppercase fw-bold">Monthly Projection Breakdown</h6>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="forecastTable">
+                <thead class="table-light">
+                    <tr>
+                        <th>Period</th>
+                        <th>Type</th>
+                        <th>Actual Revenue</th>
+                        <th>AI Predicted Revenue</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="forecastTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let forecastChart;
+
+        $(document).ready(function () {
+            loadForecast();
+        });
+
+        function loadForecast() {
+            const months = $('#monthSelector').val();
+            $('#horizonTitle').text(`Next ${months} Months`);
+
+            Swal.fire({
+                title: 'AI is thinking...',
+                text: 'Analyzing historical patterns and training regression model.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.get(`/Admin/SalesForecasting/GetForecastData?months=${months}`, function (res) {
+                Swal.close();
+                if (res.success) {
+                    renderChart(res.data);
+                    renderTable(res.data);
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            });
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('salesForecastChart').getContext('2d');
+            if (forecastChart) forecastChart.destroy();
+
+            const labels = data.map(x => x.period);
+            const actuals = data.map(x => x.actualAmount > 0 ? x.actualAmount : null);
+            const forecasts = data.map(x => x.forecastAmount > 0 ? x.forecastAmount : null);
+
+            // Verileri bağlamak için: Tahmin serisinin ilk verisi, gerçek serinin son verisi olmalı (çizgi kopmasın diye)
+            // Ama biz null kullanarak ayrımı netleştirdik.
+
+            forecastChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Historical Actuals',
+                            data: actuals,
+                            borderColor: '#008cff',
+                            backgroundColor: 'rgba(0, 140, 255, 0.1)',
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#008cff',
+                            borderWidth: 4
+                        },
+                        {
+                            label: 'AI Forecast',
+                            data: forecasts,
+                            borderColor: '#ffc107',
+                            backgroundColor: 'transparent',
+                            borderDash: [8, 5], // Kesikli çizgi
+                            fill: false,
+                            tension: 0.4,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#ffc107',
+                            borderWidth: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            grid: { display: true, color: '#f0f0f0' },
+                            ticks: {
+                                callback: value => '$' + value.toLocaleString()
+                            }
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function renderTable(data) {
+            let html = '';
+            data.forEach(item => {
+                const isForecast = item.isForecast;
+                html += `
+                    <tr>
+                        <td><span class="fw-bold">${item.period}</span></td>
+                        <td>
+                            <span class="badge rounded-pill ${isForecast ? 'bg-light-warning text-warning' : 'bg-light-primary text-primary'} px-3">
+                                ${isForecast ? 'AI PREDICTION' : 'HISTORICAL'}
+                            </span>
+                        </td>
+                        <td><span class="text-primary fw-bold">${item.actualAmount > 0 ? '$ ' + item.actualAmount.toLocaleString() : '-'}</span></td>
+                        <td><span class="text-warning fw-bold">${item.forecastAmount > 0 ? '$ ' + item.forecastAmount.toLocaleString() : '-'}</span></td>
+                        <td>
+                            ${isForecast
+                                ? '<i class="bx bx-bolt-circle text-warning fs-5"></i>'
+                                : '<i class="bx bxs-check-shield text-primary fs-5"></i>'}
+                        </td>
+                    </tr>
+                `;
+            });
+            $('#forecastTableBody').html(html);
+        }
+    </script>
+}
