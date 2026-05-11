@@ -1,0 +1,18 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Core_Layer.IRepositories;
+using Data_Access_Layer.DbContext;
+using Entity_Layer.Common;
+
+namespace Data_Access_Layer.Repositories
+{
+    public class OrderAnomalyResultRepository:GenericRepository<OrderAnomalyResult>, IOrderAnomalyResultRepository
+    {
+        public OrderAnomalyResultRepository(AppDbContext context) : base(context)
+        {
+        }
+    }
+}

@@ -51,6 +51,7 @@ builder.Services.AddScoped<ICustomerSegmentationResultRepository, CustomerSegmen
 builder.Services.AddScoped<ICustomerChurnResultRepository, CustomerChurnResultRepository>();
 builder.Services.AddScoped<IRegionalDemandForecastRepository, RegionalDemandForecastRepository>();
 builder.Services.AddScoped<IProductSalesForecastRepository, ProductSalesForecastRepository>();
+builder.Services.AddScoped<IOrderAnomalyResultRepository, OrderAnomalyResultRepository>();
 
 
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
