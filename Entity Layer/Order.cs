@@ -17,6 +17,7 @@ namespace Entity_Layer
         public virtual UserAddress UserAddress { get; set; } = null!;
         public string DeliveryAddressSnapshot { get; set; } = null!;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
+        public virtual OrderAnomalyResult OrderAnomalyResult { get; set; } = null!;
     }
 }
 

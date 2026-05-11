@@ -32,6 +32,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<CustomerChurnResult> CustomerChurnResults { get; set; }
         public DbSet<RegionalDemandForecast> RegionalDemansForecasts { get; set; }
         public DbSet<ProductSalesForecast> ProductSalesForecasts { get; set; }
+        public DbSet<OrderAnomalyResult> OrderAnomalyResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -196,13 +197,12 @@ namespace Data_Access_Layer.DbContext
                 entity.ToTable("ProductSalesForecasts");
 
                 entity.HasOne(e => e.Product)
-                      .WithMany() // Ürün entity'sinde listesini tutmak istersen .WithMany(p => p.Forecasts) yapabilirsin
+                      .WithMany() 
                       .HasForeignKey(e => e.ProductId)
                       .OnDelete(DeleteBehavior.Cascade);
 
-                // BİRE-ÇOK İLİŞKİ KURULUMU
-                entity.HasOne(f => f.Product)             // 1 Tahminin -> 1 Ürünü vardır
-                      .WithMany(p => p.SalesForecasts)    // 1 Ürünün -> Birden Çok Tahmini vardır
+                entity.HasOne(f => f.Product)     
+                      .WithMany(p => p.SalesForecasts)   
                       .HasForeignKey(f => f.ProductId)
                       .OnDelete(DeleteBehavior.Cascade);
 
@@ -213,10 +213,28 @@ namespace Data_Access_Layer.DbContext
                 entity.Property(e => e.ConfidenceScore)
                       .HasDefaultValue(0.0);
 
-                // 🔥 SENIOR TOUCH: Aynı ürün için aynı yıl ve ayda sadece 1 tahmin kaydı olabilir!
                 entity.HasIndex(e => new { e.ProductId, e.TargetYear, e.TargetMonth })
                       .IsUnique()
                       .HasDatabaseName("IX_ProductForecast_Product_Date");
+            });
+            #endregion
+
+            #region OrderAnomalyResult Configuration
+            builder.Entity<OrderAnomalyResult>(entity =>
+            {
+                entity.ToTable("OrderAnomalyResults");
+
+                entity.HasOne(x => x.Order)
+                      .WithOne(o => o.OrderAnomalyResult) 
+                      .HasForeignKey<OrderAnomalyResult>(x => x.OrderId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(e => e.Score).IsRequired();
+                entity.Property(e => e.PValue).IsRequired();
+
+                entity.HasIndex(e => e.IsAnomaly);
+
+                entity.HasIndex(e => e.OrderId).IsUnique();
             });
             #endregion
         }
