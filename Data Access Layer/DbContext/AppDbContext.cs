@@ -5,7 +5,6 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Entity_Layer;
-using Entity_Layer.Common;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

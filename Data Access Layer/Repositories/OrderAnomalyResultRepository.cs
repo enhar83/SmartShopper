@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Core_Layer.IRepositories;
 using Data_Access_Layer.DbContext;
-using Entity_Layer.Common;
+using Entity_Layer;
 
 namespace Data_Access_Layer.Repositories
 {

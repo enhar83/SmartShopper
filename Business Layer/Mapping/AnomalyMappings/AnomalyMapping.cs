@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.OrderAnomalyDtos;
-using Entity_Layer.Common;
+using Entity_Layer;
 
 namespace Business_Layer.Mapping.AnomalyMappings
 {
