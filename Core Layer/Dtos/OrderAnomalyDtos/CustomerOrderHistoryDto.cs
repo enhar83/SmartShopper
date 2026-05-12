@@ -11,5 +11,6 @@ namespace Core_Layer.Dtos.OrderAnomalyDtos
         public Guid OrderId { get; set; }
         public DateTime OrderDate { get; set; }
         public decimal TotalPrice { get; set; }
+        public string OrderDateString => OrderDate.ToString("dd.MM.yyyy HH:mm");
     }
 }

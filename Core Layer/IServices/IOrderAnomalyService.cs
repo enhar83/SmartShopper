@@ -11,5 +11,6 @@ namespace Core_Layer.IServices
     {
         Task<List<OrderAnomalyDto>> TGetAllAnomaliesAsync();
         Task<bool> TRunAnomalyDetectionAsync();
+        Task<List<CustomerOrderHistoryDto>> TGetCustomerOrderHistoryAsync(Guid orderId);
     }
 }

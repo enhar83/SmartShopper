@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.CategoryDtos;
 using Core_Layer.Dtos.ProductDtos;
+using Core_Layer.Dtos.RecommendationDtos;
 using Entity_Layer;
 
 namespace Business_Layer.Mapping.ProductMappings
@@ -79,6 +80,14 @@ namespace Business_Layer.Mapping.ProductMappings
                     ? src.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
                     : "NO_IMAGE"))
                 .ReverseMap();
+
+            CreateMap<Product, RecommendedProductDto>()
+                .ForMember(dest => dest.ProductId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.MainImageUrl, opt => opt.MapFrom(src =>
+                    src.ProductImages != null && src.ProductImages.Any(x => x.IsMain)
+                    ? src.ProductImages.FirstOrDefault(x => x.IsMain)!.ImageUrl
+                    : "NO_IMAGE"));
         }
     }
 }

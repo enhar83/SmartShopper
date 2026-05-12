@@ -10,12 +10,13 @@ using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Entity_Layer;
 using Entity_Layer.Common;
+using MailKit.Search;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
 
 namespace Business_Layer.Managers
 {
-    public class OrderAnomalyManager:IOrderAnomalyService
+    public class OrderAnomalyManager : IOrderAnomalyService
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderAnomalyResultRepository _anomalyRepo;
@@ -38,7 +39,6 @@ namespace Business_Layer.Managers
 
         public async Task<List<OrderAnomalyDto>> TGetAllAnomaliesAsync()
         {
-            // Sadece anomalileri, en riskli olandan başlayarak çekiyoruz (P-Value ne kadar küçükse risk o kadar büyüktür)
             var anomalies = await _anomalyRepo.GetAll()
                 .Include(x => x.Order)
                 .ThenInclude(o => o.AppUser)
@@ -48,18 +48,31 @@ namespace Business_Layer.Managers
             return _mapper.Map<List<OrderAnomalyDto>>(anomalies);
         }
 
+        public async Task<List<CustomerOrderHistoryDto>> TGetCustomerOrderHistoryAsync(Guid orderId )
+        {
+            var targetOrder = await _orderRepository.GetAll()
+                .FirstOrDefaultAsync(x => x.Id == orderId);
+
+            if (targetOrder == null) return new List<CustomerOrderHistoryDto>();
+
+            var history = await _orderRepository.GetAll()
+                .Where(x => x.AppUserId == targetOrder.AppUserId && !x.IsDeleted)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
+
+            return _mapper.Map<List<CustomerOrderHistoryDto>>(history);
+        }
+
         public async Task<bool> TRunAnomalyDetectionAsync()
         {
-            // 1. ADIM: Tüm siparişleri kronolojik olarak çek
             var orders = await _orderRepository.GetAll()
                 .Where(x => !x.IsDeleted)
                 .OrderBy(x => x.CreatedDate)
                 .ToListAsync();
 
-            if (orders.Count < 12) // Algoritmanın sağlıklı çalışması için minimum veri seti
-                throw new Exception("Anomali tespiti için en az 12 sipariş kaydı gerekmektedir.");
+            if (orders.Count < 12) 
+                throw new Exception("At least 12 order records are required for anomaly detection.");
 
-            // 2. ADIM: Veriyi ML.NET formatına çevir
             var inputData = orders.Select(x => new AnomalyModelInput
             {
                 TotalPrice = (float)x.TotalPrice
@@ -67,35 +80,28 @@ namespace Business_Layer.Managers
 
             IDataView dataView = _mlContext.Data.LoadFromEnumerable(inputData);
 
-            // 3. ADIM: SSA (Singular Spectrum Analysis) Spike Detection Pipeline
-            // Confidence: %99 (Sadece çok bariz sapmaları yakala)
-            // PvalueHistoryLength: Analiz penceresi (Verinin %25'i kadar geçmişe bakar)
-            // Metodun içindeki pipeline kısmını bununla değiştir:
             var pipeline = _mlContext.Transforms.DetectSpikeBySsa(
                 outputColumnName: nameof(AnomalyModelOutput.Prediction),
                 inputColumnName: nameof(AnomalyModelInput.TotalPrice),
-                confidence: 99.0, // Güven aralığı (%)
-                pvalueHistoryLength: orders.Count / 4, // Kayar pencere boyutu
-                trainingWindowSize: orders.Count, // Toplam eğitim verisi boyutu
-                seasonalityWindowSize: 3 // Mevsimsellik penceresi (küçük bir değer tutarlılık sağlar)
+                confidence: 99.0, 
+                pvalueHistoryLength: orders.Count / 4, 
+                trainingWindowSize: orders.Count, 
+                seasonalityWindowSize: 3 
             );
 
             var model = pipeline.Fit(dataView);
             var transformedData = model.Transform(dataView);
 
-            // 4. ADIM: Tahminleri oku ve sadece "Anomali" olanları ayıkla
             var predictions = _mlContext.Data.CreateEnumerable<AnomalyModelOutput>(transformedData, reuseRowObject: false).ToList();
 
             for (int i = 0; i < predictions.Count; i++)
             {
                 var result = predictions[i];
 
-                // Prediction[0] == 1 ise bu bir anomalidir (Spike)
                 if (result.Prediction[0] == 1)
                 {
                     var targetOrder = orders[i];
 
-                    // Zaten kaydedilmiş mi kontrol et (One-to-One ilişki gereği)
                     var existing = await _anomalyRepo.GetAll()
                         .FirstOrDefaultAsync(x => x.OrderId == targetOrder.Id);
 
@@ -104,10 +110,10 @@ namespace Business_Layer.Managers
                         await _anomalyRepo.AddAsync(new OrderAnomalyResult
                         {
                             OrderId = targetOrder.Id,
-                            Score = result.Prediction[1], // O anki fiyat
-                            PValue = result.Prediction[2], // İstatistikel olasılık
+                            Score = result.Prediction[1],
+                            PValue = result.Prediction[2], 
                             IsAnomaly = true,
-                            Description = $"Şüpheli işlem tespiti: Sipariş tutarı ($ {targetOrder.TotalPrice}) genel satış trendinin çok dışında bir sıçrama gösteriyor.",
+                            Description = $"Suspicious transaction detection: The order amount (${targetOrder.TotalPrice}) shows a jump far outside the general selling trend.",
                             CreatedDate = DateTime.UtcNow,
                             IsDeleted = false
                         });

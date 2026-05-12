@@ -37,5 +37,11 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = ex.Message });
             }
         }
+
+        public async Task<IActionResult> GetOrderHistory(Guid id)
+        {
+            var history = await _orderAnomalyService.TGetCustomerOrderHistoryAsync(id);
+            return Json(history);
+        }
     }
 }
