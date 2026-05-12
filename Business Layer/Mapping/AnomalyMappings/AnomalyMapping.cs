@@ -9,7 +9,7 @@ using Entity_Layer;
 
 namespace Business_Layer.Mapping.AnomalyMappings
 {
-    public class AnomalyMapping:Profile
+    public class AnomalyMapping : Profile
     {
         public AnomalyMapping()
         {
@@ -17,6 +17,11 @@ namespace Business_Layer.Mapping.AnomalyMappings
                 .ForMember(dest => dest.OrderTotal, opt => opt.MapFrom(src => src.Order.TotalPrice))
                 .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(src => src.Order.CreatedDate))
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Order.AppUser.Name + " " + src.Order.AppUser.Surname));
+
+            CreateMap<Order, CustomerOrderHistoryDto>()
+                .ForMember(dest => dest.OrderId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(src => src.CreatedDate))
+                .ForMember(dest => dest.TotalPrice, opt => opt.MapFrom(src => src.TotalPrice));
         }
     }
 }
