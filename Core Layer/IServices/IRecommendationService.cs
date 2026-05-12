@@ -9,7 +9,8 @@ namespace Core_Layer.IServices
 {
     public interface IRecommendationService
     {
-        Task<List<RecommendedProductDto>> TGetPersonalizedRecommendationsAsync(Guid userId, int count = 4);
-        Task<List<RecommendedProductDto>> TGetRelatedProductsByCartAsync(Guid userId, int count = 4);
+        Task<List<RecommendedProductDto>> TGetCartBasedRecommendationsAsync(Guid userId, int count = 4);
+        Task<List<RecommendedProductDto>> TGetFavoriteBasedRecommendationsAsync(Guid userId, int count = 4);
+        Task<List<RecommendedProductDto>> TGetOrderBasedRecommendationsAsync(Guid userId, int count = 4);
     }
 }
