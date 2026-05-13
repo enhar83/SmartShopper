@@ -94,7 +94,10 @@ namespace Business_Layer.Managers
         public async Task<bool> TTrainChurnModelAsync()
         {
             var users = await _userManager.Users.ToListAsync();
-            var allOrders = await _orderRepository.GetAll().ToListAsync();
+
+            var allOrders = await _orderRepository.GetAll()
+                .Where(x => !x.IsDeleted)
+                .ToListAsync();
 
             var userOrdersDict = allOrders.GroupBy(x => x.AppUserId).ToDictionary(g => g.Key, g => g.ToList());
 
@@ -114,7 +117,7 @@ namespace Business_Layer.Managers
                     nameof(ChurnPredictionModelInput.TotalSpend),
                     nameof(ChurnPredictionModelInput.OrderCount),
                     nameof(ChurnPredictionModelInput.AverageOrderValue))
-                .Append(_mlContext.Transforms.NormalizeMinMax("Features")) 
+                .Append(_mlContext.Transforms.NormalizeMinMax("Features"))
                 .Append(_mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(labelColumnName: "Label", featureColumnName: "Features"));
 
             var model = pipeline.Fit(dataView);
@@ -137,7 +140,11 @@ namespace Business_Layer.Managers
             var predictionEngine = _mlContext.Model.CreatePredictionEngine<ChurnPredictionModelInput, ChurnPredictionModelOutput>(trainedModel);
 
             var usersWithOrders = await _userManager.Users.Include(x => x.CustomerChurnResult).ToListAsync();
-            var allOrders = await _orderRepository.GetAll().ToListAsync();
+
+            var allOrders = await _orderRepository.GetAll()
+                .Where(x => !x.IsDeleted)
+                .ToListAsync();
+
             var userOrdersDict = allOrders.GroupBy(x => x.AppUserId).ToDictionary(g => g.Key, g => g.ToList());
 
             var resultList = new List<ChurnPredictionResultDto>();
@@ -156,16 +163,16 @@ namespace Business_Layer.Managers
 
                 var prediction = predictionEngine.Predict(input);
 
-                decimal timeRisk = Math.Min((decimal)(input.DaysSinceLastOrder / 180f) * 100m, 100m);
+                decimal timeRisk = Math.Min((decimal)(input.DaysSinceLastOrder / 120f) * 100m, 100m);
 
                 decimal behaviorRisk = (decimal)(prediction.Probability * 100);
 
                 decimal finalRisk = (timeRisk * 0.6m) + (behaviorRisk * 0.4m);
-
-                finalRisk = Math.Clamp(finalRisk, 1.5m, 99.0m);
+                finalRisk = Math.Clamp(finalRisk, 1.0m, 99.0m);
 
                 churnEntity.IsChurn = finalRisk > 50m;
-                churnEntity.ChurnProbability = finalRisk;
+
+                churnEntity.ChurnProbability = Math.Round(finalRisk, 1);
 
                 churnEntity.Recency = input.DaysSinceLastOrder;
                 churnEntity.Frequency = input.OrderCount;
@@ -187,7 +194,7 @@ namespace Business_Layer.Managers
             }
 
             await _uow.SaveAsync();
-            return resultList;
+            return resultList.OrderByDescending(x => x.ChurnProbability).ToList();
         }
     }
 }
