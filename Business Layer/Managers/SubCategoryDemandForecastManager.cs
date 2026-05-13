@@ -34,6 +34,7 @@ namespace Business_Layer.Managers
             _uow = uow;
             _mapper = mapper;
 
+            // Her eğitimde tutarlı sonuçlar için seed değeri
             _mlContext = new MLContext(seed: 42);
             _modelPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "MLModels", "SubCategoryDemandForecastModel.zip");
 
@@ -57,20 +58,23 @@ namespace Business_Layer.Managers
 
         public async Task<bool> TTrainAndGenerateForecastsAsync()
         {
+            // 1. Veri Çekimi: Silinmemiş siparişlere ait kalemleri getir
             var allOrderItems = await _orderItemRepository.GetAll()
                 .Include(oi => oi.Order)
                 .Include(oi => oi.Product)
                     .ThenInclude(p => p.SubCategory)
                         .ThenInclude(sc => sc!.Category)
-                .Where(oi => !oi.Order.IsDeleted) 
+                .Where(oi => !oi.Order.IsDeleted)
                 .ToListAsync();
 
             if (!allOrderItems.Any()) return false;
 
+            // 2. AOV (Ortalama Sipariş Tutarı) Hesaplama
             var subCategoryAovDict = allOrderItems
                 .GroupBy(x => x.Product.SubCategoryId)
-                .ToDictionary(g => g.Key, g => (float)g.Average(x => (double)x.PriceAtPurchase)); // Geçmiş fiyatlardan ortalama değer çıkartıyoruz
+                .ToDictionary(g => g.Key, g => (float)g.Average(x => (double)x.PriceAtPurchase));
 
+            // 3. Eğitim Verisi Hazırlığı (Historical Data)
             var historicalData = allOrderItems
                 .GroupBy(oi => new {
                     oi.Product.SubCategoryId,
@@ -86,13 +90,14 @@ namespace Business_Layer.Managers
                     Year = (float)g.Key.Year,
                     Month = (float)g.Key.Month,
                     SubCategoryAOV = subCategoryAovDict.ContainsKey(g.Key.SubCategoryId) ? subCategoryAovDict[g.Key.SubCategoryId] : 50f,
-                    Label = (float)g.Count() 
+                    Label = (float)g.Count()
                 }).ToList();
 
             if (historicalData.Count < 20) throw new Exception("Yetersiz eğitim verisi. Modelin örüntü yakalayabilmesi için daha fazla sipariş verisi gerekiyor.");
 
+            // 4. ML.NET Pipeline ve Eğitim
             var dataView = _mlContext.Data.LoadFromEnumerable(historicalData);
-            var trainTestSplit = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2); // %80 eğitim, %20 test
+            var trainTestSplit = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2);
 
             var pipeline = _mlContext.Transforms.Categorical.OneHotEncoding("CategoryEncoded", nameof(SubCategoryDemandForecastModelInput.CategoryName))
                 .Append(_mlContext.Transforms.Categorical.OneHotEncoding("SubCategoryEncoded", nameof(SubCategoryDemandForecastModelInput.SubCategoryName)))
@@ -108,10 +113,13 @@ namespace Business_Layer.Managers
 
             var predictionEngine = _mlContext.Model.CreatePredictionEngine<SubCategoryDemandForecastModelInput, SubCategoryDemandForecastModelOutput>(model);
 
+            // 5. Hedef Tarih Belirleme
             var lastDate = allOrderItems.Max(x => x.Order.CreatedDate);
             var targetMonth = lastDate.AddMonths(1).Month;
             var targetYear = lastDate.AddMonths(1).Year;
 
+            // 6. Tahmin Edilecek Kategorileri Filtreleme (Threshold)
+            // Sadece tek tük, hatalı/test amaçlı olan verileri eledik (TotalSales >= 2)
             var activeSubCategories = allOrderItems
                 .GroupBy(oi => new {
                     oi.Product.SubCategoryId,
@@ -123,14 +131,15 @@ namespace Business_Layer.Managers
                     TotalSales = g.Count(),
                     LastMonthSales = g.Count(oi => oi.Order.CreatedDate.Year == lastDate.Year && oi.Order.CreatedDate.Month == lastDate.Month)
                 })
-                .Where(x => x.TotalSales >= 10 && x.LastMonthSales >= 1)
+                .Where(x => x.TotalSales >= 2) // Filtreyi esnettik
                 .Select(x => x.Info)
                 .ToList();
 
-
+            // 7. Eski verileri temizle
             var oldForecasts = await _forecastRepo.GetAll().ToListAsync();
             _forecastRepo.RemoveRange(oldForecasts);
 
+            // 8. Gelecek Ay Tahminlerini Üretme ve Kaydetme
             foreach (var sc in activeSubCategories)
             {
                 var input = new SubCategoryDemandForecastModelInput
@@ -146,11 +155,12 @@ namespace Business_Layer.Managers
                 int predictedSalesCount = (int)Math.Max(0, Math.Round(prediction.PredictedCount));
                 decimal predictedRevenue = (decimal)(predictedSalesCount * input.SubCategoryAOV);
 
-                if (predictedSalesCount > 0)
+                // DÜZELTME: Sıfır (0) çıkan tahminleri de sisteme kaydediyoruz
+                if (predictedSalesCount >= 0)
                 {
                     await _forecastRepo.AddAsync(new SubCategoryDemandForecast
                     {
-                        SubCategoryId = sc.SubCategoryId, 
+                        SubCategoryId = sc.SubCategoryId,
                         TargetYear = targetYear,
                         TargetMonth = targetMonth,
                         PredictedSalesCount = predictedSalesCount,

@@ -49,7 +49,6 @@ builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
 builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 builder.Services.AddScoped<ICustomerSegmentationResultRepository, CustomerSegmentationRepository>();
 builder.Services.AddScoped<ICustomerChurnResultRepository, CustomerChurnResultRepository>();
-builder.Services.AddScoped<IRegionalDemandForecastRepository, RegionalDemandForecastRepository>();
 builder.Services.AddScoped<IProductSalesForecastRepository, ProductSalesForecastRepository>();
 builder.Services.AddScoped<IOrderAnomalyResultRepository, OrderAnomalyResultRepository>();
 builder.Services.AddScoped<ISubCategoryDemandForecastRepository, SubCategoryDemandForecastRepository>();
@@ -72,7 +71,6 @@ builder.Services.AddScoped<IOrderService, OrderManager>();
 builder.Services.AddScoped<ICustomerSegmentationService, CustomerSegmentationManager>();
 builder.Services.AddScoped<ISalesForecastingService, SalesForecastingManager>();
 builder.Services.AddScoped<ICustomerChurnResultService, CustomerChurnResultManager>();
-builder.Services.AddScoped<IRegionalDemandForecastService, RegionalDemandForecastManager>();
 builder.Services.AddScoped<IProductSalesForecastService, ProductSalesForecastManager>();
 builder.Services.AddScoped<IOrderAnomalyService, OrderAnomalyManager>();
 builder.Services.AddScoped<IRecommendationService, RecommendationManager>();
@@ -82,7 +80,6 @@ builder.Services.AddScoped<DataSeeder>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
-
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 

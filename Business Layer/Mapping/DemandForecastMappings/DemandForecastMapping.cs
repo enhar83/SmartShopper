@@ -13,8 +13,6 @@ namespace Business_Layer.Mapping.DemandForecastMappings
     {
         public DemandForecastMapping()
         {
-            CreateMap<RegionalDemandForecast, RegionalDemandForecastDto>();
-
             CreateMap<SubCategoryDemandForecast, SubCategoryDemandForecastDto>()
                 .ForMember(dest => dest.SubCategoryName, opt => opt.MapFrom(src => src.SubCategory.Name))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.SubCategory.Category.Name));

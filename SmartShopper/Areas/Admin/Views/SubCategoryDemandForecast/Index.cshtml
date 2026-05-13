@@ -1,15 +1,15 @@
 ﻿@using Core_Layer.Dtos.DemandForecastDtos
-@model List<RegionalDemandForecastDto>
+@model List<SubCategoryDemandForecastDto>
 
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 
 @{
-    ViewData["Title"] = "AI Regional Demand Forecast";
+    ViewData["Title"] = "AI SubCategory Demand Forecast";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 
     decimal totalExpectedRevenue = Model?.Sum(x => x.PredictedRevenue) ?? 0;
-    int totalExpectedOrders = Model?.Sum(x => x.PredictedOrderCount) ?? 0;
-    var topRegion = Model?.OrderByDescending(x => x.PredictedRevenue).FirstOrDefault();
+    int totalExpectedSales = Model?.Sum(x => x.PredictedSalesCount) ?? 0;
+    var topSubCategory = Model?.OrderByDescending(x => x.PredictedRevenue).FirstOrDefault();
 }
 
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-4">
@@ -17,12 +17,8 @@
     <div class="ps-3">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-0 p-0">
-                <li class="breadcrumb-item">
-                    <a href="javascript:;"><i class="bx bx-trending-up"></i></a>
-                </li>
-                <li class="breadcrumb-item active" aria-current="page">
-                    Regional Demand Forecasting
-                </li>
+                <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-trending-up"></i></a></li>
+                <li class="breadcrumb-item active" aria-current="page">SubCategory Demand Forecasting</li>
             </ol>
         </nav>
     </div>
@@ -31,14 +27,13 @@
 @Html.AntiForgeryToken()
 
 <div class="row row-cols-1 row-cols-md-3 row-cols-xl-3 mb-4">
-
     <div class="col">
         <div class="card radius-10 border-start border-0 border-3 border-info shadow-sm h-100">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div>
                         <p class="mb-0 text-secondary">AI Forecasting Engine</p>
-                        <h4 class="my-1 text-info">SDCA Linear Regression</h4>
+                        <h4 class="my-1 text-info">FastTree Regression</h4>
                         <p class="mb-0 font-13 text-success">
                             <i class='bx bxs-check-shield'></i> Algorithm Ready
                         </p>
@@ -62,12 +57,8 @@
                 <div class="d-flex align-items-center">
                     <div>
                         <p class="mb-0 text-secondary">Total Projected Revenue</p>
-                        <h4 class="my-1 text-success">
-                            $ @totalExpectedRevenue.ToString("N2")
-                        </h4>
-                        <p class="mb-0 font-13">
-                            Across @(Model?.Count ?? 0) Regions
-                        </p>
+                        <h4 class="my-1 text-success">$ @totalExpectedRevenue.ToString("N2")</h4>
+                        <p class="mb-0 font-13">Across @(Model?.Count ?? 0) SubCategories</p>
                     </div>
                     <div class="widgets-icons-2 rounded-circle bg-light-success text-success ms-auto">
                         <i class='bx bx-dollar'></i>
@@ -82,32 +73,34 @@
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div>
-                        <p class="mb-0 text-secondary">Top Growth Region</p>
-                        <h4 class="my-1 text-primary">
-                            @(topRegion != null ? topRegion.City : "N/A")
-                        </h4>
-                        <p class="mb-0 font-13">
-                            Expected: $ @(topRegion?.PredictedRevenue.ToString("N2") ?? "0.00")
-                        </p>
+                        <p class="mb-0 text-secondary">Top Growth SubCategory</p>
+                        <h4 class="my-1 text-primary">@(topSubCategory != null ? topSubCategory.SubCategoryName : "N/A")</h4>
+                        <p class="mb-0 font-13">Expected: $ @(topSubCategory?.PredictedRevenue.ToString("N2") ?? "0.00")</p>
                     </div>
                     <div class="widgets-icons-2 rounded-circle bg-light-primary text-primary ms-auto">
-                        <i class='bx bx-map-pin'></i>
+                        <i class='bx bx-purchase-tag-alt'></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </div>
 
 <div class="card radius-10 shadow-none border">
-    <div class="card-header bg-transparent border-bottom">
-        <div class="d-flex align-items-center">
-            <div>
-                <h6 class="mb-0 fw-bold">
-                    Predicted Regional Demands
-                </h6>
-            </div>
+    <div class="card-header bg-transparent border-bottom d-flex align-items-center justify-content-between">
+        <h6 class="mb-0 fw-bold">Predicted Category Demands</h6>
+
+        <div class="ms-auto" style="width: 250px;">
+            <select id="categoryFilter" class="form-select form-select-sm border-primary">
+                <option value="">-- All Categories  --</option>
+                @if (ViewBag.Categories != null)
+                {
+                    foreach (var cat in ViewBag.Categories as List<string>)
+                    {
+                        <option value="@cat">@cat</option>
+                    }
+                }
+            </select>
         </div>
     </div>
 
@@ -116,9 +109,10 @@
             <table id="forecastDataTable" class="table align-middle mb-0 table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th>Location</th>
+                        <th>SubCategory</th>
+                        <th>Category</th>
                         <th>Target Period</th>
-                        <th>Expected Orders</th>
+                        <th>Expected Sales (Qty)</th>
                         <th>Projected Revenue</th>
                         <th>Market Potential</th>
                     </tr>
@@ -132,22 +126,23 @@
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <div class="avatar-sm bg-light-primary text-primary rounded-circle p-2 me-2 text-center" style="width:35px; height:35px">
-                                            <i class='bx bx-buildings fs-5'></i>
+                                            <i class='bx bx-category fs-5'></i>
                                         </div>
                                         <div>
-                                            <h6 class="mb-0 font-14 fw-bold">@item.City</h6>
-                                            <small class="text-muted">@item.Country</small>
+                                            <h6 class="mb-0 font-14 fw-bold">@item.SubCategoryName</h6>
+                                            <small class="text-muted">Accuracy: % @(Math.Round(item.ModelAccuracyScore * 100, 1))</small>
                                         </div>
                                     </div>
                                 </td>
+                                <td>@item.CategoryName</td>
                                 <td>
                                     <span class="badge bg-light-secondary text-secondary border">
                                         <i class='bx bx-calendar'></i> @item.Period
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="fw-bold text-dark">@item.PredictedOrderCount</span>
-                                    <small class="text-muted">orders</small>
+                                    <span class="fw-bold text-dark">@item.PredictedSalesCount</span>
+                                    <small class="text-muted">units</small>
                                 </td>
                                 <td>
                                     <h6 class="mb-0 font-14 text-success fw-bold">
@@ -155,17 +150,17 @@
                                     </h6>
                                 </td>
                                 <td>
-                                    @if (item.RevenueLevel == "High Potential")
+                                    @if (item.PotentialLevel == "High Growth")
                                     {
-                                        <span class="badge bg-light-success text-success border border-success px-3 radius-30">@item.RevenueLevel</span>
+                                        <span class="badge bg-light-success text-success border border-success px-3 radius-30">@item.PotentialLevel</span>
                                     }
-                                    else if (item.RevenueLevel == "Medium Potential")
+                                    else if (item.PotentialLevel == "Stable")
                                     {
-                                        <span class="badge bg-light-warning text-warning border border-warning px-3 radius-30">@item.RevenueLevel</span>
+                                        <span class="badge bg-light-warning text-warning border border-warning px-3 radius-30">@item.PotentialLevel</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-light-info text-info border border-info px-3 radius-30">@item.RevenueLevel</span>
+                                        <span class="badge bg-light-info text-info border border-info px-3 radius-30">@item.PotentialLevel</span>
                                     }
                                 </td>
                             </tr>
@@ -174,7 +169,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="5" class="text-center py-5">
+                            <td colspan="6" class="text-center py-5">
                                 <h6>No forecast data available.</h6>
                                 <p class="text-muted">Click "Generate Next Month Forecast" to run the ML.NET prediction engine.</p>
                             </td>
@@ -193,16 +188,30 @@
 
     <script>
         $(document).ready(function () {
-            $('#forecastDataTable').DataTable({
-                order: [[3, "desc"]],
-                pageLength: 10
+            var table = $('#forecastDataTable').DataTable({
+                order: [[4, "desc"]], 
+                pageLength: 10,
+                columnDefs: [
+
+                    { targets: 1, visible: true }
+                ]
+            });
+
+            $('#categoryFilter').on('change', function () {
+                var selectedCategory = $(this).val();
+
+                if (selectedCategory) {
+                    table.column(1).search('^' + selectedCategory + '$', true, false).draw();
+                } else {
+                    table.column(1).search('').draw();
+                }
             });
         });
 
         function executeDemandForecast() {
             Swal.fire({
                 title: 'Training ML Model...',
-                html: 'Analyzing historical regional data and building FastTree regression model.<br><br><b>Please wait.</b>',
+                html: 'Analyzing historical product sales and building FastTree regression model.<br><br><b>Please wait.</b>',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
@@ -212,7 +221,7 @@
             var token = $('input[name="__RequestVerificationToken"]').val();
 
             $.ajax({
-                url: '@Url.Action("RunForecast", "RegionalDemandForecast", new { area = "Admin" })',
+                url: '@Url.Action("RunForecast", "SubCategoryDemandForecast", new { area = "Admin" })',
                 type: 'POST',
                 data: {
                     __RequestVerificationToken: token
