@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Areas\Admin\Views\RegionalDemandForecast\" />
     <Folder Include="ViewComponents\Layout\" />
   </ItemGroup>
 
