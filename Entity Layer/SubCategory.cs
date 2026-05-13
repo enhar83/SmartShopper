@@ -13,5 +13,6 @@ namespace Entity_Layer
         public Guid CategoryId { get; set; }
         public required Category Category { get; set; }
         public ICollection<Product> Products { get; set; } = new List<Product>();
+        public ICollection<SubCategoryDemandForecast> DemandForecasts { get; set; } = new List<SubCategoryDemandForecast>();
     }
 }

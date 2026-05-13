@@ -32,6 +32,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<RegionalDemandForecast> RegionalDemansForecasts { get; set; }
         public DbSet<ProductSalesForecast> ProductSalesForecasts { get; set; }
         public DbSet<OrderAnomalyResult> OrderAnomalyResults { get; set; }
+        public DbSet<SubCategoryDemandForecast> SubCategoryDemandForecasts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -234,6 +235,29 @@ namespace Data_Access_Layer.DbContext
                 entity.HasIndex(e => e.IsAnomaly);
 
                 entity.HasIndex(e => e.OrderId).IsUnique();
+            });
+            #endregion
+
+            #region SubCategoryDemandForecast Configuration
+            builder.Entity<SubCategoryDemandForecast>(entity =>
+            {
+                entity.ToTable("SubCategoryDemandForecasts");
+
+                entity.HasOne(e => e.SubCategory)
+                      .WithMany(s => s.DemandForecasts) 
+                      .HasForeignKey(e => e.SubCategoryId)
+                      .OnDelete(DeleteBehavior.Cascade); 
+
+                entity.Property(e => e.PredictedRevenue)
+                      .HasPrecision(18, 2)
+                      .IsRequired();
+
+                entity.Property(e => e.ModelAccuracyScore)
+                      .HasDefaultValue(0.0);
+
+                entity.HasIndex(e => new { e.SubCategoryId, e.TargetYear, e.TargetMonth })
+                      .IsUnique()
+                      .HasDatabaseName("IX_SubCatForecast_SubCat_Date");
             });
             #endregion
         }

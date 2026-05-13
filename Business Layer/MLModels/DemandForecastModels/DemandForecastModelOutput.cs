@@ -10,6 +10,6 @@ namespace Business_Layer.MLModels.DemandForecastModels
     public class DemandForecastModelOutput
     {
         [ColumnName("Score")]
-        public float PredictedRevenue { get; set; }
+        public float Score { get; set; }
     }
 }

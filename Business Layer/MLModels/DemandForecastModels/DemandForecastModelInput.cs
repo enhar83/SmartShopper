@@ -14,13 +14,13 @@ namespace Business_Layer.MLModels.DemandForecastModels
         [LoadColumn(1)]
         public string City { get; set; } = null!;
         [LoadColumn(2)]
-        public float Month { get; set; }
-        [LoadColumn(3)]
         public float Year { get; set; }
+        [LoadColumn(3)]
+        public float Month { get; set; }
         [LoadColumn(4)]
         public float CityAOV { get; set; }
         [LoadColumn(5)]
         [ColumnName("Label")]
-        public float TotalRevenue { get; set; }
+        public float Label { get; set; }
     }
 }
