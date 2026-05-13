@@ -52,6 +52,7 @@ builder.Services.AddScoped<ICustomerChurnResultRepository, CustomerChurnResultRe
 builder.Services.AddScoped<IRegionalDemandForecastRepository, RegionalDemandForecastRepository>();
 builder.Services.AddScoped<IProductSalesForecastRepository, ProductSalesForecastRepository>();
 builder.Services.AddScoped<IOrderAnomalyResultRepository, OrderAnomalyResultRepository>();
+builder.Services.AddScoped<ISubCategoryDemandForecastRepository, SubCategoryDemandForecastRepository>();
 
 
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
@@ -75,6 +76,7 @@ builder.Services.AddScoped<IRegionalDemandForecastService, RegionalDemandForecas
 builder.Services.AddScoped<IProductSalesForecastService, ProductSalesForecastManager>();
 builder.Services.AddScoped<IOrderAnomalyService, OrderAnomalyManager>();
 builder.Services.AddScoped<IRecommendationService, RecommendationManager>();
+builder.Services.AddScoped<ISubCategoryDemandForecastService, SubCategoryDemandForecastManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 

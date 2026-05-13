@@ -216,7 +216,7 @@ namespace Business_Layer.Managers
 
             if (userCart == null || userCart.CartItems.Count < 3) return new List<RecommendedProductDto>();
 
-            var cartProducts = userCart.CartItems.ToDictionary(x => x.ProductId, x => x.Product.Name);
+            var cartProducts = userCart.CartItems.ToDictionary(x => x.ProductId, x => x.Product!.Name);
             var cartProductIds = cartProducts.Keys.ToList();
 
             var orderItemsList = await _orderRepository.GetAll()
