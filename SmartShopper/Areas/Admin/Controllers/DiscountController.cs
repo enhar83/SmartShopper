@@ -135,5 +135,31 @@ namespace SmartShopper.Areas.Admin.Controllers
                 return Json(new { success = false, message = "An unexpected system error occurred while updating." });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> AssignDiscount(AssignDiscountDto assignDto)
+        {
+            try
+            {
+                await _discountService.TAssignDiscountToUserAsync(assignDto);
+                return Json(new { success = true, message = "The discount has been successfully applied!" });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "A system error occurred during the assignment process." });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetActiveDiscounts()
+        {
+            var discounts = await _discountService.TGetAllDiscountsAsync();
+            var activeDiscounts = discounts.Where(x => !x.IsDeleted && x.EndDate > DateTime.Now).ToList();
+            return Json(activeDiscounts);
+        }
     }
 }

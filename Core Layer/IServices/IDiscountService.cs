@@ -14,5 +14,6 @@ namespace Core_Layer.IServices
         Task<DiscountUpdateDto> GetDiscountForUpdateAsync(Guid id);
         Task TUpdateDiscountAsync(DiscountUpdateDto updateDto);
         Task TDeleteDiscountAsync(Guid id);
+        Task TAssignDiscountToUserAsync(AssignDiscountDto assignDto);
     }
 }

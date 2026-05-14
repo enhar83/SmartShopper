@@ -16,12 +16,14 @@ namespace Business_Layer.Managers
     public class DiscountManager : IDiscountService
     {
         private readonly IDiscountRepository _discountRepository;
+        private readonly IDiscountCustomerRepository _discountCustomerRepository;
         private readonly IUnitOfWork _uow; 
         private readonly IMapper _mapper;
 
-        public DiscountManager(IDiscountRepository discountRepository, IUnitOfWork uow, IMapper mapper)
+        public DiscountManager(IDiscountRepository discountRepository, IDiscountCustomerRepository discountCustomerRepository, IUnitOfWork uow, IMapper mapper)
         {
             _discountRepository = discountRepository;
+            _discountCustomerRepository = discountCustomerRepository;
             _uow = uow;
             _mapper = mapper;
         }
@@ -82,6 +84,28 @@ namespace Business_Layer.Managers
                 throw new LogicException("NotFound", "No campaign was found to delete.");
 
             _discountRepository.Remove(discount);
+            await _uow.SaveAsync();
+        }
+
+        public async Task TAssignDiscountToUserAsync(AssignDiscountDto assignDto)
+        {
+            bool alreadyExists = await _discountCustomerRepository.AnyAsync(x =>
+                x.AppUserId == assignDto.AppUserId &&
+                x.DiscountId == assignDto.DiscountId &&
+                !x.IsUsed);
+
+            if (alreadyExists)
+                throw new LogicException("Duplicate", "This discount has already been applied to this user and has not yet been used.");
+
+            var assignment = new DiscountCustomer
+            {
+                AppUserId = assignDto.AppUserId,
+                DiscountId = assignDto.DiscountId,
+                IsUsed = false, 
+                CreatedDate = DateTime.Now 
+            };
+
+            await _discountCustomerRepository.AddAsync(assignment);
             await _uow.SaveAsync();
         }
     }
