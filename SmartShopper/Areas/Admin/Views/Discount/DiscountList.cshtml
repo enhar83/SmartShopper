@@ -77,7 +77,6 @@
                                         <div class="text-danger" title="End Date"><i class='bx bx-calendar-x'></i> @discount.EndDate.ToString("dd.MM.yyyy HH:mm")</div>
                                     </td>
                                     <td class="text-center">
-                                        @* İŞTE SENIOR DOKUNUŞU VE DÜZELTİLEN KISIM BURASI *@
                                         @if (!discount.IsDeleted && discount.EndDate > DateTime.Now)
                                         {
                                             <div class="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3">
@@ -99,8 +98,18 @@
                                     </td>
                                     <td class="text-center">
                                         <div class="d-flex order-actions justify-content-center">
-                                            <a href="javascript:;" onclick="openEditModal('@discount.Id')" class="text-primary bg-light-primary border-0 me-2" title="Edit"><i class='bx bx-edit'></i></a>
-                                            <a href="javascript:;" onclick="deleteDiscount('@discount.Id')" class="text-danger bg-light-danger border-0" title="Delete"><i class='bx bx-trash'></i></a>
+                                            <a href="javascript:;" onclick="openAssignedUsersModal('@discount.Id', '@discount.Name')"
+                                               class="text-info bg-light-info border-0 me-2" title="Assigned Users">
+                                                <i class='bx bx-group'></i>
+                                            </a>
+                                            <a href="javascript:;" onclick="openEditModal('@discount.Id')"
+                                               class="text-primary bg-light-primary border-0 me-2" title="Edit">
+                                                <i class='bx bx-edit'></i>
+                                            </a>
+                                            <a href="javascript:;" onclick="deleteDiscount('@discount.Id')"
+                                               class="text-danger bg-light-danger border-0" title="Delete">
+                                                <i class='bx bx-trash'></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -163,7 +172,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" id="btnAddDiscountSave" class="btn btn-primary px-4">Create Campaign</button>
                 </div>
             </form>
@@ -180,7 +189,6 @@
             </div>
             <form id="editDiscountForm">
                 <input type="hidden" name="Id" id="editDiscountId" />
-
                 <div class="modal-body p-4">
                     <div id="editFormErrorArea" class="alert alert-danger d-none"></div>
                     <div class="row g-3">
@@ -219,7 +227,6 @@
                             <label class="form-label">End Date <span class="text-danger">*</span></label>
                             <input type="datetime-local" name="EndDate" id="editEndDate" class="form-control" required>
                         </div>
-
                         <div class="col-md-12 mt-4">
                             <div class="form-check form-switch card shadow-none border p-3 d-flex align-items-center">
                                 <input type="hidden" name="IsDeleted" id="editIsDeletedHidden" value="false" />
@@ -230,14 +237,43 @@
                                 </label>
                             </div>
                         </div>
-
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" id="btnEditDiscountSave" class="btn btn-warning px-4">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="assignedUsersModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-top border-0 border-4 border-info">
+            <div class="modal-header">
+                <h5 class="modal-title text-info"><i class='bx bx-group me-1'></i> Users Assigned to: <span id="modalDiscountName" class="fw-bold"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <th>Full Name</th>
+                                <th>Email</th>
+                                <th class="text-center">Usage Status</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="assignedUsersTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
@@ -286,15 +322,12 @@
                     success: function (res) {
                         if (res.success) {
                             $("#addDiscountModal").modal('hide');
-                            Swal.fire({
-                                icon: 'success', title: 'Created!', text: res.message, timer: 1500, showConfirmButton: false
-                            }).then(() => location.reload());
+                            Swal.fire({ icon: 'success', title: 'Created!', text: res.message, timer: 1500, showConfirmButton: false })
+                            .then(() => location.reload());
                         } else {
                             $btn.prop("disabled", false).text("Create Campaign");
                             if(res.errors && res.errors.length > 0) {
-                                let errorHtml = '<ul>';
-                                res.errors.forEach(err => errorHtml += `<li>${err}</li>`);
-                                errorHtml += '</ul>';
+                                let errorHtml = '<ul>' + res.errors.map(err => `<li>${err}</li>`).join('') + '</ul>';
                                 $("#formErrorArea").html(errorHtml).removeClass("d-none");
                             } else {
                                 Swal.fire('Warning', res.message, 'warning');
@@ -321,15 +354,12 @@
                     success: function (res) {
                         if (res.success) {
                             $("#editDiscountModal").modal('hide');
-                            Swal.fire({
-                                icon: 'success', title: 'Updated!', text: res.message, timer: 1500, showConfirmButton: false
-                            }).then(() => location.reload());
+                            Swal.fire({ icon: 'success', title: 'Updated!', text: res.message, timer: 1500, showConfirmButton: false })
+                            .then(() => location.reload());
                         } else {
                             $btn.prop("disabled", false).text("Save Changes");
                             if(res.errors && res.errors.length > 0) {
-                                let errorHtml = '<ul>';
-                                res.errors.forEach(err => errorHtml += `<li>${err}</li>`);
-                                errorHtml += '</ul>';
+                                let errorHtml = '<ul>' + res.errors.map(err => `<li>${err}</li>`).join('') + '</ul>';
                                 $("#editFormErrorArea").html(errorHtml).removeClass("d-none");
                             } else {
                                 Swal.fire('Warning', res.message, 'warning');
@@ -343,17 +373,10 @@
                 });
             });
 
-            $('#addDiscountModal').on('hidden.bs.modal', function () {
-                $('#addDiscountForm')[0].reset();
-                $("#formErrorArea").addClass("d-none").html('');
-                $('#maxDiscountContainer').show();
-            });
-            $('#editDiscountModal').on('hidden.bs.modal', function () {
-                $('#editDiscountForm')[0].reset();
-                $("#editFormErrorArea").addClass("d-none").html('');
-                $('#editMaxDiscountContainer').show();
-                $('#editIsDeletedSwitch').prop('checked', false);
-                $('#editIsDeletedHidden').val('false');
+            $('.modal').on('hidden.bs.modal', function () {
+                $(this).find('form').trigger('reset');
+                $(".alert").addClass("d-none").html('');
+                $('#maxDiscountContainer, #editMaxDiscountContainer').show();
             });
         });
 
@@ -365,38 +388,21 @@
                 success: function (res) {
                     if (res.success) {
                         let data = res.data;
-
                         $('#editDiscountId').val(data.id);
                         $('#editName').val(data.name);
                         $('#editDescription').val(data.description);
                         $('#editValue').val(data.value);
                         $('#editMinOrder').val(data.minOrderAmount);
                         $('#editMaxDiscount').val(data.maxDiscountAmount);
-
                         $('#editDiscountTypeSelect').val(data.type).trigger('change');
-
-                        if (data.startDate) {
-                            $('#editStartDate').val(data.startDate.substring(0, 16));
-                        }
-                        if (data.endDate) {
-                            $('#editEndDate').val(data.endDate.substring(0, 16));
-                        }
-
-                        if (data.isDeleted) {
-                            $('#editIsDeletedSwitch').prop('checked', true);
-                            $('#editIsDeletedHidden').val('true');
-                        } else {
-                            $('#editIsDeletedSwitch').prop('checked', false);
-                            $('#editIsDeletedHidden').val('false');
-                        }
-
+                        if (data.startDate) $('#editStartDate').val(data.startDate.substring(0, 16));
+                        if (data.endDate) $('#editEndDate').val(data.endDate.substring(0, 16));
+                        $('#editIsDeletedSwitch').prop('checked', data.isDeleted);
+                        $('#editIsDeletedHidden').val(data.isDeleted ? 'true' : 'false');
                         $('#editDiscountModal').modal('show');
                     } else {
                         Swal.fire('Error', res.message, 'error');
                     }
-                },
-                error: function () {
-                    Swal.fire('Error', 'An unexpected error occurred while fetching data.', 'error');
                 }
             });
         }
@@ -404,12 +410,10 @@
         function deleteDiscount(id) {
             Swal.fire({
                 title: 'Are you sure?',
-                text: "You won't be able to revert this! The campaign will be marked as deleted.",
+                text: "Mark as deleted!",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!'
+                confirmButtonColor: '#3085d6', cancelButtonColor: '#d33', confirmButtonText: 'Yes, delete it!'
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
@@ -418,17 +422,64 @@
                         data: { id: id },
                         success: function (res) {
                             if (res.success) {
-                                Swal.fire(
-                                    'Deleted!',
-                                    res.message,
-                                    'success'
-                                ).then(() => location.reload());
+                                Swal.fire('Deleted!', res.message, 'success').then(() => location.reload());
                             } else {
                                 Swal.fire('Error', res.message, 'error');
                             }
-                        },
-                        error: function () {
-                            Swal.fire('Error', 'An unexpected system error occurred.', 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function openAssignedUsersModal(discountId, discountName) {
+            $("#modalDiscountName").text(discountName);
+            $("#assignedUsersTableBody").html('<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-info spinner-border-sm"></div> Loading...</td></tr>');
+            $("#assignedUsersModal").modal('show');
+
+            $.get('/Admin/Discount/GetAssignedUsers?id=' + discountId, function (data) {
+                let html = "";
+                if (!data || data.length === 0) {
+                    html = '<tr><td colspan="4" class="text-center py-4 text-muted">No users found for this campaign.</td></tr>';
+                } else {
+                    data.forEach(item => {
+                        let statusBadge = item.isUsed
+                            ? '<span class="badge bg-light-success text-success"><i class="bx bx-check"></i> Used</span>'
+                            : '<span class="badge bg-light-warning text-warning"><i class="bx bx-time"></i> Not Used</span>';
+
+                        let actionBtn = item.isUsed
+                            ? '<button class="btn btn-sm btn-light border" disabled title="Used discounts cannot be removed"><i class="bx bx-trash"></i></button>'
+                            : `<button class="btn btn-sm btn-outline-danger" onclick="removeUserDiscount('${item.assignmentId}')" title="Revoke discount"><i class="bx bx-trash"></i></button>`;
+
+                        html += `<tr>
+                            <td><div class="fw-bold">${item.userFullName}</div></td>
+                            <td>${item.email}</td>
+                            <td class="text-center">${statusBadge}</td>
+                            <td class="text-center">${actionBtn}</td>
+                        </tr>`;
+                    });
+                }
+                $("#assignedUsersTableBody").html(html);
+            }).fail(function() {
+                $("#assignedUsersTableBody").html('<tr><td colspan="4" class="text-center text-danger">Failed to load data.</td></tr>');
+            });
+        }
+
+        function removeUserDiscount(assignmentId) {
+            Swal.fire({
+                title: 'Revoke Discount?',
+                text: "The user will lose access to this offer!",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, remove it!'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Admin/Discount/RemoveUserDiscount?id=' + assignmentId, function (res) {
+                        if (res.success) {
+                            Swal.fire('Success', res.message, 'success');
+                            $("#assignedUsersModal").modal('hide');
+                        } else {
+                            Swal.fire('Error', res.message, 'error');
                         }
                     });
                 }

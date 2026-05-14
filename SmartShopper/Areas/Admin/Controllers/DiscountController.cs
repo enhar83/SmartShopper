@@ -161,5 +161,26 @@ namespace SmartShopper.Areas.Admin.Controllers
             var activeDiscounts = discounts.Where(x => !x.IsDeleted && x.EndDate > DateTime.Now).ToList();
             return Json(activeDiscounts);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAssignedUsers(Guid id)
+        {
+            var users = await _discountService.TGetUsersByDiscountIdAsync(id);
+            return Json(users);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> RemoveUserDiscount(Guid id)
+        {
+            try
+            {
+                await _discountService.TRemoveDiscountFromUserAsync(id);
+                return Json(new { success = true, message = "The discount was successfully reclaimed from the user." });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
     }
 }

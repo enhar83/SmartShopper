@@ -108,5 +108,34 @@ namespace Business_Layer.Managers
             await _discountCustomerRepository.AddAsync(assignment);
             await _uow.SaveAsync();
         }
+
+        public async Task<List<DiscountAssignedUserDto>> TGetUsersByDiscountIdAsync(Guid discountId)
+        {
+            var assignments = await _discountCustomerRepository.GetAll()
+                .Where(x => x.DiscountId == discountId && !x.IsDeleted)
+                .Select(x => new DiscountAssignedUserDto
+                {
+                    AssignmentId = x.Id,
+                    UserFullName = x.AppUser.Name + " " + x.AppUser.Surname,
+                    Email = x.AppUser.Email!,
+                    IsUsed = x.IsUsed,
+                    AssignedDate = x.CreatedDate
+                }).ToListAsync();
+
+            return assignments;
+        }
+
+        public async Task TRemoveDiscountFromUserAsync(Guid assignmentId)
+        {
+            var assignment = await _discountCustomerRepository.GetByIdAsync(assignmentId);
+            if (assignment == null)
+                throw new LogicException("NotFound", "Discount not found.");
+
+            if (assignment.IsUsed)
+                throw new LogicException("Used", "A used discount cannot be reclaimed.");
+
+            _discountCustomerRepository.Remove(assignment);
+            await _uow.SaveAsync();
+        }
     }
 }

@@ -25,6 +25,12 @@ namespace Business_Layer.Mapping.DiscountMappings
             CreateMap<AssignDiscountDto, DiscountCustomer>()
                 .ForMember(dest => dest.IsUsed, opt => opt.MapFrom(src => false))
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
+
+            CreateMap<DiscountCustomer, DiscountAssignedUserDto>()
+                .ForMember(dest => dest.AssignmentId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.AppUser.Name + " " + src.AppUser.Surname))
+                .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.AppUser.Email))
+                .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.CreatedDate));
         }
     }
 }
