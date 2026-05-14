@@ -52,6 +52,8 @@ builder.Services.AddScoped<ICustomerChurnResultRepository, CustomerChurnResultRe
 builder.Services.AddScoped<IProductSalesForecastRepository, ProductSalesForecastRepository>();
 builder.Services.AddScoped<IOrderAnomalyResultRepository, OrderAnomalyResultRepository>();
 builder.Services.AddScoped<ISubCategoryDemandForecastRepository, SubCategoryDemandForecastRepository>();
+builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
+builder.Services.AddScoped<IDiscountCustomerRepository, DiscountCustomerRepository>();
 
 
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
