@@ -1,0 +1,243 @@
+﻿@using Core_Layer.Dtos.DiscountDtos
+@using static Entity_Layer.Discount
+@model List<DiscountListDto>
+
+
+@{
+    ViewData["Title"] = "Discount Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int count = 1;
+}
+
+<div class="row">
+    <div class="col-xl-12 mx-auto">
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="breadcrumb-title pe-3">Marketing</div>
+            <div class="ps-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 p-0">
+                        <li class="breadcrumb-item"><a href="javascript:;"><i class="bx bx-home-alt"></i></a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Discounts & Coupons</li>
+                    </ol>
+                </nav>
+            </div>
+            <div class="ms-auto">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDiscountModal">
+                    <i class='bx bx-plus-circle me-1'></i> Add New Discount
+                </button>
+            </div>
+        </div>
+        <div class="card border-top border-0 border-4 border-primary">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="discountDataTable" class="table table-striped table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th>Campaign Name</th>
+                                <th class="text-center">Type</th>
+                                <th class="text-center">Value</th>
+                                <th class="text-center">Min. Order</th>
+                                <th class="text-center">Valid Dates</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var discount in Model)
+                            {
+                                <tr>
+                                    <td>@count</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="ms-2">
+                                                <h6 class="mb-0 font-14">@discount.Name</h6>
+                                                <small class="text-muted">@discount.Description</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (discount.Type == DiscountType.Percentage)
+                                        {
+                                            <span class="badge bg-info"><i class='bx bx-pie-chart-alt'></i> Percentage</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary"><i class='bx bx-lira'></i> Fixed Amount</span>
+                                        }
+                                    </td>
+                                    <td class="text-center fw-bold">
+                                        @(discount.Type == DiscountType.Percentage ? $"%{discount.Value}" : $"{discount.Value:C2}")
+                                    </td>
+                                    <td class="text-center">
+                                        @(discount.MinOrderAmount.HasValue? discount.MinOrderAmount.Value.ToString("C2") : "No Limit")
+                                    </td>
+                                    <td class="text-center" style="font-size:0.85rem;">
+                                        <div class="text-success" title="Start Date"><i class='bx bx-calendar-check'></i> @discount.StartDate.ToString("dd.MM.yyyy HH:mm")</div>
+                                        <div class="text-danger" title="End Date"><i class='bx bx-calendar-x'></i> @discount.EndDate.ToString("dd.MM.yyyy HH:mm")</div>
+                                    </td>
+                                    <td class="text-center">
+                                        @if (discount.IsActive && discount.EndDate > DateTime.Now)
+                                        {
+                                            <div class="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3">
+                                                <i class='bx bx-check-circle me-1'></i>Active
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="badge rounded-pill text-danger bg-light-danger p-2 text-uppercase px-3">
+                                                <i class='bx bx-x-circle me-1'></i>Expired / Passive
+                                            </div>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex order-actions justify-content-center">
+                                            <a href="javascript:;" class="text-primary bg-light-primary border-0 me-2" title="Edit"><i class='bx bx-edit'></i></a>
+                                            <a href="javascript:;" class="text-danger bg-light-danger border-0" title="Delete"><i class='bx bx-trash'></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                count++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="addDiscountModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-top border-0 border-4 border-primary">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary"><i class='bx bx-gift me-1'></i> Create New Discount</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addDiscountForm">
+                <div class="modal-body p-4">
+                    <div id="formErrorArea" class="alert alert-danger d-none"></div>
+
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Campaign Name <span class="text-danger">*</span></label>
+                            <input type="text" name="Name" class="form-control" placeholder="e.g., Summer Sale 2026" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Description</label>
+                            <textarea name="Description" class="form-control" rows="2" placeholder="Brief details about the campaign..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Discount Type <span class="text-danger">*</span></label>
+                            <select name="Type" id="discountTypeSelect" class="form-select">
+                                <option value="1">Percentage (%)</option>
+                                <option value="2">Fixed Amount (TL)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Discount Value <span class="text-danger">*</span></label>
+                            <input type="number" step="0.01" name="Value" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Minimum Order Amount</label>
+                            <input type="number" step="0.01" name="MinOrderAmount" class="form-control" placeholder="Leave blank if no limit">
+                        </div>
+                        <div class="col-md-6" id="maxDiscountContainer">
+                            <label class="form-label">Max Discount Amount</label>
+                            <input type="number" step="0.01" name="MaxDiscountAmount" class="form-control" placeholder="Only for Percentage type">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Start Date <span class="text-danger">*</span></label>
+                            <input type="datetime-local" name="StartDate" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">End Date <span class="text-danger">*</span></label>
+                            <input type="datetime-local" name="EndDate" class="form-control" required>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="btnAddDiscountSave" class="btn btn-primary px-4">Create Campaign</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('#discountDataTable').DataTable({
+                "pageLength": 10,
+                "language": { "emptyTable": "No discounts found" },
+                "order": [[ 5, "desc" ]] 
+            });
+
+            $('#discountTypeSelect').on('change', function() {
+                if($(this).val() === "2") { 
+                    $('#maxDiscountContainer').hide();
+                    $('input[name="MaxDiscountAmount"]').val(''); 
+                } else {
+                    $('#maxDiscountContainer').show();
+                }
+            });
+
+            $("#addDiscountForm").on("submit", function (e) {
+                e.preventDefault();
+
+                $("#formErrorArea").addClass("d-none").html('');
+
+                const $btn = $("#btnAddDiscountSave");
+                $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+
+                $.ajax({
+                    url: '/Admin/Discount/CreateDiscount', 
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    success: function (res) {
+                        if (res.success) {
+                            $("#addDiscountModal").modal('hide');
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Created!',
+                                text: res.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            $btn.prop("disabled", false).text("Create Campaign");
+
+                            if(res.errors && res.errors.length > 0) {
+                                let errorHtml = '<ul>';
+                                res.errors.forEach(function(err) {
+                                    errorHtml += `<li>${err}</li>`;
+                                });
+                                errorHtml += '</ul>';
+                                $("#formErrorArea").html(errorHtml).removeClass("d-none");
+                            } else {
+                                Swal.fire('Warning', res.message, 'warning');
+                            }
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error', 'An unexpected system error occurred.', 'error');
+                        $btn.prop("disabled", false).text("Create Campaign");
+                    }
+                });
+            });
+
+            $('#addDiscountModal').on('hidden.bs.modal', function () {
+                $('#addDiscountForm')[0].reset();
+                $("#formErrorArea").addClass("d-none").html('');
+                $('#maxDiscountContainer').show();
+            });
+        });
+    </script>
+}

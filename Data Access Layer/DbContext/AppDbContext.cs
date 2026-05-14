@@ -257,8 +257,6 @@ namespace Data_Access_Layer.DbContext
 
                 entity.Property(d => d.MaxDiscountAmount)
                       .HasPrecision(18, 2);
-
-                entity.HasIndex(d => new { d.IsActive, d.EndDate });
             });
 
             builder.Entity<DiscountCustomer>(entity =>

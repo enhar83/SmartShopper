@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Entity_Layer.Common;
+using static Entity_Layer.Discount;
 
-namespace Entity_Layer
+namespace Core_Layer.Dtos.DiscountDtos
 {
-    public class Discount:BaseEntity
+    public class DiscountCreateDto
     {
         public string Name { get; set; } = null!;
         public string Description { get; set; } = null!;
@@ -17,12 +17,5 @@ namespace Entity_Layer
         public decimal? MaxDiscountAmount { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
-        public virtual ICollection<DiscountCustomer>? DiscountCustomers { get; set; }
-
-        public enum DiscountType
-        {
-            Percentage = 1, 
-            FixedAmount = 2  
-        }
     }
 }
