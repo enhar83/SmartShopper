@@ -32,6 +32,8 @@ namespace Data_Access_Layer.DbContext
         public DbSet<ProductSalesForecast> ProductSalesForecasts { get; set; }
         public DbSet<OrderAnomalyResult> OrderAnomalyResults { get; set; }
         public DbSet<SubCategoryDemandForecast> SubCategoryDemandForecasts { get; set; }
+        public DbSet<Discount> Discounts { get; set; }
+        public DbSet<DiscountCustomer> DiscountCustomers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -231,6 +233,49 @@ namespace Data_Access_Layer.DbContext
                 entity.HasIndex(e => new { e.SubCategoryId, e.TargetYear, e.TargetMonth })
                       .IsUnique()
                       .HasDatabaseName("IX_SubCatForecast_SubCat_Date");
+            });
+            #endregion
+
+            #region Discount & DiscountCustomer Configuration
+            builder.Entity<Discount>(entity =>
+            {
+                entity.ToTable("Discounts");
+
+                entity.Property(d => d.Name)
+                      .HasMaxLength(150)
+                      .IsRequired();
+
+                entity.Property(d => d.Description)
+                      .HasMaxLength(500);
+
+                entity.Property(d => d.Value)
+                      .HasPrecision(18, 2)
+                      .IsRequired();
+
+                entity.Property(d => d.MinOrderAmount)
+                      .HasPrecision(18, 2);
+
+                entity.Property(d => d.MaxDiscountAmount)
+                      .HasPrecision(18, 2);
+
+                entity.HasIndex(d => new { d.IsActive, d.EndDate });
+            });
+
+            builder.Entity<DiscountCustomer>(entity =>
+            {
+                entity.ToTable("DiscountCustomers");
+
+                entity.HasOne(dc => dc.AppUser)
+                      .WithMany(u => u.DiscountCustomers)
+                      .HasForeignKey(dc => dc.AppUserId)
+                      .OnDelete(DeleteBehavior.Cascade); 
+
+                entity.HasOne(dc => dc.Discount)
+                      .WithMany(d => d.DiscountCustomers)
+                      .HasForeignKey(dc => dc.DiscountId)
+                      .OnDelete(DeleteBehavior.Cascade); 
+
+                entity.HasIndex(dc => new { dc.AppUserId, dc.IsUsed });
             });
             #endregion
         }
