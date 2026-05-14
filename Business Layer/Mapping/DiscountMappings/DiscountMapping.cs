@@ -31,6 +31,16 @@ namespace Business_Layer.Mapping.DiscountMappings
                 .ForMember(dest => dest.UserFullName, opt => opt.MapFrom(src => src.AppUser.Name + " " + src.AppUser.Surname))
                 .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.AppUser.Email))
                 .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.CreatedDate));
+
+            CreateMap<DiscountCustomer, UserDiscountListDto>()
+                .ForMember(dest => dest.AssignmentId, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.CampaignName, opt => opt.MapFrom(src => src.Discount.Name))
+                .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Discount.Description))
+                .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Discount.Type))
+                .ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Discount.Value))
+                .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.CreatedDate))
+                .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.Discount.EndDate))
+                .ForMember(dest => dest.IsUsed, opt => opt.MapFrom(src => src.IsUsed));
         }
     }
 }
