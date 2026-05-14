@@ -17,6 +17,8 @@ namespace Business_Layer.Mapping.DiscountMappings
                 .ForMember(dest => dest.IsDeleted, opt => opt.MapFrom(src => false));
 
             CreateMap<Discount, DiscountListDto>();
+
+            CreateMap<Discount, DiscountUpdateDto>();
         }
     }
 }
