@@ -137,5 +137,16 @@ namespace Business_Layer.Managers
             _discountCustomerRepository.Remove(assignment);
             await _uow.SaveAsync();
         }
+
+        public async Task<List<UserDiscountListDto>> TGetUserSpecificDiscountsAsync(Guid userId)
+        {
+            var userAssignments = await _discountCustomerRepository.GetAll()
+                .Include(x => x.Discount)
+                .Where(x => x.AppUserId == userId && !x.IsDeleted)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
+
+            return _mapper.Map<List<UserDiscountListDto>>(userAssignments);
+        }
     }
 }

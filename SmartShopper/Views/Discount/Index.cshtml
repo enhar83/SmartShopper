@@ -1,0 +1,191 @@
+﻿@using Core_Layer.Dtos.DiscountDtos
+@using static Entity_Layer.Discount
+@model List<UserDiscountListDto>
+
+@{
+    ViewData["Title"] = "My Coupons";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="contact-area bg-light pt-80 pb-100">
+    <div class="container-wrapper extra-padding-15">
+        <div class="row">
+            <div class="col-xl-4 col-lg-4 col-md-12">
+                <div class="contact-form-left text-center rounded bg-white shadow-sm p-5 border">
+                    <div class="nav flex-column nav-pills custom-dashboard-tabs">
+                        <a class="nav-link mb-2" asp-controller="Profile" asp-action="ViewProfile"><i class="fas fa-user-circle mr-10"></i>My Profile</a>
+                        <a class="nav-link mb-2" asp-controller="Order" asp-action="Index"><i class="fas fa-shopping-bag mr-10"></i>My Orders</a>
+                        <a class="nav-link active mb-2" asp-controller="MyDiscounts" asp-action="Index"><i class="fas fa-ticket-alt mr-10"></i>My Coupons</a>
+                    </div>
+                    <div class="bottom-line mt-30 mb-20"></div>
+                    <p class="text-muted small ls-1 text-uppercase font-weight-bold">Dashboard</p>
+                </div>
+            </div>
+
+            <div class="col-xl-8 col-lg-8 col-md-12 mt-md-30">
+                <div class="bg-white rounded shadow-sm border p-5" style="min-height: 550px;">
+                    <div class="d-flex justify-content-between align-items-center mb-40 border-bottom pb-3">
+                        <h3 class="mb-0 font-weight-bold text-dark">Available Offers</h3>
+                        <span class="badge badge-dark rounded-pill px-3">@(Model?.Count(x => !x.IsUsed && !x.IsExpired) ?? 0) Active</span>
+                    </div>
+
+                    @if (Model != null && Model.Any())
+                    {
+                        <div class="row">
+                            @foreach (var coupon in Model)
+                            {
+                                <div class="col-md-12 mb-4">
+                                    <div class="coupon-card d-flex align-items-center border rounded @(coupon.IsUsed || coupon.IsExpired ? "coupon-disabled" : "")">
+                                        <div class="coupon-left p-4 text-center bg-dark text-white d-flex flex-column justify-content-center">
+                                            @if (coupon.Type == DiscountType.Percentage)
+                                            {
+                                                <h2 class="mb-0 font-weight-bold">%@coupon.Value.ToString("0")</h2>
+                                                <small class="text-uppercase ls-1">OFF</small>
+                                            }
+                                            else
+                                            {
+                                                <h2 class="mb-0 font-weight-bold">@coupon.Value.ToString("C0")</h2>
+                                                <small class="text-uppercase ls-1">DISCOUNT</small>
+                                            }
+                                        </div>
+
+                                        <div class="coupon-right p-4 flex-grow-1 position-relative">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <h5 class="mb-1 font-weight-bold text-dark text-uppercase">@coupon.CampaignName</h5>
+                                                    <p class="text-muted small mb-2">@coupon.Description</p>
+                                                </div>
+                                                <div class="text-right">
+                                                    @if (coupon.IsUsed)
+                                                    {
+                                                        <span class="badge badge-success px-3 py-2 text-uppercase">USED</span>
+                                                    }
+                                                    else if (coupon.IsExpired)
+                                                    {
+                                                        <span class="badge badge-secondary px-3 py-2 text-uppercase">EXPIRED</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-warning text-white px-3 py-2 text-uppercase badge-pulse">ACTIVE</span>
+                                                    }
+                                                </div>
+                                            </div>
+
+                                            <div class="coupon-footer mt-2 pt-2 border-top d-flex justify-content-between align-items-center">
+                                                <div class="small text-muted">
+                                                    <i class="far fa-calendar-alt mr-1"></i> Added: @coupon.AssignedDate.ToString("dd MMM yyyy")
+                                                </div>
+                                                <div class="small font-weight-bold @(coupon.IsExpired ? "text-danger" : "text-danger")">
+                                                    <i class="far fa-clock mr-1"></i> Valid Until: @coupon.EndDate.ToString("dd MMM yyyy HH:mm")
+                                                </div>
+                                            </div>
+
+                                            <div class="coupon-circle top"></div>
+                                            <div class="coupon-circle bottom"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <div class="empty-state-icon mb-4">
+                                <i class="fas fa-ticket-alt fa-4x text-light"></i>
+                            </div>
+                            <h5 class="font-weight-bold text-dark">No coupons found!</h5>
+                            <p class="text-muted">Keep shopping to earn special AI-powered discounts tailored just for you.</p>
+                            <a href="/" class="btn btn-dark rounded-0 px-5 mt-3">START SHOPPING</a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .custom-dashboard-tabs .nav-link {
+            color: #666;
+            border: 1px solid #f0f0f0;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: 0.2s;
+        }
+
+            .custom-dashboard-tabs .nav-link.active {
+                background-color: #222 !important;
+                border-color: #222;
+                color: #fff !important;
+            }
+
+            .custom-dashboard-tabs .nav-link:hover:not(.active) {
+                color: #000;
+                border-color: #222;
+            }
+
+        .coupon-card {
+            background: #fff;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+            .coupon-card:hover:not(.coupon-disabled) {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            }
+
+        .coupon-left {
+            min-width: 130px;
+            min-height: 140px;
+            border-right: 2px dashed #eee;
+            position: relative;
+        }
+
+        .coupon-disabled {
+            opacity: 0.6;
+            filter: grayscale(0.8);
+        }
+
+        .coupon-circle {
+            width: 20px;
+            height: 20px;
+            background: #f8f9fa; 
+            border-radius: 50%;
+            position: absolute;
+            left: -11px;
+            border: 1px solid #eee;
+        }
+
+            .coupon-circle.top {
+                top: -11px;
+            }
+
+            .coupon-circle.bottom {
+                bottom: -11px;
+            }
+
+        .badge-pulse {
+            animation: pulse-animation 2s infinite;
+        }
+
+        @@keyframes pulse-animation {
+            0% {
+                box-shadow: 0 0 0 0px rgba(255, 193, 7, 0.4);
+            }
+
+            100% {
+                box-shadow: 0 0 0 10px rgba(255, 193, 7, 0);
+            }
+        }
+
+        .ls-1 {
+            letter-spacing: 1px;
+        }
+    </style>
+}
