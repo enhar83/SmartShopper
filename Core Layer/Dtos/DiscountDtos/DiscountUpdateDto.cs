@@ -16,6 +16,7 @@ namespace Core_Layer.Dtos.DiscountDtos
         public decimal Value { get; set; }
         public decimal? MinOrderAmount { get; set; }
         public decimal? MaxDiscountAmount { get; set; }
+        public bool IsDeleted { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
     }

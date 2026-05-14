@@ -18,6 +18,8 @@ namespace Business_Layer.Mapping.DiscountMappings
 
             CreateMap<Discount, DiscountListDto>();
 
+            CreateMap<DiscountUpdateDto, Discount>();
+
             CreateMap<Discount, DiscountUpdateDto>();
         }
     }

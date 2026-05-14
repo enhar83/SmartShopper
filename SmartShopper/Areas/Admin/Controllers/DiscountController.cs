@@ -72,5 +72,68 @@ namespace SmartShopper.Areas.Admin.Controllers
                 });
             }
         }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteDiscount(Guid id)
+        {
+            try
+            {
+                await _discountService.TDeleteDiscountAsync(id);
+                return Json(new { success = true, message = "The discount campaign has been successfully deleted!" });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An unexpected system error occurred while deleting." });
+            }
+        }
+
+        public async Task<IActionResult> GetDiscountForEdit(Guid id)
+        {
+            try
+            {
+                var data = await _discountService.GetDiscountForUpdateAsync(id);
+                return Json(new { success = true, data = data });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An unexpected system error occurred while fetching data." });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateDiscount(DiscountUpdateDto updateDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                var validationErrors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+
+                return Json(new { success = false, message = "Please correct any errors in the form.", errors = validationErrors });
+            }
+
+            try
+            {
+                await _discountService.TUpdateDiscountAsync(updateDto);
+                return Json(new { success = true, message = "The campaign has been successfully updated!" });
+            }
+            catch (LogicException ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return Json(new { success = false, message = "An unexpected system error occurred while updating." });
+            }
+        }
     }
 }

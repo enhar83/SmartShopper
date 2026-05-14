@@ -47,5 +47,42 @@ namespace Business_Layer.Managers
             var discounts = await _discountRepository.GetAll().ToListAsync();
             return _mapper.Map<List<DiscountListDto>>(discounts);
         }
+
+        public async Task<DiscountUpdateDto> GetDiscountForUpdateAsync(Guid id)
+        {
+            var discount = await _discountRepository.GetByIdAsync(id);
+            if (discount == null)
+                throw new LogicException("NotFound", "No discount campaign was found to update.");
+
+            return _mapper.Map<DiscountUpdateDto>(discount);
+        }
+
+        public async Task TUpdateDiscountAsync(DiscountUpdateDto updateDto)
+        {
+            bool isDiscountNameExists = await _discountRepository.AnyAsync(x => x.Name == updateDto.Name && x.Id != updateDto.Id);
+
+            if (isDiscountNameExists)
+                throw new LogicException("Name", "There is already another discount campaign with this name. Please choose a different name.");
+
+            var existingDiscount = await _discountRepository.GetByIdAsync(updateDto.Id);
+            if (existingDiscount == null)
+                throw new LogicException("NotFound", "No discount campaign was found to update.");
+
+            _mapper.Map(updateDto, existingDiscount);
+            existingDiscount.UpdatedDate = DateTime.Now; 
+
+            _discountRepository.Update(existingDiscount);
+            await _uow.SaveAsync();
+        }
+
+        public async Task TDeleteDiscountAsync(Guid id)
+        {
+            var discount = await _discountRepository.GetByIdAsync(id);
+            if (discount == null)
+                throw new LogicException("NotFound", "No campaign was found to delete.");
+
+            _discountRepository.Remove(discount);
+            await _uow.SaveAsync();
+        }
     }
 }
