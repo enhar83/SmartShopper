@@ -203,7 +203,7 @@
                     <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
                         <div class="single-product shadow-sm">
                             <div class="ai-score-badge">
-                                <i class="fas fa-bolt"></i> %@item.MatchPercentage Match
+                                <i class="fas fa-bolt"></i> %@(Math.Round(item.MatchScore * 100)) Match
                             </div>
                             <div class="product-img-container">
                                 <div class="recommendation-reason-badge">
@@ -216,7 +216,6 @@
                                     }
                                     else
                                     {
-
                                         <i class="fas fa-image fa-4x text-light"></i>
                                     }
                                 </a>
@@ -260,6 +259,7 @@
 
     async function addToCart(productId) {
         const token = '@tokens.RequestToken';
+
         try {
             const response = await fetch('/Cart/AddToCart', {
                 method: 'POST',
@@ -278,6 +278,7 @@
                     icon: 'success',
                     title: 'Added to your cart!'
                 });
+
                 if (typeof refreshMiniCart === "function") refreshMiniCart();
             } else {
                 Toast.fire({

@@ -16,21 +16,21 @@ namespace SmartShopper.Controllers
         public async Task<IActionResult> GetOrderRecommendations()
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var data = await _recommendationService.TGetOrderBasedRecommendationsAsync(userId, 8);
+            var data = await _recommendationService.TGetOrderBasedRecommendationsAsync(userId, 12);
             return View(data);
         }
 
         public async Task<IActionResult> GetFavoriteRecommendations()
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var data = await _recommendationService.TGetFavoriteBasedRecommendationsAsync(userId, 8);
+            var data = await _recommendationService.TGetFavoriteBasedRecommendationsAsync(userId, 12);
             return View(data);
         }
 
         public async Task<IActionResult> GetCartRecommendations()
         {
             var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
-            var data = await _recommendationService.TGetCartBasedRecommendationsAsync(userId, 8);
+            var data = await _recommendationService.TGetCartBasedRecommendationsAsync(userId, 12);
             return View(data);
         }
     }

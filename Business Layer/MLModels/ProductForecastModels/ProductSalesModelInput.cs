@@ -20,5 +20,7 @@ namespace Business_Layer.MLModels.ProductForecastModels
         [LoadColumn(4)]
         [ColumnName("Label")]
         public float TotalQuantitySold { get; set; }
+
     }
+
 }

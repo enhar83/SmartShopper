@@ -56,11 +56,9 @@ namespace Business_Layer.Managers
                 }
             }
 
-            // --- KRİTİK KONTROL VE FALLBACK ---
             var allProducts = await _productRepository.GetAll().Include(x => x.ProductImages).Where(x => !x.IsDeleted).ToListAsync();
             var userPurchasedIds = allOrders.Where(o => o.AppUserId == userId).SelectMany(o => o.OrderItems).Select(i => i.ProductId).ToList();
 
-            // Eğer yeterli eğitim verisi yoksa veya kullanıcı yeni ise Popüler Ürünleri dön (Fallback)
             if (trainingData.Count < 5 || !userMapping.ContainsKey(userId))
             {
                 return GetFallbackProducts(allProducts, userPurchasedIds, "Trending choice based on store popularity", count);
@@ -76,8 +74,10 @@ namespace Business_Layer.Managers
                         MatrixColumnIndexColumnName = "UserIdEncoded",
                         MatrixRowIndexColumnName = "ProductIdEncoded",
                         LabelColumnName = "Label",
-                        NumberOfIterations = 50, // Küçük veride iterasyonu artırmak iyidir
-                        LearningRate = 0.1f,
+                        LossFunction = MatrixFactorizationTrainer.LossFunctionType.SquareLossOneClass,
+                        LearningRate = 0.01f,
+
+                        NumberOfIterations = 50,
                         Quiet = true
                     }));
 
@@ -95,7 +95,6 @@ namespace Business_Layer.Managers
                         ProductId = productMapping.ContainsKey(prod.Id) ? productMapping[prod.Id] : 0
                     });
 
-                    // NaN kontrolü: Eğer model skor üretemediyse listeye alma
                     if (!float.IsNaN(pred.Score))
                         rawResults.Add((prod, pred.Score));
                 }
@@ -106,7 +105,8 @@ namespace Business_Layer.Managers
                 float minScore = rawResults.Min(x => x.score);
                 float maxScore = rawResults.Max(x => x.score);
 
-                return rawResults.OrderByDescending(x => x.score).Take(count).Select(x => {
+                return rawResults.OrderByDescending(x => x.score).Take(count).Select(x =>
+                {
                     var dto = _mapper.Map<RecommendedProductDto>(x.prod);
                     dto.MatchScore = (maxScore == minScore) ? 0.95f : 0.75f + ((x.score - minScore) / (maxScore - minScore)) * 0.24f;
                     dto.RecommendationReason = "Based on your purchase history";
@@ -154,8 +154,14 @@ namespace Business_Layer.Managers
                         MatrixColumnIndexColumnName = "UserIdEncoded",
                         MatrixRowIndexColumnName = "ProductIdEncoded",
                         LabelColumnName = "Label",
+
+                        // 1. DOKUNUŞ: Sadece olumlu verilerimiz olduğunu söylüyoruz!
+                        LossFunction = MatrixFactorizationTrainer.LossFunctionType.SquareLossOneClass,
+
+                        // 2. DOKUNUŞ: Öğrenme oranını 0.01'e düşürerek patlamayı engelliyoruz!
+                        LearningRate = 0.01f,
+
                         NumberOfIterations = 50,
-                        LearningRate = 0.1f,
                         Quiet = true
                     }));
 
@@ -177,7 +183,8 @@ namespace Business_Layer.Managers
                 float minScore = rawResults.Min(x => x.score);
                 float maxScore = rawResults.Max(x => x.score);
 
-                return rawResults.OrderByDescending(x => x.score).Take(count).Select(x => {
+                return rawResults.OrderByDescending(x => x.score).Take(count).Select(x =>
+                {
                     var dto = _mapper.Map<RecommendedProductDto>(x.prod);
                     dto.MatchScore = (maxScore == minScore) ? 0.90f : 0.70f + ((x.score - minScore) / (maxScore - minScore)) * 0.28f;
                     dto.RecommendationReason = "Matching your wishlist style";
@@ -190,7 +197,6 @@ namespace Business_Layer.Managers
             }
         }
 
-        // --- YARDIMCI METOT: FALLBACK (BOŞ KALMAMA GARANTİSİ) ---
         private List<RecommendedProductDto> GetFallbackProducts(List<Product> products, List<Guid> excludedIds, string reason, int count)
         {
             var fallbackItems = products
@@ -199,7 +205,8 @@ namespace Business_Layer.Managers
                 .Take(count)
                 .ToList();
 
-            return fallbackItems.Select(p => {
+            return fallbackItems.Select(p =>
+            {
                 var dto = _mapper.Map<RecommendedProductDto>(p);
                 dto.MatchScore = 0.85f; // Fallback ürünlerine sabit %85 veriyoruz
                 dto.RecommendationReason = reason;
