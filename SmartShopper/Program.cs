@@ -56,7 +56,6 @@ builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
 builder.Services.AddScoped<IDiscountCustomerRepository, DiscountCustomerRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
-
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
 builder.Services.AddScoped<ISubCategoryService, SubCategoryManager>();
 builder.Services.AddScoped<IProductService, ProductManager>();
