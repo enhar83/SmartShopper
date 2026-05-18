@@ -4,6 +4,7 @@ using Core_Layer.Dtos.OrderDtos;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Entity_Layer;
+using Microsoft.EntityFrameworkCore; 
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +17,9 @@ namespace Business_Layer.Managers
         private readonly IOrderRepository _orderRepository;
         private readonly IOrderItemRepository _orderItemRepository;
         private readonly IProductRepository _productRepository;
-        private readonly IUserAddressRepository _addressRepository; 
+        private readonly IUserAddressRepository _addressRepository;
         private readonly ICartService _cartService;
+        private readonly IDiscountCustomerRepository _discountCustomerRepository; 
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
@@ -27,6 +29,7 @@ namespace Business_Layer.Managers
             IProductRepository productRepository,
             IUserAddressRepository addressRepository,
             ICartService cartService,
+            IDiscountCustomerRepository discountCustomerRepository,
             IUnitOfWork uow,
             IMapper mapper)
         {
@@ -35,6 +38,7 @@ namespace Business_Layer.Managers
             _productRepository = productRepository;
             _addressRepository = addressRepository;
             _cartService = cartService;
+            _discountCustomerRepository = discountCustomerRepository;
             _uow = uow;
             _mapper = mapper;
         }
@@ -63,7 +67,7 @@ namespace Business_Layer.Managers
             return summary;
         }
 
-        public async Task<bool> TPlaceOrderAsync(Guid userId, Guid addressId)
+        public async Task<bool> TPlaceOrderAsync(Guid userId, Guid addressId, Guid? discountId = null)
         {
             var userCart = await _cartService.TGetUserCartAsync(userId);
             if (userCart == null || !userCart.Items.Any())
@@ -77,15 +81,58 @@ namespace Business_Layer.Managers
             {
                 string addressSnapshot = $"{address.Title}: {address.FullAddress} - {address.District}/{address.City} - {address.Country}";
 
+                decimal subTotal = userCart.GrandTotal;
+                decimal discountAmount = 0;
+                decimal finalTotal = subTotal;
+                Guid? appliedDiscountId = null;
+
+                if (discountId.HasValue && discountId.Value != Guid.Empty)
+                {
+                    var assignment = await _discountCustomerRepository.GetAll()
+                        .Include(x => x.Discount)
+                        .FirstOrDefaultAsync(x => x.Id == discountId.Value && x.AppUserId == userId && !x.IsUsed && !x.IsDeleted);
+
+                    if (assignment != null && assignment.Discount != null && !assignment.Discount.IsDeleted)
+                    {
+                        var discount = assignment.Discount;
+                        var now = DateTime.Now;
+
+                        bool isMinOrderValid = !discount.MinOrderAmount.HasValue || subTotal >= discount.MinOrderAmount.Value;
+                        bool isDateValid = discount.StartDate <= now && discount.EndDate >= now;
+
+                        if (isMinOrderValid && isDateValid)
+                        {
+                            if (discount.Type == Discount.DiscountType.Percentage)
+                            {
+                                discountAmount = (subTotal * discount.Value) / 100m;
+                            }
+                            else if (discount.Type == Discount.DiscountType.FixedAmount)
+                            {
+                                discountAmount = discount.Value;
+                            }
+
+                            finalTotal = subTotal - discountAmount;
+                            if (finalTotal < 0) finalTotal = 0; 
+
+                            appliedDiscountId = discount.Id; 
+                        }
+                    }
+                }
+
                 var order = new Order
                 {
                     AppUserId = userId,
-                    CreatedDate = DateTime.Now, 
+                    CreatedDate = DateTime.Now,
                     Status = OrderStatus.Pending,
-                    TotalPrice = userCart.GrandTotal,
-                    AddressId = addressId, 
+                    AddressId = addressId,
                     DeliveryAddressSnapshot = addressSnapshot,
                     IsDeleted = false,
+
+                    SubTotal = subTotal,
+                    DiscountAmount = discountAmount > 0 ? discountAmount : null,
+                    AppliedDiscountId = appliedDiscountId,
+                    TotalPrice = finalTotal,
+
                     AppUser = null!,
                     UserAddress = null!
                 };

@@ -26,6 +26,7 @@ namespace Business_Layer.Managers
         {
             var order = await _orderRepository.Where(o => o.Id == orderId)
                 .AsNoTracking()
+                .Include(o => o.AppliedDiscount) 
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                         .ThenInclude(p => p.ProductImages)
@@ -38,6 +39,7 @@ namespace Business_Layer.Managers
         {
             var orders = await _orderRepository.Where(x => x.AppUserId == userId && !x.IsDeleted)
                 .AsNoTracking()
+                .Include(o => o.AppliedDiscount)
                 .Include(o => o.OrderItems)
                     .ThenInclude(oi => oi.Product)
                         .ThenInclude(p => p.ProductImages)
@@ -52,6 +54,7 @@ namespace Business_Layer.Managers
             var orders = await _orderRepository.GetAll()
                 .AsNoTracking()
                 .Include(x => x.AppUser)
+                .Include(x => x.AppliedDiscount)
                 .Include(x => x.OrderItems)
                 .OrderByDescending(x => x.CreatedDate)
                 .ToListAsync();

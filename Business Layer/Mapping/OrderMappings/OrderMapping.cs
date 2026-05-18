@@ -18,7 +18,9 @@ namespace Business_Layer.Mapping.OrderMappings
                 .ForMember(dest => dest.PriceAtPurchase, opt => opt.MapFrom(src => src.Price));
 
             CreateMap<Order, OrderListDto>()
-                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems));
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems))
+                .ForMember(dest => dest.AppliedDiscountName, opt => opt.MapFrom(src =>
+                    src.AppliedDiscount != null ? src.AppliedDiscount.Name : null));
 
             CreateMap<OrderItem, OrderItemListDto>()
                  .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))

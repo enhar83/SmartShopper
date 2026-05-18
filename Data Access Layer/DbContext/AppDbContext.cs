@@ -34,6 +34,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<SubCategoryDemandForecast> SubCategoryDemandForecasts { get; set; }
         public DbSet<Discount> Discounts { get; set; }
         public DbSet<DiscountCustomer> DiscountCustomers { get; set; }
+        public DbSet<Comment> Comments { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -274,6 +275,36 @@ namespace Data_Access_Layer.DbContext
                       .OnDelete(DeleteBehavior.Cascade); 
 
                 entity.HasIndex(dc => new { dc.AppUserId, dc.IsUsed });
+            });
+            #endregion
+
+            #region Comment Configuration
+            builder.Entity<Comment>(entity =>
+            {
+                entity.ToTable("Comments");
+
+                entity.Property(c => c.Title)
+                      .HasMaxLength(150)
+                      .IsRequired();
+
+                entity.Property(c => c.Text)
+                      .HasMaxLength(1000)
+                      .IsRequired();
+
+                entity.Property(c => c.IsApproved)
+                      .HasDefaultValue(false);
+
+                // Product ile İlişki (Ürün silinirse yorumlar da silinsin)
+                entity.HasOne(c => c.Product)
+                      .WithMany(p => p.Comments)
+                      .HasForeignKey(c => c.ProductId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                // AppUser ile İlişki (Kullanıcı silinirse yorumlar kalsın, db patlamasın)
+                entity.HasOne(c => c.AppUser)
+                      .WithMany(u => u.Comments)
+                      .HasForeignKey(c => c.AppUserId)
+                      .OnDelete(DeleteBehavior.NoAction);
             });
             #endregion
         }

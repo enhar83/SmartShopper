@@ -20,6 +20,7 @@ namespace Entity_Layer
         public ICollection<Favorite>? Favorites { get; set; }
         public ICollection<OrderItem>? OrderItems { get; set; }
         public virtual ICollection<ProductSalesForecast>? SalesForecasts { get; set; }
+        public virtual ICollection<Comment>? Comments { get; set; }
     }
 }
 

@@ -21,6 +21,7 @@ namespace Entity_Layer
         public ICollection<CustomerSegmentationResult>? SegmentationResults { get; set; }
         public virtual CustomerChurnResult CustomerChurnResult { get; set; } = null!;
         public virtual ICollection<DiscountCustomer>? DiscountCustomers { get; set; }
+        public virtual ICollection<Comment>? Comments { get; set; }
 
     }
 }

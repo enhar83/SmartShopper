@@ -10,6 +10,6 @@ namespace Core_Layer.IServices
     public interface ICheckoutService
     {
         Task<CheckoutSummaryDto> TGetCheckoutSummaryAsync(Guid userId);
-        Task<bool> TPlaceOrderAsync(Guid userId, Guid addressId);
+        Task<bool> TPlaceOrderAsync(Guid userId, Guid addressId, Guid? discountId = null);
     }
 }

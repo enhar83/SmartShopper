@@ -60,7 +60,7 @@ namespace SmartShopper.Controllers
 
             var userIdString = Guid.Parse(userId);
 
-            var result = await _checkoutService.TPlaceOrderAsync(userIdString, selectedAddressId);
+            var result = await _checkoutService.TPlaceOrderAsync(userIdString, selectedAddressId, selectedDiscountId);
 
             if (result)
             {

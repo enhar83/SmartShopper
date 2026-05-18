@@ -118,8 +118,6 @@
                                                 else if (coupon.StartDate > now) disableReason = $"Starts on {coupon.StartDate:dd MMM}";
                                                 else if (!isMinOrderValid) disableReason = $"Min Cart Total Required: {coupon.MinOrderAmount?.ToString("C2")}";
 
-                                                // Değeri (value) BOŞ bırakıyoruz ki Controller bunu işleme alamasın (Güvenlik Önlemi)
-                                                // Style tarafında text-danger veriyoruz ki dropdown açıldığında kırmızı görünsün
                                                 <option value=""
                                                         data-is-valid="false"
                                                         data-error="@disableReason"
@@ -220,41 +218,36 @@
                 const selectedOption = $(this).find('option:selected');
                 const isValid = selectedOption.attr("data-is-valid");
 
-                // Alert alanlarını sıfırla
                 $("#couponSummaryArea").removeClass("d-none");
                 $("#couponSuccessAlert").addClass("d-none").removeClass("d-flex");
                 $("#couponErrorAlert").addClass("d-none").removeClass("d-flex");
 
-                // SEÇİM BOŞ İSE
                 if (isValid === "empty") {
                     $("#couponSummaryArea").addClass("d-none");
                     $("#grandTotalText").text(formatCurrency(originalTotal));
                     return;
                 }
 
-                // GEÇERSİZ KUPON SEÇİLDİYSE (KIRMIZI UYARI)
                 if (isValid === "false") {
                     const errorMsg = selectedOption.attr("data-error");
                     $("#couponErrorAlert").removeClass("d-none").addClass("d-flex");
                     $("#couponErrorText").text("Not Applicable: " + errorMsg);
                     $("#grandTotalText").text(formatCurrency(originalTotal));
 
-                    // Görsel Geri Bildirim (Hata Sarsıntısı - Opsiyonel)
                     $("#couponSummaryArea").fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
                     return;
                 }
 
-                // GEÇERLİ KUPON SEÇİLDİYSE (HESAPLAMA)
                 const discountType = parseInt(selectedOption.attr("data-type")) || 0;
                 const discountValue = parseFloat(selectedOption.attr("data-value")) || 0;
 
                 let savedAmount = 0;
                 let newTotal = originalTotal;
 
-                if (discountType === 1) { // Yüzde
+                if (discountType === 1) { 
                     savedAmount = (originalTotal * discountValue) / 100;
                     newTotal = originalTotal - savedAmount;
-                } else if (discountType === 2) { // Tutar
+                } else if (discountType === 2) { 
                     savedAmount = discountValue;
                     newTotal = originalTotal - savedAmount;
                     if (newTotal < 0) newTotal = 0;
