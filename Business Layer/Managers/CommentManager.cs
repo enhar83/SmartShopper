@@ -9,6 +9,7 @@ using Core_Layer.Exceptions;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
 using Entity_Layer;
+using Microsoft.EntityFrameworkCore;
 
 namespace Business_Layer.Managers
 {
@@ -54,6 +55,19 @@ namespace Business_Layer.Managers
             );
 
             return hasBoughtProduct;
+        }
+
+        public async Task<List<ResultCommentDto>> TGetApprovedCommentsByProductIdAsync(Guid productId)
+        {
+            var comments = await _commentRepository
+                .Where(c => c.ProductId == productId && c.IsApproved == true && c.IsDeleted == false)
+                .Include(c => c.AppUser)
+                .OrderByDescending(c => c.CreatedDate) 
+                .ToListAsync();
+
+            var commentDtos = _mapper.Map<List<ResultCommentDto>>(comments);
+
+            return commentDtos;
         }
     }
 }

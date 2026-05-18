@@ -11,7 +11,7 @@ namespace Core_Layer.IServices
     public interface ICommentService
     {
         Task TAddAsync(CreateCommentDto createCommentDto, Guid userId);
-
         Task<bool> TCanUserCommentOnProductAsync(Guid userId, Guid productId);
+        Task<List<ResultCommentDto>> TGetApprovedCommentsByProductIdAsync(Guid productId);
     }
 }
