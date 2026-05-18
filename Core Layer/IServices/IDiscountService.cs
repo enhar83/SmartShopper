@@ -11,12 +11,14 @@ namespace Core_Layer.IServices
     {
         Task TCreateDiscountAsync(DiscountCreateDto createDto);
         Task<List<DiscountListDto>> TGetAllDiscountsAsync();
-        Task<DiscountUpdateDto> GetDiscountForUpdateAsync(Guid id);
+        Task<DiscountUpdateDto> TGetDiscountForUpdateAsync(Guid id);
         Task TUpdateDiscountAsync(DiscountUpdateDto updateDto);
         Task TDeleteDiscountAsync(Guid id);
         Task TAssignDiscountToUserAsync(AssignDiscountDto assignDto);
         Task<List<DiscountAssignedUserDto>> TGetUsersByDiscountIdAsync(Guid discountId);
         Task TRemoveDiscountFromUserAsync(Guid assignmentId);
         Task<List<UserDiscountListDto>> TGetUserSpecificDiscountsAsync(Guid userId);
+        Task TMarkDiscountAsUsedAsync(Guid userId, Guid discountId);
+        Task<List<UserDiscountListDto>> TGetAvailableDiscountsForCheckoutAsync(Guid userId);
     }
 }

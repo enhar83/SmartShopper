@@ -38,6 +38,8 @@ namespace Business_Layer.Mapping.DiscountMappings
                 .ForMember(dest => dest.Description, opt => opt.MapFrom(src => src.Discount.Description))
                 .ForMember(dest => dest.Type, opt => opt.MapFrom(src => src.Discount.Type))
                 .ForMember(dest => dest.Value, opt => opt.MapFrom(src => src.Discount.Value))
+                .ForMember(dest => dest.MinOrderAmount, opt => opt.MapFrom(src => src.Discount.MinOrderAmount))
+                .ForMember(dest => dest.StartDate, opt => opt.MapFrom(src => src.Discount.StartDate))
                 .ForMember(dest => dest.AssignedDate, opt => opt.MapFrom(src => src.CreatedDate))
                 .ForMember(dest => dest.EndDate, opt => opt.MapFrom(src => src.Discount.EndDate))
                 .ForMember(dest => dest.IsUsed, opt => opt.MapFrom(src => src.IsUsed));

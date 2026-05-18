@@ -8,11 +8,16 @@ namespace SmartShopper.Controllers
     {
         private readonly ICheckoutService _checkoutService;
         private readonly IUserAddressService _userAddressService;
+        private readonly IDiscountService _discountService;
 
-        public CheckoutController(ICheckoutService checkoutService, IUserAddressService userAddressService)
+        public CheckoutController(
+            ICheckoutService checkoutService,
+            IUserAddressService userAddressService,
+            IDiscountService discountService)
         {
             _checkoutService = checkoutService;
             _userAddressService = userAddressService;
+            _discountService = discountService;
         }
 
         public async Task<IActionResult> Index()
@@ -33,12 +38,15 @@ namespace SmartShopper.Controllers
             var addresses = await _userAddressService.TGetUserAddressListCheckoutAsync(userIdString);
             ViewBag.Addresses = addresses;
 
+            var coupons = await _discountService.TGetAvailableDiscountsForCheckoutAsync(userIdString);
+            ViewBag.Coupons = coupons;
+
             return View(summary);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken] 
-        public async Task<IActionResult> PlaceOrder(Guid selectedAddressId)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> PlaceOrder(Guid selectedAddressId, Guid? selectedDiscountId)
         {
             if (selectedAddressId == Guid.Empty)
             {
@@ -56,6 +64,9 @@ namespace SmartShopper.Controllers
 
             if (result)
             {
+                if (selectedDiscountId.HasValue && selectedDiscountId.Value != Guid.Empty)
+                    await _discountService.TMarkDiscountAsUsedAsync(userIdString, selectedDiscountId.Value);
+
                 TempData["SuccessMessage"] = "Your order has been successfully received!";
                 return RedirectToAction("OrderSuccess");
             }

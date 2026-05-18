@@ -95,7 +95,7 @@ namespace SmartShopper.Areas.Admin.Controllers
         {
             try
             {
-                var data = await _discountService.GetDiscountForUpdateAsync(id);
+                var data = await _discountService.TGetDiscountForUpdateAsync(id);
                 return Json(new { success = true, data = data });
             }
             catch (LogicException ex)
