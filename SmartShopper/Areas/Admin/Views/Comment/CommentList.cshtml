@@ -1,0 +1,208 @@
+﻿@using Core_Layer.Dtos.CommentDtos
+@model List<CommentListAdminPanelDto>
+
+@{
+    ViewData["Title"] = "Comment Management";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-xl-12 mx-auto">
+        <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
+            <div class="breadcrumb-title pe-3">Customer Interactions</div>
+            <div class="ps-3">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-0 p-0">
+                        <li class="breadcrumb-item"><a href="/Admin/Home/Index"><i class="bx bx-home-alt"></i></a></li>
+                        <li class="breadcrumb-item active" aria-current="page">Product Comments</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="card border-top border-0 border-4 border-info">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="commentDataTable" class="table table-striped table-bordered align-middle" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%" class="text-center">#</th>
+                                <th style="width: 15%">Product</th>
+                                <th style="width: 20%">Customer</th>
+                                <th style="width: 15%">Rating & Title</th>
+                                <th style="width: 15%" class="text-center">Date</th>
+                                <th style="width: 10%" class="text-center">Status</th>
+                                <th style="width: 10%" class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="text-center fw-bold text-muted"></td>
+
+                                    <td class="fw-bold">@item.ProductName</td>
+
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold text-dark">@item.CustomerFullName</span>
+                                            <small class="text-muted">@item.CustomerEmail</small>
+                                        </div>
+                                    </td>
+
+                                    <td>
+                                        <div class="text-warning mb-1" style="font-size: 12px;">
+                                            @for (int s = 1; s <= 5; s++)
+                                            {
+                                                if (s <= item.Rating)
+                                                {
+                                                    <i class='bx bxs-star'></i>
+                                                }
+                                                else
+                                                {
+                                                    <i class='bx bx-star text-secondary'></i>
+                                                }
+                                            }
+                                        </div>
+                                        <span class="d-block text-truncate" style="max-width: 200px;" title="@item.Title">
+                                            @item.Title
+                                        </span>
+                                    </td>
+
+                                    <td class="text-center">@item.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
+
+                                    <td class="text-center">
+                                        @if (item.IsApproved)
+                                        {
+                                            <div class="badge rounded-pill text-success bg-light-success p-2 text-uppercase px-3">
+                                                <i class='bx bx-check-circle me-1'></i>Approved
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="badge rounded-pill text-warning bg-light-warning p-2 text-uppercase px-3">
+                                                <i class='bx bx-time-five me-1'></i>Pending
+                                            </div>
+                                        }
+                                    </td>
+
+                                    <td class="text-center">
+                                        <div class="d-flex order-actions justify-content-center">
+                                            <a href="javascript:;" class="text-info bg-light-info border-0 me-2"
+                                               onclick="showCommentDetails(`@Html.Raw(item.Title.Replace("`", "'"))`, `@Html.Raw(item.Text.Replace("`", "'"))`)"
+                                               title="Read Comment">
+                                                <i class='bx bx-envelope-open'></i>
+                                            </a>
+
+                                            @if (item.IsApproved)
+                                            {
+                                                <a href="javascript:;" class="text-danger bg-light-danger border-0"
+                                                   onclick="toggleApproval('@item.Id', false)" title="Reject / Hide">
+                                                    <i class='bx bx-hide'></i>
+                                                </a>
+                                            }
+                                            else
+                                            {
+                                                <a href="javascript:;" class="text-success bg-light-success border-0"
+                                                   onclick="toggleApproval('@item.Id', true)" title="Approve / Publish">
+                                                    <i class='bx bx-check'></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="commentDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-top border-0 border-4 border-info">
+            <div class="modal-header border-bottom-0">
+                <h5 class="modal-title text-info"><i class='bx bx-message-detail me-1'></i> Review Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 pt-0">
+                <h6 id="modalCommentTitle" class="fw-bold mb-3 border-bottom pb-2"></h6>
+                <p id="modalCommentText" class="text-muted" style="white-space: pre-wrap; font-size: 15px; line-height: 1.6;"></p>
+            </div>
+            <div class="modal-footer border-top-0">
+                <button type="button" class="btn btn-secondary px-4" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        $(document).ready(function() {
+            var table = $('#commentDataTable').DataTable({
+                pageLength: 10,
+                language: { emptyTable: "No comments found." },
+                order: [[4, 'desc']], 
+                columnDefs: [
+                    { searchable: false, orderable: false, targets: 0 }, 
+                    { orderable: false, targets: 6 } 
+                ]
+            });
+
+            table.on('order.dt search.dt', function () {
+                let i = 1;
+                table.cells(null, 0, { search: 'applied', order: 'applied' }).every(function (cell) {
+                    this.data(i++);
+                });
+            }).draw();
+        });
+
+        function showCommentDetails(title, text) {
+            $("#modalCommentTitle").text(title);
+            $("#modalCommentText").text(text);
+            $("#commentDetailsModal").modal('show');
+        }
+
+        function toggleApproval(commentId, isApproving) {
+            const actionText = isApproving ? "publish this comment on the site" : "hide this comment from the site";
+            const confirmBtnText = isApproving ? "Yes, Approve it!" : "Yes, Hide it!";
+            const confirmBtnColor = isApproving ? "#15ca20" : "#fd3550";
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to ${actionText}.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: confirmBtnColor,
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: confirmBtnText
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.post('/Admin/Comment/ToggleApproval', { id: commentId }, function(res) {
+                        if (res.success) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Success!',
+                                text: res.message,
+                                timer: 1500,
+                                showConfirmButton: false
+                            }).then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', res.message, 'error');
+                        }
+                    }).fail(function() {
+                        Swal.fire('Error!', 'A critical technical error occurred.', 'error');
+                    });
+                }
+            });
+        }
+    </script>
+}
