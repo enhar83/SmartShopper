@@ -69,5 +69,32 @@ namespace Business_Layer.Managers
 
             return commentDtos;
         }
+
+        public async Task<List<CommentListAdminPanelDto>> TGetAllCommentsForAdminAsync()
+        {
+            var comments = await _commentRepository.GetAll()
+                .Include(c => c.Product) 
+                .Include(c => c.AppUser)
+                .OrderByDescending(c => c.CreatedDate) 
+                .ToListAsync();
+
+            var commentDtos = _mapper.Map<List<CommentListAdminPanelDto>>(comments);
+
+            return commentDtos;
+        }
+
+        public async Task TToggleCommentApprovalAsync(Guid commentId)
+        {
+            var comment = await _commentRepository.GetByIdAsync(commentId);
+
+            if (comment == null)
+                throw new LogicException("NotFound", "No comment was found to process.\r\n");
+
+            comment.IsApproved = !comment.IsApproved;
+
+            _commentRepository.Update(comment);
+
+            await _uow.SaveAsync();
+        }
     }
 }

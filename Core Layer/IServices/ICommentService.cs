@@ -13,5 +13,7 @@ namespace Core_Layer.IServices
         Task TAddAsync(CreateCommentDto createCommentDto, Guid userId);
         Task<bool> TCanUserCommentOnProductAsync(Guid userId, Guid productId);
         Task<List<ResultCommentDto>> TGetApprovedCommentsByProductIdAsync(Guid productId);
+        Task<List<CommentListAdminPanelDto>> TGetAllCommentsForAdminAsync();
+        Task TToggleCommentApprovalAsync(Guid commentId);
     }
 }
