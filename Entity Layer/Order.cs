@@ -16,6 +16,10 @@ namespace Entity_Layer
         public Guid AddressId { get; set; }
         public virtual UserAddress UserAddress { get; set; } = null!;
         public string DeliveryAddressSnapshot { get; set; } = null!;
+        public decimal? SubTotal { get; set; }
+        public decimal? DiscountAmount { get; set; }
+        public Guid? AppliedDiscountId { get; set; }
+        public virtual Discount? AppliedDiscount { get; set; }
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
         public virtual OrderAnomalyResult OrderAnomalyResult { get; set; } = null!;
     }

@@ -18,6 +18,7 @@ namespace Entity_Layer
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
         public virtual ICollection<DiscountCustomer>? DiscountCustomers { get; set; }
+        public virtual ICollection<Order> Orders { get; set; } = new HashSet<Order>();
 
         public enum DiscountType
         {
