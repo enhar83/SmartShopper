@@ -78,6 +78,7 @@ builder.Services.AddScoped<IOrderAnomalyService, OrderAnomalyManager>();
 builder.Services.AddScoped<IRecommendationService, RecommendationManager>();
 builder.Services.AddScoped<ISubCategoryDemandForecastService, SubCategoryDemandForecastManager>();
 builder.Services.AddScoped<IDiscountService, DiscountManager>();
+builder.Services.AddScoped<ICommentService, CommentManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 
