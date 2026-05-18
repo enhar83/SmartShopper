@@ -12,6 +12,7 @@
 }
 
 <style>
+    /* Slider ve Ürün Görseli CSS'leri */
     .thumbnail-slider-wrapper {
         display: flex;
         flex-direction: column;
@@ -101,6 +102,7 @@
             margin-bottom: 15px;
         }
 
+    /* Buton ve Fiyat CSS'leri */
     .fav-detail-btn {
         height: 54px;
         width: 54px;
@@ -143,9 +145,12 @@
     }
 </style>
 
+<!-- Ürün Üst Detay Alanı (Görseller, Fiyat, Sepet vs.) -->
 <div class="shop-single-page-area mt-40 over-hidden">
     <div class="container-wrapper extra-padding-15">
         <div class="row">
+
+            <!-- Sol Taraf: Görseller -->
             <div class="col-xl-6 col-lg-6 col-md-12">
                 <div class="product-left-img-tab d-flex">
                     @if (Model.ProductImages != null && Model.ProductImages.Any())
@@ -199,6 +204,7 @@
                 </div>
             </div>
 
+            <!-- Sağ Taraf: Ürün Bilgileri -->
             <div class="col-xl-6 col-lg-6 col-md-12">
                 <div class="product-view-info">
                     <nav aria-label="breadcrumb">
@@ -221,6 +227,7 @@
 
                     <p class="text-muted mb-35" style="line-height: 1.8; font-size: 15px;">@Model.Description</p>
 
+                    <!-- Sepete Ekle / Favori Aksiyonları -->
                     <div class="border-top border-bottom py-4 mb-30">
                         <div class="d-flex align-items-center">
                             <div class="quantity-control mr-20">
@@ -258,6 +265,7 @@
     </div>
 </div>
 
+<!-- Alt Sekmeler (Açıklama ve Yorumlar) -->
 <div class="product-view-tab-area mt-80">
     <div class="container-wrapper extra-padding-10 border-top pt-60 pb-85">
         <ul class="nav nav-tabs justify-content-center product-view-tab border-0" id="myTab" role="tablist">
@@ -265,115 +273,176 @@
                 <a class="nav-link active" id="desc-tab" data-toggle="tab" href="#desc-content" role="tab">Description</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="review-tab" data-toggle="tab" href="#review-content" role="tab">Reviews (0)</a>
+                <a class="nav-link" id="review-tab" data-toggle="tab" href="#review-content" role="tab">Reviews</a>
             </li>
         </ul>
+
         <div class="tab-content mt-40" id="myTabContent">
+            <!-- Açıklama Tabı -->
             <div class="tab-pane fade show active" id="desc-content" role="tabpanel">
                 <div class="mx-auto" style="max-width: 900px;">
                     <h5 class="mb-20 font-weight-bold">Product Specifications</h5>
                     <p>@Model.Description</p>
                 </div>
             </div>
+
+            <!-- Yorumlar Tabı (Bütün listeleme sorumluluğunu ViewComponent'e devrettik) -->
             <div class="tab-pane fade" id="review-content" role="tabpanel">
-                <div class="text-center py-5">
-                    <i class="far fa-comments fa-3x mb-3 text-muted"></i>
-                    <h6 class="text-muted">There are no reviews yet. Be the first to review!</h6>
+                <div class="mx-auto" style="max-width: 900px;">
+                    @await Component.InvokeAsync("_CommentListForProductDetailComponentPartial", new { productId = Model.Id })
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<!-- Benzer Ürünler -->
 @await Component.InvokeAsync("_SimilarProductsListInProductDetailComponentPartial", new { subCategoryId = Model.SubCategoryId })
+
+<!-- YORUM YAPMA MODALI (Sadece POST işlemi için, ana View'da kalır) -->
+<div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title font-weight-bold" id="reviewModalLabel">Write a Review</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form action="/Comment/AddComment" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="ProductId" value="@Model.Id" />
+
+                <div class="modal-body p-4">
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold">Rating <span class="text-danger">*</span></label>
+                        <select name="Rating" class="form-control" required>
+                            <option value="" disabled selected>Select a rating</option>
+                            <option value="5">⭐⭐⭐⭐⭐ (5/5) - Excellent</option>
+                            <option value="4">⭐⭐⭐⭐ (4/5) - Very Good</option>
+                            <option value="3">⭐⭐⭐ (3/5) - Average</option>
+                            <option value="2">⭐⭐ (2/5) - Poor</option>
+                            <option value="1">⭐ (1/5) - Terrible</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="font-weight-bold">Review Title <span class="text-danger">*</span></label>
+                        <input type="text" name="Title" class="form-control" placeholder="Summarize your experience" required maxlength="150" />
+                    </div>
+                    <div class="form-group mb-0">
+                        <label class="font-weight-bold">Your Review <span class="text-danger">*</span></label>
+                        <textarea name="Text" class="form-control" rows="4" placeholder="Tell us more about this product..." required minlength="10" maxlength="1000"></textarea>
+                        <small class="text-muted">Minimum 10 characters.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 p-4">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-dark px-5">Submit Review</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     document.addEventListener("DOMContentLoaded", function() {
+        // Thumbnail Slider İşlemleri
         const up = document.getElementById('scrollUp');
         const down = document.getElementById('scrollDown');
         const slider = document.querySelector('.p-tap-vertical');
 
         if(up && slider) { up.addEventListener('click', () => slider.scrollTop -= 110); }
         if(down && slider) { down.addEventListener('click', () => slider.scrollTop += 110); }
-    });
 
-    const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end',
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true
-    });
+        // Genel SweetAlert Tanımlaması
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3000,
+            timerProgressBar: true
+        });
 
-    async function addToCartDetail(productId) {
-        const quantity = document.getElementById('productQuantity').value;
-        const token = '@tokens.RequestToken';
-
-        try {
-            const response = await fetch('/Cart/AddToCart', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': token,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify({
-                    ProductId: productId,
-                    Quantity: parseInt(quantity)
-                })
-            });
-
-            const result = await response.json();
-
-            if (response.ok && result.success) {
-                Toast.fire({ icon: 'success', title: result.message });
-                if (typeof refreshMiniCart === "function") {
-                    refreshMiniCart();
-                }
-            } else {
-                Toast.fire({ icon: 'warning', title: result.message || 'Please sign in.' });
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+        // Backend'den (Controller'dan) Gelen Mesajları Dinleme
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <text>Toast.fire({ icon: 'success', title: '@Html.Raw(TempData["SuccessMessage"])' });</text>
         }
-    }
+        @if (TempData["WarningMessage"] != null)
+        {
+                <text>Toast.fire({ icon: 'warning', title: '@Html.Raw(TempData["WarningMessage"])' });</text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <text>Toast.fire({ icon: 'error', title: '@Html.Raw(TempData["ErrorMessage"])' });</text>
+        }
 
-    async function toggleFavoriteDetail(productId, btnElement) {
-        const icon = btnElement.querySelector('i');
-        const token = '@tokens.RequestToken';
+        // Add to Cart vs Toggle Favorite metotlarını dış dünyaya açabilmek için global scopa bağlama
+        window.addToCartDetail = async function(productId) {
+            const quantity = document.getElementById('productQuantity').value;
+            const token = '@tokens.RequestToken';
 
-        try {
-            const response = await fetch('/Favorite/ToggleFavorite', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                    'RequestVerificationToken': token,
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: `productId=${productId}`
-            });
+            try {
+                const response = await fetch('/Cart/AddToCart', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ ProductId: productId, Quantity: parseInt(quantity) })
+                });
 
-            const data = await response.json();
+                const result = await response.json();
 
-            if (response.ok && data.succeeded) {
-                if (data.isFavorite) {
-                    btnElement.classList.add('is-fav');
-                    icon.classList.replace('far', 'fas');
-                    Toast.fire({ icon: 'success', title: data.message });
+                if (response.ok && result.success) {
+                    Toast.fire({ icon: 'success', title: result.message });
+                    if (typeof refreshMiniCart === "function") { refreshMiniCart(); }
                 } else {
-                    btnElement.classList.remove('is-fav');
-                    icon.classList.replace('fas', 'far');
-                    Toast.fire({ icon: 'info', title: data.message });
+                    Toast.fire({ icon: 'warning', title: result.message || 'Please sign in.' });
                 }
-            } else {
-                const errorMsg = (data.errors && data.errors.length > 0) ? data.errors[0] : (data.message || 'Please sign in.');
-                Toast.fire({ icon: 'warning', title: errorMsg });
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
             }
-        } catch (error) {
-            console.error('Error:', error);
-            Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
-        }
-    }
+        };
+
+        window.toggleFavoriteDetail = async function(productId, btnElement) {
+            const icon = btnElement.querySelector('i');
+            const token = '@tokens.RequestToken';
+
+            try {
+                const response = await fetch('/Favorite/ToggleFavorite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'RequestVerificationToken': token,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: `productId=${productId}`
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.succeeded) {
+                    if (data.isFavorite) {
+                        btnElement.classList.add('is-fav');
+                        icon.classList.replace('far', 'fas');
+                        Toast.fire({ icon: 'success', title: data.message });
+                    } else {
+                        btnElement.classList.remove('is-fav');
+                        icon.classList.replace('fas', 'far');
+                        Toast.fire({ icon: 'info', title: data.message });
+                    }
+                } else {
+                    const errorMsg = (data.errors && data.errors.length > 0) ? data.errors[0] : (data.message || 'Please sign in.');
+                    Toast.fire({ icon: 'warning', title: errorMsg });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Toast.fire({ icon: 'error', title: 'A technical error occurred!' });
+            }
+        };
+    });
 </script>

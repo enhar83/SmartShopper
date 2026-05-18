@@ -1,0 +1,69 @@
+﻿@using Core_Layer.Dtos.CommentDtos
+@model List<ResultCommentDto>
+
+<!-- Üst Başlık ve Yorum Yap Butonu -->
+<div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+    <h5 class="mb-0 font-weight-bold">Customer Reviews (@(Model?.Count ?? 0))</h5>
+
+    <!-- Bu buton ana sayfadaki (ProductDetail) '#reviewModal' id'li modalı tetikler.
+         ViewComponent'in modaldan haberdar olmasına gerek yoktur, sadece tetiği çeker. -->
+    <button type="button" class="btn btn-dark px-4 font-weight-bold" data-toggle="modal" data-target="#reviewModal">
+        <i class="fas fa-pen mr-2"></i> Write a Review
+    </button>
+</div>
+
+<!-- Yorumlar Listesi Kontrolü -->
+@if (Model != null && Model.Any())
+{
+    <div class="review-list">
+        @foreach (var comment in Model)
+        {
+            <div class="review-card mb-4">
+                <div class="d-flex">
+
+                    <!-- Kullanıcı Avatarı (İsmin ilk harfi) -->
+                    <div class="review-avatar mr-15">
+                        @(string.IsNullOrEmpty(comment.UserName) ? "U" : comment.UserName.Substring(0, 1).ToUpper())
+                    </div>
+
+                    <div class="w-100">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <!-- Güvenli DTO üzerinden gelen isim ve soyisim -->
+                            <h6 class="mb-0 font-weight-bold">@comment.UserName @comment.UserSurname</h6>
+                            <small class="text-muted">@comment.CreatedDate.ToString("dd MMM yyyy")</small>
+                        </div>
+
+                        <!-- Yıldız Derecelendirmesi (Rating) -->
+                        <div class="star-rating mb-2">
+                            @for (int s = 1; s <= 5; s++)
+                            {
+                                if (s <= comment.Rating)
+                                {
+                                    <i class="fas fa-star"></i>
+                                }
+                                else
+                                {
+                                    <!-- Boş yıldızlar için özel CSS sınıfımız -->
+                                    <i class="fas fa-star empty-star"></i>
+                                }
+                            }
+                        </div>
+
+                        <!-- Yorum Başlığı ve İçeriği -->
+                        <h6 class="font-weight-bold">@comment.Title</h6>
+                        <p class="text-muted mb-0">@comment.Text</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <!-- Empty State (Yorum Yoksa Çıkacak Ekran) -->
+    <div class="text-center py-5 bg-light rounded-lg">
+        <i class="far fa-comments fa-3x mb-3 text-muted"></i>
+        <h6 class="text-muted font-weight-bold">There are no reviews yet.</h6>
+        <p class="text-muted small mb-0">Share your thoughts and be the first to review this product!</p>
+    </div>
+}
