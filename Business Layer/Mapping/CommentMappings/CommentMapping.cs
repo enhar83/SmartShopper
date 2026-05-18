@@ -20,6 +20,11 @@ namespace Business_Layer.Mapping.CommentMappings
             CreateMap<Comment, ResultCommentDto>()
                 .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => src.AppUser.Name))
                 .ForMember(dest => dest.UserSurname, opt => opt.MapFrom(src => src.AppUser.Surname));
+
+            CreateMap<Comment, CommentListAdminPanelDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
+                .ForMember(dest => dest.CustomerFullName, opt => opt.MapFrom(src => src.AppUser.Name + " " + src.AppUser.Surname))
+                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.AppUser.Email));
         }
     }
 }
