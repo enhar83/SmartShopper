@@ -15,5 +15,6 @@ namespace Core_Layer.IServices
         Task<List<ResultCommentDto>> TGetApprovedCommentsByProductIdAsync(Guid productId);
         Task<List<CommentListAdminPanelDto>> TGetAllCommentsForAdminAsync();
         Task TToggleCommentApprovalAsync(Guid commentId);
+        Task<List<UserCommentListDto>> TGetCommentsByUserIdAsync(Guid userId);
     }
 }

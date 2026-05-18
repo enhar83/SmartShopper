@@ -96,5 +96,18 @@ namespace Business_Layer.Managers
 
             await _uow.SaveAsync();
         }
+
+        public async Task<List<UserCommentListDto>> TGetCommentsByUserIdAsync(Guid userId)
+        {
+            var comments = await _commentRepository
+                .Where(c => c.AppUserId == userId && c.IsDeleted == false)
+                .Include(c => c.Product)
+                .OrderByDescending(c => c.CreatedDate)
+                .ToListAsync();
+
+            var commentDtos = _mapper.Map<List<UserCommentListDto>>(comments);
+
+            return commentDtos;
+        }
     }
 }
