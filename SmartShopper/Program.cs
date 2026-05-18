@@ -54,6 +54,7 @@ builder.Services.AddScoped<IOrderAnomalyResultRepository, OrderAnomalyResultRepo
 builder.Services.AddScoped<ISubCategoryDemandForecastRepository, SubCategoryDemandForecastRepository>();
 builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
 builder.Services.AddScoped<IDiscountCustomerRepository, DiscountCustomerRepository>();
+builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
 
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
