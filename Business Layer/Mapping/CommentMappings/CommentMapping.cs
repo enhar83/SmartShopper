@@ -25,6 +25,9 @@ namespace Business_Layer.Mapping.CommentMappings
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
                 .ForMember(dest => dest.CustomerFullName, opt => opt.MapFrom(src => src.AppUser.Name + " " + src.AppUser.Surname))
                 .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.AppUser.Email));
+
+            CreateMap<Comment, UserCommentListDto>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
         }
     }
 }
