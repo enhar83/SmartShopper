@@ -46,5 +46,18 @@ namespace SmartShopper.Controllers
 
             return RedirectToAction("ProductDetails", "Product", new { id = createCommentDto.ProductId });
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Index()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (string.IsNullOrEmpty(userIdString) || !Guid.TryParse(userIdString, out Guid userId))
+                return RedirectToAction("Login", "Auth");
+
+            var comments = await _commentService.TGetCommentsByUserIdAsync(userId);
+
+            return View(comments);
+        }
     }
 }
