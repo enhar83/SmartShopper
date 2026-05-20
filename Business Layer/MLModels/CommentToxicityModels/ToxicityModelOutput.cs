@@ -13,5 +13,6 @@ namespace Business_Layer.MLModels.CommentToxicityModels
         public bool Prediction { get; set; }
         [ColumnName("Probability")]
         public float Probability { get; set; }
+        public float Score { get; set; }
     }
 }

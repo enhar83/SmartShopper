@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Business_Layer.MLModels.CommentToxicityModels;
 using Core_Layer.IServices;
@@ -21,19 +21,41 @@ namespace Business_Layer.Managers
                 if (!File.Exists(dataPath))
                     return Task.FromResult("Error: CSV data file not found!");
 
-                MLContext mlContext = new MLContext(seed: 0);
+                var lines = File.ReadAllLines(dataPath);
+                var dataList = new List<ToxicityModelInput>();
 
-                IDataView dataView = mlContext.Data.LoadFromTextFile<ToxicityModelInput>(
-                    path: dataPath,
-                    hasHeader: true,
-                    separatorChar: ',',
-                    allowQuoting: true);
+                foreach (var line in lines)
+                {
+                    if (string.IsNullOrWhiteSpace(line) || line.StartsWith("Text")) continue;
+
+                    int lastCommaIndex = line.LastIndexOf(',');
+                    if (lastCommaIndex == -1) continue;
+
+                    string textPart = line.Substring(0, lastCommaIndex).Trim('"', ' ');
+                    string labelPart = line.Substring(lastCommaIndex + 1).Trim();
+
+                    bool isToxic = (labelPart == "1" || labelPart.ToLower() == "true");
+
+                    dataList.Add(new ToxicityModelInput
+                    {
+                        Text = textPart,
+                        Label = isToxic
+                    });
+                }
+
+                int toxicCount = dataList.Count(x => x.Label);
+                int cleanCount = dataList.Count(x => !x.Label);
+
+                if (dataList.Count == 0)
+                    return Task.FromResult("Error: Hiçbir veri okunamadı! Dosya boş olabilir.");
+
+                MLContext mlContext = new MLContext(seed: 0);
+                IDataView dataView = mlContext.Data.LoadFromEnumerable(dataList);
 
                 var pipeline = mlContext.Transforms.Text.FeaturizeText("Features", nameof(ToxicityModelInput.Text))
-                    .Append(mlContext.BinaryClassification.Trainers.LbfgsLogisticRegression(
+                    .Append(mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(
                         labelColumnName: nameof(ToxicityModelInput.Label),
-                        featureColumnName: "Features"
-                    ));
+                        featureColumnName: "Features"));
 
                 ITransformer trainedModel = pipeline.Fit(dataView);
 
@@ -43,7 +65,7 @@ namespace Business_Layer.Managers
 
                 mlContext.Model.Save(trainedModel, dataView.Schema, modelPath);
 
-                return Task.FromResult("Success: AI Model successfully trained and saved.");
+                return Task.FromResult($"Success: AI Model başarıyla eğitildi! ({cleanCount} Temiz, {toxicCount} Toksik yorum ezberlendi.)");
             }
             catch (Exception ex)
             {
