@@ -1,0 +1,173 @@
+﻿@using Core_Layer.Dtos.NotificationDtos
+@model List<NotificationListDto>
+
+<style>
+    /* Sepetteki açılış efektinin aynısı bildirim için */
+    #miniNotificationDetails.notification-visible {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        z-index: 999999 !important;
+        transform: none !important;
+        right: 0;
+        top: 100%;
+        min-width: 320px;
+    }
+
+    /* Sepet menüsünün kutu tasarımının birebir kopyası */
+    .header-notification-details {
+        display: none;
+        background: #fff;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        border: 1px solid #eee;
+        border-radius: 4px;
+        transition: none !important;
+    }
+
+    .notification-item-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+    }
+
+        .notification-item-link:hover h6 {
+            color: #ff3366; /* Temanın link hover rengi */
+        }
+</style>
+
+<div class="header-shopping-cart" id="miniNotificationTrigger" onclick="toggleMyNotification(event)" style="cursor:pointer; position:relative; display:flex; align-items:center; height:100%;">
+    <i class="far fa-bell" style="font-size: 22px; color: #333;"></i>
+    @if (ViewBag.UnreadCount != null && ViewBag.UnreadCount > 0)
+    {
+        <sup class="s-count" id="notificationBadge" style="background-color: #ff3366; right: -8px; top: -5px;">@ViewBag.UnreadCount</sup>
+    }
+</div>
+
+<div class="header-notification-details position-absolute pl-30 pr-30 pt-30 pb-30" id="miniNotificationDetails" style="right: 0; width: 330px;">
+
+    <h5 class="mb-20 notification-header-title" style="font-size: 16px; font-weight: 600;">
+        Notifications (@(ViewBag.UnreadCount ?? 0) Unread)
+    </h5>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="h-shop-cart-contetn over-x-heddne over-y-scroll" style="max-height: 350px;">
+            @foreach (var item in Model)
+            {
+                string bgStyle = item.IsRead ? "transparent" : "#fcfcfc";
+
+                <ul class="d-flex pb-15 border-b-light-gray mb-15 notification-container-ul" style="list-style:none; padding:10px; background-color: @bgStyle; border-radius:4px;">
+                    <li class="pl-0" style="flex-grow: 1;">
+                        <a href="@item.RelatedUrl" class="notification-item-link notification-item" data-id="@item.Id">
+                            <h6 style="font-size:14px; margin-bottom:5px; font-weight: 600; color: #333;">
+                                @item.Title
+                            </h6>
+                            <p style="font-size:12px; color:#777; margin-bottom:8px; line-height:1.4;">
+                                @item.Message
+                            </p>
+                            <span style="font-size:11px; color:#aaa;">
+                                <i class="far fa-clock mr-1"></i> @item.CreatedDate.ToString("dd MMM HH:mm")
+                            </span>
+                        </a>
+                    </li>
+                </ul>
+            }
+        </div>
+        <div class="mt-3 text-center">
+            <a href="#" id="markAllReadBtn" class="theme-color font-weight-bold" style="font-size:13px; text-decoration:underline;">Mark All as Read</a>
+        </div>
+    }
+    else
+    {
+        <div class="text-center py-4">
+            <p class="mb-0 text-muted" style="font-size: 14px;">You have no notifications.</p>
+        </div>
+    }
+</div>
+
+<script>
+    // 1. Kutuyu Açıp Kapatma İşlemi (Sepetteki ile birebir aynı logic)
+    window.toggleMyNotification = function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const details = document.getElementById('miniNotificationDetails');
+        details.classList.toggle('notification-visible');
+
+        // UX Ekstrası: Eğer bildirimleri açarsan, sepet açıksa onu kapat ki üst üste binmesinler
+        const cartDetails = document.getElementById('miniCartDetails');
+        if(cartDetails && cartDetails.classList.contains('cart-visible')){
+            cartDetails.classList.remove('cart-visible');
+        }
+    };
+
+    // 2. Dışarı tıklayınca kutuyu kapatma
+    document.addEventListener('click', function(event) {
+        const details = document.getElementById('miniNotificationDetails');
+        const trigger = document.getElementById('miniNotificationTrigger');
+
+        if (details && trigger && !details.contains(event.target) && !trigger.contains(event.target)) {
+            details.classList.remove('notification-visible');
+        }
+    });
+
+    // 3. Okundu İşaretleme (AJAX)
+    document.addEventListener("DOMContentLoaded", function() {
+        const notificationItems = document.querySelectorAll('.notification-item');
+
+        notificationItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                const notificationId = this.getAttribute('data-id');
+                const parentUl = this.closest('ul');
+
+                // Eğer okunmamış ise (arkaplan griyse)
+                if (parentUl.style.backgroundColor === 'rgb(252, 252, 252)' || parentUl.style.backgroundColor === '#fcfcfc') {
+                    fetch('/Notification/MarkAsRead?id=' + notificationId, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            parentUl.style.backgroundColor = 'transparent';
+
+                            const badge = document.getElementById('notificationBadge');
+                            const headerTitle = document.querySelector('.notification-header-title');
+
+                            if (badge) {
+                                let currentCount = parseInt(badge.innerText);
+                                if (currentCount > 1) {
+                                    badge.innerText = currentCount - 1;
+                                    headerTitle.innerText = 'Notifications (' + (currentCount - 1) + ' Unread)';
+                                } else {
+                                    badge.remove();
+                                    headerTitle.innerText = 'Notifications (0 Unread)';
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // Tümünü Okundu İşaretle
+        const markAllBtn = document.getElementById('markAllReadBtn');
+        if (markAllBtn) {
+            markAllBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                fetch('/Notification/MarkAllAsRead', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const badge = document.getElementById('notificationBadge');
+                        const headerTitle = document.querySelector('.notification-header-title');
+
+                        if (badge) badge.remove();
+                        if (headerTitle) headerTitle.innerText = 'Notifications (0 Unread)';
+
+                        document.querySelectorAll('.notification-container-ul').forEach(ul => {
+                            ul.style.backgroundColor = 'transparent';
+                        });
+                    }
+                });
+            });
+        }
+    });
+</script>

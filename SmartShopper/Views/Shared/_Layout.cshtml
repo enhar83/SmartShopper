@@ -1,172 +1,179 @@
 ﻿<!doctype html>
 <html class="no-js" lang="zxx">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>SmartShopper</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta charset="utf-8">
+	<meta http-equiv="x-ua-compatible" content="ie=edge">
+	<title>SmartShopper</title>
+	<meta name="description" content="">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="shortcut icon" href="~/assets/images/logo/favicons.png" type="image/x-icon">
+	<link rel="shortcut icon" href="~/assets/images/logo/favicons.png" type="image/x-icon">
 
-    <link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
-    <link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css">
-    <link rel="stylesheet" href="~/assets/css/animate.css">
-    <link rel="stylesheet" href="~/assets/css/meanmenu.css">
-    <link rel="stylesheet" href="~/assets/css/audioplayer.css">
-    <link rel="stylesheet" href="~/assets/css/jquery.fancybox.min.css">
-    <link rel="stylesheet" href="~/assets/css/flaticon.css">
-    <link rel="stylesheet" href="~/assets/css/slick.css">
-    <link rel="stylesheet" href="~/assets/css/icomoon.css">
-    <link rel="stylesheet" href="~/assets/css/default.css">
-    <link rel="stylesheet" href="~/assets/css/style.css">
-    <link rel="stylesheet" href="~/assets/css/responsive.css">
+	<link rel="stylesheet" href="~/assets/css/bootstrap.min.css">
+	<link rel="stylesheet" href="~/assets/css/fontawesome-all.min.css">
+	<link rel="stylesheet" href="~/assets/css/animate.css">
+	<link rel="stylesheet" href="~/assets/css/meanmenu.css">
+	<link rel="stylesheet" href="~/assets/css/audioplayer.css">
+	<link rel="stylesheet" href="~/assets/css/jquery.fancybox.min.css">
+	<link rel="stylesheet" href="~/assets/css/flaticon.css">
+	<link rel="stylesheet" href="~/assets/css/slick.css">
+	<link rel="stylesheet" href="~/assets/css/icomoon.css">
+	<link rel="stylesheet" href="~/assets/css/default.css">
+	<link rel="stylesheet" href="~/assets/css/style.css">
+	<link rel="stylesheet" href="~/assets/css/responsive.css">
 </head>
 <body>
 
-    <header>
-        <div id="header-sticky" class="header-area">
-            <div class="header pl-30 pr-30 pt-15 pb-15">
-                <div class="container-fluid">
-                    <div class="row align-items-center justify-content-lg-between position-relative">
-                        <div class="col-xl-5 col-lg-5 col-md-4 col-sm-4 col-4 pr-0 d-lg-flex align-items-lg-center position-static">
-                            <div class="d-block d-lg-none">
-                                <a class="mobile-menubar" href="javascript:void(0);"><span class="icon-menu"></span></a>
-                            </div>
-                            <div class="main-menu">
-                                <nav id="mobile-menu">
-                                    <ul class="d-block">
-                                        <li><a href="/Home/Index">Home</a></li>
-                                        <li class="full-mega-menu-position">
-                                            <a class="active" href="/Product/ProductList">Shop</a>
-                                            <ul class="mega-menu full-mega-menu pb-40 pl-50 pt-60 border-gray bg-white">
-                                                <li class="border-r-light-gray pl-10">
-                                                    <a class="mega-title mb-20" href="#">Shop Layout</a>
-                                                    <ul>
-                                                        <li><a href="/Product/ProductList">Products</a></li>
-                                                        <li><a href="/Profile/ViewProfile">My Profile </a></li>
-                                                        <li><a href="/Cart/Index">Shopping cart</a></li>
-                                                        <li><a href="/Favorite/Index">Wishlist</a></li>
-                                                        <li><a href="/Order/Index">My Orders</a></li>
-                                                        <li><a href="/Recommendation/GetOrderRecommendations">Order Recommendations </a></li>
-                                                        <li><a href="/Recommendation/GetFavoriteRecommendations">Favorite Recommendations</a></li>
-                                                        <li><a href="/Recommendation/GetCartRecommendations">Cart Recommendations</a></li>
-                                                    </ul>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li><a href="#">Pages</a></li>
-                                        <li><a href="#">Portfolio</a></li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                        <div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-4 d-flex align-items-center justify-content-center">
-                            <div class="logo">
-                                <a href="/" class="d-block"><img src="~/assets/images/logo/logo.png" alt="HOMESS"></a>
-                            </div>
-                        </div>
-                        <div class="col-xl-5 col-lg-5 col-md-4 col-sm-4 col-4">
-                            <div class="header-right d-flex justify-content-end align-items-center">
-                                <ul class="header-login d-none d-lg-block">
-                                    <li><a href="/Account/Login"><span class="icon-users"></span><span class="logo-register ml-2">Login / Register</span></a></li>
-                                </ul>
-                                <ul class="header-search d-none d-lg-block">
-                                    <li><span class="icon-search"></span></li>
-                                </ul>
-                                <ul class="header-heart d-none d-lg-block">
-                                    <li><a href="/Favorite/Index"><span class="icon-heart"></span></a></li>
-                                </ul>
-                                <ul>
-                                    <li class="position-relative" id="miniCartContainer">
-                                        @await Component.InvokeAsync("_CartNavbarComponentPartial")
-                                    </li>
-                                </ul>
-                                <ul class="d-none d-lg-block">
-                                    <li class="position-relative">
-                                        <div class="header-setting"><span class="icon-settings"></span></div>
-                                        <div class="header-setting-content position-absolute pt-30 pl-30 pr-30 pb-30">
-                                            <h5>Language</h5>
-                                            <ul class="mb-20 pt-1">
-                                                <li><a href="#">English</a></li>
-                                            </ul>
-                                            <h5>Currencies</h5>
-                                            <ul class="pt-1">
-                                                <li><a href="#">USD – US Dollar</a></li>
-                                            </ul>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+	<header>
+		<div id="header-sticky" class="header-area">
+			<div class="header pl-30 pr-30 pt-15 pb-15">
+				<div class="container-fluid">
+					<div class="row align-items-center justify-content-lg-between position-relative">
+						<div class="col-xl-5 col-lg-5 col-md-4 col-sm-4 col-4 pr-0 d-lg-flex align-items-lg-center position-static">
+							<div class="d-block d-lg-none">
+								<a class="mobile-menubar" href="javascript:void(0);"><span class="icon-menu"></span></a>
+							</div>
+							<div class="main-menu">
+								<nav id="mobile-menu">
+									<ul class="d-block">
+										<li><a href="/Home/Index">Home</a></li>
+										<li class="full-mega-menu-position">
+											<a class="active" href="/Product/ProductList">Shop</a>
+											<ul class="mega-menu full-mega-menu pb-40 pl-50 pt-60 border-gray bg-white">
+												<li class="border-r-light-gray pl-10">
+													<a class="mega-title mb-20" href="#">Shop Layout</a>
+													<ul>
+														<li><a href="/Product/ProductList">Products</a></li>
+														<li><a href="/Profile/ViewProfile">My Profile </a></li>
+														<li><a href="/Cart/Index">Shopping cart</a></li>
+														<li><a href="/Favorite/Index">Wishlist</a></li>
+														<li><a href="/Order/Index">My Orders</a></li>
+														<li><a href="/Recommendation/GetOrderRecommendations">Order Recommendations </a></li>
+														<li><a href="/Recommendation/GetFavoriteRecommendations">Favorite Recommendations</a></li>
+														<li><a href="/Recommendation/GetCartRecommendations">Cart Recommendations</a></li>
+													</ul>
+												</li>
+											</ul>
+										</li>
+										<li><a href="#">Pages</a></li>
+										<li><a href="#">Portfolio</a></li>
+									</ul>
+								</nav>
+							</div>
+						</div>
+						<div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-4 d-flex align-items-center justify-content-center">
+							<div class="logo">
+								<a href="/" class="d-block"><img src="~/assets/images/logo/logo.png" alt="HOMESS"></a>
+							</div>
+						</div>
+						<div class="col-xl-5 col-lg-5 col-md-4 col-sm-4 col-4">
+							<div class="header-right d-flex justify-content-end align-items-center">
+								<ul class="header-login d-none d-lg-block">
+									<li><a href="/Account/Login"><span class="icon-users"></span><span class="logo-register ml-2">Login / Register</span></a></li>
+								</ul>
+								<ul class="header-search d-none d-lg-block">
+									<li><span class="icon-search"></span></li>
+								</ul>
+								<ul class="header-heart d-none d-lg-block">
+									<li><a href="/Favorite/Index"><span class="icon-heart"></span></a></li>
+								</ul>
 
-    <main>
-        @RenderBody()
-    </main>
+								<ul class="d-none d-lg-block">
+									<li class="position-relative" id="miniNotificationContainer" style="margin-right: 15px;">
+										@await Component.InvokeAsync("_NavbarNotificationListComponentPartial")
+									</li>
+								</ul>
 
-    <footer>
-        <div class="footer-area-area theme-bg">
-            <div class="footer-top pt-100 pb-100">
-                <div class="container-wrapper extra-padding-15">
-                    <div class="row justify-content-center align-items-center">
-                        <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                            <div class="footer-top-content text-center">
-                                <div class="footer-logo mb-35">
-                                    <a href="/"><img src="~/assets/images/logo/logo.png" alt=""></a>
-                                </div>
-                                <p>SmartShopper is an advanced e-commerce platform.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <div class="container-wrapper extra-padding-15">
-                    <div class="copyright-area pt-45 pb-25">
-                        <div class="row align-items-center justify-content-center">
-                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 text-center">
-                                <p>Copyright © <a href="#">SmartShopper</a> All Rights Reserved.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </footer>
+								<ul>
+									<li class="position-relative" id="miniCartContainer">
+										@await Component.InvokeAsync("_CartNavbarComponentPartial")
+									</li>
+								</ul>
+								<ul class="d-none d-lg-block">
+									<li class="position-relative">
+										<div class="header-setting"><span class="icon-settings"></span></div>
+										<div class="header-setting-content position-absolute pt-30 pl-30 pr-30 pb-30">
+											<h5>Language</h5>
+											<ul class="mb-20 pt-1">
+												<li><a href="#">English</a></li>
+											</ul>
+											<h5>Currencies</h5>
+											<ul class="pt-1">
+												<li><a href="#">USD – US Dollar</a></li>
+											</ul>
+										</div>
+									</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</header>
 
-    <div class="scroll-up" id="scroll">
-        <a href="#"><span class="icon-chevrons-up"></span></a>
-    </div>
+	<main>
+		@RenderBody()
+	</main>
 
-    <script src="~/assets/js/vendor/modernizr-3.5.0.min.js"></script>
-    <script src="~/assets/js/vendor/jquery-1.12.4.min.js"></script>
-    <script src="~/assets/js/popper.min.js"></script>
-    <script src="~/assets/js/bootstrap.min.js"></script>
-    <script src="~/assets/js/jquery.inputarrow.js"></script>
-    <script src="~/assets/js/jquery.fancybox.min.js"></script>
-    <script src="~/assets/js/isotope.pkgd.min.js"></script>
-    <script src="~/assets/js/plugins.js"></script>
-    <script src="~/assets/js/wow.min.js"></script>
-    <script src="~/assets/js/audioplayer.js"></script>
-    <script src="~/assets/js/main.js"></script>
-    <script src="~/assets/js/slick.min.js"></script>
-    <script src="~/assets/js/jquery.meanmenu.min.js"></script>
+	<footer>
+		<div class="footer-area-area theme-bg">
+			<div class="footer-top pt-100 pb-100">
+				<div class="container-wrapper extra-padding-15">
+					<div class="row justify-content-center align-items-center">
+						<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+							<div class="footer-top-content text-center">
+								<div class="footer-logo mb-35">
+									<a href="/"><img src="~/assets/images/logo/logo.png" alt=""></a>
+								</div>
+								<p>SmartShopper is an advanced e-commerce platform.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="footer-bottom">
+				<div class="container-wrapper extra-padding-15">
+					<div class="copyright-area pt-45 pb-25">
+						<div class="row align-items-center justify-content-center">
+							<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12 text-center">
+								<p>Copyright © <a href="#">SmartShopper</a> All Rights Reserved.</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</footer>
 
-    <script>
-        function refreshMiniCart() {
-            $.get('/Cart/GetMiniCartComponent', function (data) {
-                $('#miniCartContainer').html(data);
-            });
-        }
-    </script>
+	<div class="scroll-up" id="scroll">
+		<a href="#"><span class="icon-chevrons-up"></span></a>
+	</div>
 
-    @await RenderSectionAsync("Scripts", required: false)
-    @await RenderSectionAsync("Styles", required: false)
+	<script src="~/assets/js/vendor/modernizr-3.5.0.min.js"></script>
+	<script src="~/assets/js/vendor/jquery-1.12.4.min.js"></script>
+	<script src="~/assets/js/popper.min.js"></script>
+	<script src="~/assets/js/bootstrap.min.js"></script>
+	<script src="~/assets/js/jquery.inputarrow.js"></script>
+	<script src="~/assets/js/jquery.fancybox.min.js"></script>
+	<script src="~/assets/js/isotope.pkgd.min.js"></script>
+	<script src="~/assets/js/plugins.js"></script>
+	<script src="~/assets/js/wow.min.js"></script>
+	<script src="~/assets/js/audioplayer.js"></script>
+	<script src="~/assets/js/main.js"></script>
+	<script src="~/assets/js/slick.min.js"></script>
+	<script src="~/assets/js/jquery.meanmenu.min.js"></script>
+
+	<script>
+		function refreshMiniCart() {
+			$.get('/Cart/GetMiniCartComponent', function (data) {
+				$('#miniCartContainer').html(data);
+			});
+		}
+	</script>
+
+	@await RenderSectionAsync("Scripts", required: false)
+	@await RenderSectionAsync("Styles", required: false)
 
 </body>
 </html>
