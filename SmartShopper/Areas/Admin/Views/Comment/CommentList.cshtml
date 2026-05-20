@@ -22,14 +22,24 @@
 
         <div class="card border-top border-0 border-4 border-info">
             <div class="card-body">
+
+                <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+                    <h5 class="mb-0 font-weight-bold text-dark">Customer Reviews</h5>
+
+                    <button onclick="startAiTraining()" class="btn btn-warning px-4 font-weight-bold shadow-sm">
+                        <i class='bx bx-brain mr-2'></i> Retrain AI Model
+                    </button>
+                </div>
+
                 <div class="table-responsive">
                     <table id="commentDataTable" class="table table-striped table-bordered align-middle" style="width:100%">
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 5%" class="text-center">#</th>
                                 <th style="width: 15%">Product</th>
-                                <th style="width: 20%">Customer</th>
+                                <th style="width: 15%">Customer</th>
                                 <th style="width: 15%">Rating & Title</th>
+                                <th style="width: 15%" class="text-center">AI Analysis</th>
                                 <th style="width: 15%" class="text-center">Date</th>
                                 <th style="width: 10%" class="text-center">Status</th>
                                 <th style="width: 10%" class="text-center">Actions</th>
@@ -67,6 +77,30 @@
                                         <span class="d-block text-truncate" style="max-width: 200px;" title="@item.Title">
                                             @item.Title
                                         </span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        @if (item.IsToxic.HasValue && item.ToxicityScore.HasValue)
+                                        {
+                                            if (item.IsToxic.Value)
+                                            {
+                                                <div class="badge rounded-pill text-danger bg-light-danger p-2 px-3" title="Score: @item.ToxicityScore.Value.ToString("0.00")">
+                                                    <i class='bx bx-biohazard me-1'></i>Toxic (@item.ToxicityScore.Value.ToString("P0"))
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="badge rounded-pill text-success bg-light-success p-2 px-3" title="Score: @item.ToxicityScore.Value.ToString("0.00")">
+                                                    <i class='bx bx-check-shield me-1'></i>Clean (@item.ToxicityScore.Value.ToString("P0"))
+                                                </div>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <div class="badge rounded-pill text-secondary bg-light-secondary p-2 px-3">
+                                                <i class='bx bx-minus me-1'></i>N/A
+                                            </div>
+                                        }
                                     </td>
 
                                     <td class="text-center">@item.CreatedDate.ToString("dd.MM.yyyy HH:mm")</td>
@@ -148,10 +182,10 @@
             var table = $('#commentDataTable').DataTable({
                 pageLength: 10,
                 language: { emptyTable: "No comments found." },
-                order: [[4, 'desc']], 
+                order: [[5, 'desc']], // DİKKAT: Tarih sütunu artık 5. sırada olduğu için indeksi 5 yaptık.
                 columnDefs: [
-                    { searchable: false, orderable: false, targets: 0 }, 
-                    { orderable: false, targets: 6 } 
+                    { searchable: false, orderable: false, targets: 0 },
+                    { orderable: false, targets: 7 } // DİKKAT: Actions sütunu artık 7. sırada
                 ]
             });
 
@@ -163,12 +197,14 @@
             }).draw();
         });
 
+        // Uzun yorumu okumak için
         function showCommentDetails(title, text) {
             $("#modalCommentTitle").text(title);
             $("#modalCommentText").text(text);
             $("#commentDetailsModal").modal('show');
         }
 
+        // Onaylama / Geri çekme
         function toggleApproval(commentId, isApproving) {
             const actionText = isApproving ? "publish this comment on the site" : "hide this comment from the site";
             const confirmBtnText = isApproving ? "Yes, Approve it!" : "Yes, Hide it!";
@@ -201,6 +237,38 @@
                     }).fail(function() {
                         Swal.fire('Error!', 'A critical technical error occurred.', 'error');
                     });
+                }
+            });
+        }
+
+        function startAiTraining() {
+            Swal.fire({
+                title: 'AI Model is Training...',
+                html: 'Please wait while the Machine Learning model processes the dataset. <br><br><b class="text-warning">This may take 10-30 seconds.</b>',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            $.ajax({
+                url: '/Admin/Comment/TrainModel',
+                type: 'POST',
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Training Complete!',
+                            text: res.message,
+                            confirmButtonColor: '#15ca20'
+                        });
+                    } else {
+                        Swal.fire('Error!', res.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Critical Error!', 'A technical issue occurred while training the model.', 'error');
                 }
             });
         }

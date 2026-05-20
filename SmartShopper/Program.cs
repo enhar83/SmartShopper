@@ -83,6 +83,7 @@ builder.Services.AddScoped<ISubCategoryDemandForecastService, SubCategoryDemandF
 builder.Services.AddScoped<IDiscountService, DiscountManager>();
 builder.Services.AddScoped<ICommentService, CommentManager>();
 builder.Services.AddScoped<IToxicityPredictionService, ToxicityPredictionManager>();
+builder.Services.AddScoped<ICommentModelTrainingService, CommentModelTrainingManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 

@@ -39,9 +39,9 @@ namespace SmartShopper.Controllers
             {
                 TempData["WarningMessage"] = ex.Message;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "An unexpected system error occurred while adding a comment.";
+                TempData["ErrorMessage"] = "System Error: " + ex.Message + " | Detail: " + ex.InnerException?.Message;
             }
 
             return RedirectToAction("ProductDetails", "Product", new { id = createCommentDto.ProductId });

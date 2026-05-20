@@ -25,4 +25,10 @@
     <ProjectReference Include="..\Core Layer\Core Layer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="ecommerce_reviews.csv">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

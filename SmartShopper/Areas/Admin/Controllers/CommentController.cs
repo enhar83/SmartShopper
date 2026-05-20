@@ -8,10 +8,12 @@ namespace SmartShopper.Areas.Admin.Controllers
     public class CommentController : Controller
     {
         private readonly ICommentService _commentService;
+        private readonly ICommentModelTrainingService _commentModelTrainingService;
 
-        public CommentController(ICommentService commentService)
+        public CommentController(ICommentService commentService, ICommentModelTrainingService commentModelTrainingService)
         {
             _commentService = commentService;
+            _commentModelTrainingService = commentModelTrainingService;
         }
 
         public async Task<IActionResult> CommentList()
@@ -37,6 +39,20 @@ namespace SmartShopper.Areas.Admin.Controllers
             {
                 return Json(new { success = false, message = "A technical error occurred while updating the comment status." });
             }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TrainModel()
+        {
+
+            var resultMessage = await _commentModelTrainingService.TTrainAndSaveModelAsync();
+
+            if (resultMessage.StartsWith("Success"))
+            {
+                return Json(new { success = true, message = resultMessage });
+            }
+
+            return Json(new { success = false, message = resultMessage });
         }
     }
 }

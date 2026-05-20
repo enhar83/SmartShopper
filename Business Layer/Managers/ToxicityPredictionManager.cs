@@ -21,7 +21,7 @@ namespace Business_Layer.Managers
         public Task<(double ToxicityScore, bool IsToxic)> TPredictToxicityAsync(string text)
         {
             var input = new ToxicityModelInput { Text = text };
-            var output = _predictionEnginePool.Predict(input);
+            var output = _predictionEnginePool.Predict("ToxicityModel", input);
 
             return Task.FromResult(((double)output.Probability, output.Prediction));
         }
