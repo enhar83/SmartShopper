@@ -331,6 +331,36 @@ namespace Data_Access_Layer.DbContext
                 entity.HasIndex(e => e.IsToxic); 
             });
             #endregion
+
+            #region Notification Configuration
+            builder.Entity<Notification>(entity =>
+            {
+                entity.ToTable("Notifications");
+
+                entity.Property(n => n.Title)
+                      .HasMaxLength(150)
+                      .IsRequired();
+
+                entity.Property(n => n.Message)
+                      .HasMaxLength(500)
+                      .IsRequired();
+
+                entity.Property(n => n.NotificationType)
+                      .HasMaxLength(50)
+                      .IsRequired();
+
+                entity.Property(n => n.RelatedUrl)
+                      .HasMaxLength(500);
+
+                entity.Property(n => n.IsRead)
+                      .HasDefaultValue(false);
+
+                entity.HasOne(n => n.AppUser)
+                      .WithMany(u => u.Notifications) 
+                      .HasForeignKey(n => n.AppUserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+            #endregion
         }
     }
 }

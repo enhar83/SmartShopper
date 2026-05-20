@@ -22,6 +22,7 @@ namespace Entity_Layer
         public virtual CustomerChurnResult CustomerChurnResult { get; set; } = null!;
         public virtual ICollection<DiscountCustomer>? DiscountCustomers { get; set; }
         public virtual ICollection<Comment>? Comments { get; set; }
+        public virtual ICollection<Notification>? Notifications { get; set; }
 
     }
 }
