@@ -36,6 +36,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<DiscountCustomer> DiscountCustomers { get; set; }
         public DbSet<Comment> Comments { get; set; }
         public DbSet<CommentAnalysisResult> CommentAnalysisResults { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
