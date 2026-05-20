@@ -17,5 +17,7 @@ namespace Core_Layer.Dtos.CommentDtos
         public byte Rating { get; set; }
         public DateTime CreatedDate { get; set; }
         public bool IsApproved { get; set; }
+        public double? ToxicityScore { get; set; }
+        public bool? IsToxic { get; set; }
     }
 }

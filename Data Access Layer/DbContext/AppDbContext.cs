@@ -35,6 +35,7 @@ namespace Data_Access_Layer.DbContext
         public DbSet<Discount> Discounts { get; set; }
         public DbSet<DiscountCustomer> DiscountCustomers { get; set; }
         public DbSet<Comment> Comments { get; set; }
+        public DbSet<CommentAnalysisResult> CommentAnalysisResults { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -305,6 +306,29 @@ namespace Data_Access_Layer.DbContext
                       .WithMany(u => u.Comments)
                       .HasForeignKey(c => c.AppUserId)
                       .OnDelete(DeleteBehavior.NoAction);
+            });
+            #endregion
+
+            #region CommentAnalysisResult Configuration
+            builder.Entity<CommentAnalysisResult>(entity =>
+            {
+                entity.ToTable("CommentAnalysisResults");
+
+                entity.HasOne(x => x.Comment)
+                      .WithOne(c => c.CommentAnalysisResult)
+                      .HasForeignKey<CommentAnalysisResult>(x => x.CommentId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.Property(e => e.ToxicityScore)
+                      .HasPrecision(18, 4)
+                      .IsRequired();
+
+                entity.Property(e => e.SentimentScore)
+                      .HasPrecision(18, 4)
+                      .HasDefaultValue(0.0);
+
+                entity.HasIndex(e => e.CommentId).IsUnique(); 
+                entity.HasIndex(e => e.IsToxic); 
             });
             #endregion
         }

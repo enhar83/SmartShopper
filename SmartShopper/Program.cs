@@ -54,6 +54,7 @@ builder.Services.AddScoped<IOrderAnomalyResultRepository, OrderAnomalyResultRepo
 builder.Services.AddScoped<ISubCategoryDemandForecastRepository, SubCategoryDemandForecastRepository>();
 builder.Services.AddScoped<IDiscountRepository, DiscountRepository>();
 builder.Services.AddScoped<IDiscountCustomerRepository, DiscountCustomerRepository>();
+builder.Services.AddScoped<ICommentAnalysisResultRepository, CommentAnalysisResultRepository>();
 builder.Services.AddScoped<ICommentRepository, CommentRepository>();
 
 builder.Services.AddScoped<ICategoryService, CategoryManager>();
@@ -86,7 +87,6 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddValidatorsFromAssemblies(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
-
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));

@@ -24,10 +24,14 @@ namespace Business_Layer.Mapping.CommentMappings
             CreateMap<Comment, CommentListAdminPanelDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name))
                 .ForMember(dest => dest.CustomerFullName, opt => opt.MapFrom(src => src.AppUser.Name + " " + src.AppUser.Surname))
-                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.AppUser.Email));
+                .ForMember(dest => dest.CustomerEmail, opt => opt.MapFrom(src => src.AppUser.Email))
+                .ForMember(dest => dest.ToxicityScore, opt => opt.MapFrom(src =>src.CommentAnalysisResult != null ? src.CommentAnalysisResult.ToxicityScore : (double?)null))
+                .ForMember(dest => dest.IsToxic, opt => opt.MapFrom(src =>src.CommentAnalysisResult != null ? src.CommentAnalysisResult.IsToxic : (bool?)null));
 
             CreateMap<Comment, UserCommentListDto>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.Name));
+
+            CreateMap<CommentAnalysisResult, CommentAnalysisResultDto>();
         }
     }
 }

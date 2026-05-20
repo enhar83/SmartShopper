@@ -17,5 +17,6 @@ namespace Entity_Layer
         public AppUser AppUser { get; set; } = null!;
         public Guid ProductId { get; set; }
         public Product Product { get; set; } = null!;
+        public CommentAnalysisResult CommentAnalysisResult { get; set; } = null!;
     }
 }
