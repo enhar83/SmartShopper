@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.DiscountDtos;
+using Core_Layer.Dtos.NotificationDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
@@ -16,13 +17,15 @@ namespace Business_Layer.Managers
     {
         private readonly IDiscountRepository _discountRepository;
         private readonly IDiscountCustomerRepository _discountCustomerRepository;
+        private readonly INotificationService _notificationService;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public DiscountManager(IDiscountRepository discountRepository, IDiscountCustomerRepository discountCustomerRepository, IUnitOfWork uow, IMapper mapper)
+        public DiscountManager(IDiscountRepository discountRepository, IDiscountCustomerRepository discountCustomerRepository, INotificationService notificationService, IUnitOfWork uow, IMapper mapper)
         {
             _discountRepository = discountRepository;
             _discountCustomerRepository = discountCustomerRepository;
+            _notificationService = notificationService;
             _uow = uow;
             _mapper = mapper;
         }
@@ -106,6 +109,23 @@ namespace Business_Layer.Managers
             };
 
             await _discountCustomerRepository.AddAsync(assignment);
+
+            var discountDetails = await _discountRepository.GetByIdAsync(assignDto.DiscountId);
+
+            if (discountDetails != null)
+            {
+                var notificationDto = new CreateNotificationDto
+                {
+                    AppUserId = assignDto.AppUserId,
+                    Title = "Exclusive Discount Unlocked!",
+                    Message = $"Congratulations! A special '{discountDetails.Name}' discount has been added to your account. Don't miss this opportunity!",
+                    NotificationType = "Discount",
+                    RelatedUrl = "Discount/Index" 
+                };
+
+                await _notificationService.TAddAsync(notificationDto);
+            }
+
             await _uow.SaveAsync();
         }
 
