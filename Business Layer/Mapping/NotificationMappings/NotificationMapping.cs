@@ -14,6 +14,8 @@ namespace Business_Layer.Mapping.NotificationMappings
         public NotificationMapping()
         {
             CreateMap<CreateNotificationDto, Notification>().ReverseMap();
+
+            CreateMap<Notification, NotificationListDto>().ReverseMap();
         }
     }
 }
