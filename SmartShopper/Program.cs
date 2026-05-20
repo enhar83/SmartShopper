@@ -1,6 +1,7 @@
 using System.Text;
 using Business_Layer.Managers;
 using Business_Layer.Mapping.CategoryMappings;
+using Business_Layer.MLModels.CommentToxicityModels;
 using Business_Layer.Validators.CategoryValidators;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
@@ -15,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Internal;
+using Microsoft.Extensions.ML;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -80,6 +82,7 @@ builder.Services.AddScoped<IRecommendationService, RecommendationManager>();
 builder.Services.AddScoped<ISubCategoryDemandForecastService, SubCategoryDemandForecastManager>();
 builder.Services.AddScoped<IDiscountService, DiscountManager>();
 builder.Services.AddScoped<ICommentService, CommentManager>();
+builder.Services.AddScoped<IToxicityPredictionService, ToxicityPredictionManager>();
 
 builder.Services.AddScoped<DataSeeder>();
 
@@ -90,6 +93,9 @@ builder.Services.AddFluentValidationClientsideAdapters();
 
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
 builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("JwtSettings"));
+
+builder.Services.AddPredictionEnginePool<ToxicityModelInput, ToxicityModelOutput>()
+       .FromFile(modelName: "ToxicityModel", filePath: "MLModels/ToxicityModel.zip", watchForChanges: true);
 
 builder.Services.AddAuthentication(options =>
 {

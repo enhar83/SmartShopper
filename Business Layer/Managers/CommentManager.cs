@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
 using Core_Layer.Dtos.CommentDtos;
@@ -20,12 +19,20 @@ namespace Business_Layer.Managers
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public CommentManager(ICommentRepository commentRepository, IOrderRepository orderRepository, IUnitOfWork uow, IMapper mapper)
+        private readonly IToxicityPredictionService _toxicityPredictionService;
+
+        public CommentManager(
+            ICommentRepository commentRepository,
+            IOrderRepository orderRepository,
+            IUnitOfWork uow,
+            IMapper mapper,
+            IToxicityPredictionService toxicityPredictionService)
         {
             _commentRepository = commentRepository;
             _orderRepository = orderRepository;
             _uow = uow;
             _mapper = mapper;
+            _toxicityPredictionService = toxicityPredictionService;
         }
 
         public async Task TAddAsync(CreateCommentDto createCommentDto, Guid userId)
@@ -38,9 +45,18 @@ namespace Business_Layer.Managers
             var comment = _mapper.Map<Comment>(createCommentDto);
 
             comment.AppUserId = userId;
-            comment.IsApproved = false; 
+            comment.IsApproved = false;
             comment.CreatedDate = DateTime.Now;
             comment.IsDeleted = false;
+
+            var prediction = await _toxicityPredictionService.TPredictToxicityAsync(createCommentDto.Text);
+
+            comment.CommentAnalysisResult = new CommentAnalysisResult
+            {
+                ToxicityScore = prediction.ToxicityScore,
+                IsToxic = prediction.IsToxic,
+                SentimentScore = 0.0 
+            };
 
             await _commentRepository.AddAsync(comment);
             await _uow.SaveAsync();
@@ -50,7 +66,7 @@ namespace Business_Layer.Managers
         {
             var hasBoughtProduct = await _orderRepository.AnyAsync(order =>
                 order.AppUserId == userId &&
-                order.Status == OrderStatus.Delivered && 
+                order.Status == OrderStatus.Delivered &&
                 order.OrderItems.Any(oi => oi.ProductId == productId)
             );
 
@@ -62,7 +78,7 @@ namespace Business_Layer.Managers
             var comments = await _commentRepository
                 .Where(c => c.ProductId == productId && c.IsApproved == true && c.IsDeleted == false)
                 .Include(c => c.AppUser)
-                .OrderByDescending(c => c.CreatedDate) 
+                .OrderByDescending(c => c.CreatedDate)
                 .ToListAsync();
 
             var commentDtos = _mapper.Map<List<ResultCommentDto>>(comments);
@@ -73,9 +89,10 @@ namespace Business_Layer.Managers
         public async Task<List<CommentListAdminPanelDto>> TGetAllCommentsForAdminAsync()
         {
             var comments = await _commentRepository.GetAll()
-                .Include(c => c.Product) 
+                .Include(c => c.Product)
                 .Include(c => c.AppUser)
-                .OrderByDescending(c => c.CreatedDate) 
+                .Include(c => c.CommentAnalysisResult)
+                .OrderByDescending(c => c.CreatedDate)
                 .ToListAsync();
 
             var commentDtos = _mapper.Map<List<CommentListAdminPanelDto>>(comments);
