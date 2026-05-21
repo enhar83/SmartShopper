@@ -16,6 +16,19 @@ namespace WebUI.Controllers
             _notificationService = notificationService;
         }
 
+        public async Task<IActionResult> Index()
+        {
+            var userIdString = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(userIdString))
+                return RedirectToAction("Login", "Account");
+
+            Guid userId = Guid.Parse(userIdString);
+
+            var notifications = await _notificationService.TGetNotificationHistoryAsync(userId);
+
+            return View(notifications);
+        }
+
         [HttpPost]
         public async Task<IActionResult> MarkAsRead(Guid id)
         {

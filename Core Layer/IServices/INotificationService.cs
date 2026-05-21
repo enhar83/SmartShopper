@@ -15,5 +15,7 @@ namespace Core_Layer.IServices
         Task TMarkAsReadAsync(Guid notificationId);
         Task TMarkAllAsReadAsync(Guid userId);
         Task TDeleteNotificationAsync(Guid id);
+        Task<List<NotificationListForIndexDto>> TGetNotificationHistoryAsync(Guid userId);
+
     }
 }

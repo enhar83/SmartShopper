@@ -101,5 +101,15 @@ namespace Business_Layer.Managers
             _notificationRepository.Update(notification);
             await _uow.SaveAsync();
         }
+
+        public async Task<List<NotificationListForIndexDto>> TGetNotificationHistoryAsync(Guid userId)
+        {
+            var notifications = await _notificationRepository.GetAll()
+                .Where(x => x.AppUserId == userId && !x.IsDeleted)
+                .OrderByDescending(x => x.CreatedDate)
+                .ToListAsync();
+
+            return _mapper.Map<List<NotificationListForIndexDto>>(notifications);
+        }
     }
 }
