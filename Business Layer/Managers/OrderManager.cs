@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core_Layer.Dtos.NotificationDtos;
 using Core_Layer.Dtos.OrderDtos;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
@@ -11,13 +12,15 @@ namespace Business_Layer.Managers
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IProductRepository _productRepository;
+        private readonly INotificationService _notificationService;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
-        public OrderManager(IOrderRepository orderRepository, IProductRepository productRepository, IUnitOfWork uow, IMapper mapper)
+        public OrderManager(IOrderRepository orderRepository, IProductRepository productRepository, INotificationService notificationService, IUnitOfWork uow, IMapper mapper)
         {
             _orderRepository = orderRepository;
             _productRepository = productRepository;
+            _notificationService = notificationService;
             _uow = uow;
             _mapper = mapper;
         }
@@ -88,6 +91,20 @@ namespace Business_Layer.Managers
 
                 order.Status = updateDto.NewStatus;
                 _orderRepository.Update(order);
+
+                string statusText = updateDto.NewStatus.ToString();
+                string shortOrderId = order.Id.ToString().Substring(0, 8).ToUpper();
+
+                var notificationDto = new CreateNotificationDto
+                {
+                    AppUserId = order.AppUserId,
+                    Title = "Order Status Updated",
+                    Message = $"Your order #{shortOrderId} status has been successfully updated to '{statusText}'.",
+                    NotificationType = "Order",
+                    RelatedUrl = $"/Order/Index"
+                };
+
+                await _notificationService.TAddAsync(notificationDto);
 
                 await _uow.SaveAsync();
                 return true;
