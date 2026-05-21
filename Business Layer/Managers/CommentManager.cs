@@ -16,6 +16,7 @@ namespace Business_Layer.Managers
     {
         private readonly ICommentRepository _commentRepository;
         private readonly IOrderRepository _orderRepository;
+        private readonly INotificationService _notificationService;   
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
 
@@ -24,12 +25,14 @@ namespace Business_Layer.Managers
         public CommentManager(
             ICommentRepository commentRepository,
             IOrderRepository orderRepository,
+            INotificationService notificationService,
             IUnitOfWork uow,
             IMapper mapper,
             IToxicityPredictionService toxicityPredictionService)
         {
             _commentRepository = commentRepository;
             _orderRepository = orderRepository;
+            _notificationService = notificationService;
             _uow = uow;
             _mapper = mapper;
             _toxicityPredictionService = toxicityPredictionService;
@@ -102,14 +105,31 @@ namespace Business_Layer.Managers
 
         public async Task TToggleCommentApprovalAsync(Guid commentId)
         {
-            var comment = await _commentRepository.GetByIdAsync(commentId);
+            var comment = await _commentRepository.Where(x => x.Id == commentId)
+                .Include(x => x.Product)
+                .FirstOrDefaultAsync();
 
             if (comment == null)
-                throw new LogicException("NotFound", "No comment was found to process.\r\n");
+                throw new LogicException("NotFound", "No comment was found to process.");
 
             comment.IsApproved = !comment.IsApproved;
-
             _commentRepository.Update(comment);
+
+            if (comment.IsApproved)
+            {
+                string productName = comment.Product != null ? comment.Product.Name : "our product";
+
+                var notificationDto = new Core_Layer.Dtos.NotificationDtos.CreateNotificationDto
+                {
+                    AppUserId = comment.AppUserId,
+                    Title = "Comment Approved",
+                    Message = $"Your comment on '{productName}' has been approved and is now live. Thank you for your feedback!",
+                    NotificationType = "Comment",
+                    RelatedUrl = $"/Product/ProductDetails/{comment.ProductId}"
+                };
+
+                await _notificationService.TAddAsync(notificationDto);
+            }
 
             await _uow.SaveAsync();
         }
