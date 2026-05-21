@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
+using Core_Layer.Dtos.NotificationDtos;
 using Core_Layer.Dtos.ProductDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IRepositories;
@@ -20,6 +21,7 @@ namespace Business_Layer.Managers
         private readonly IProductRepository _productRepository;
         private readonly IFavoriteRepository _favoriteRepository;
         private readonly IOrderItemRepository _orderItemRepository;
+        private readonly INotificationService _notificationService;
         private readonly IUnitOfWork _uow;
         private readonly IMapper _mapper;
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -28,6 +30,7 @@ namespace Business_Layer.Managers
             IProductRepository productRepository,
             IFavoriteRepository favoriteRepository,
             IOrderItemRepository orderItemRepository,
+            INotificationService notificationService,
             IUnitOfWork uow,
             IMapper mapper,
             IHttpContextAccessor httpContextAccessor)
@@ -35,6 +38,7 @@ namespace Business_Layer.Managers
             _productRepository = productRepository;
             _favoriteRepository = favoriteRepository;
             _orderItemRepository = orderItemRepository;
+            _notificationService = notificationService;
             _uow = uow;
             _mapper = mapper;
             _httpContextAccessor = httpContextAccessor;
@@ -123,10 +127,36 @@ namespace Business_Layer.Managers
             if (anyExists)
                 throw new LogicException(nameof(updateProductDto.Name), "This product name already exists.");
 
+            decimal oldPrice = productToUpdate.Price;
+            decimal newPrice = updateProductDto.Price;
+
             _mapper.Map(updateProductDto, productToUpdate);
             productToUpdate.UpdatedDate = DateTime.Now;
 
             _productRepository.Update(productToUpdate);
+
+            if (newPrice < oldPrice)
+            {
+                var usersToNotify = await _favoriteRepository
+                    .Where(f => f.ProductId == productToUpdate.Id)
+                    .Select(f => f.AppUserId)
+                    .ToListAsync();
+
+                foreach (var userId in usersToNotify)
+                {
+                    var notificationDto = new CreateNotificationDto
+                    {
+                        AppUserId = userId,
+                        Title = "Price Drop Alert",
+                        Message = $"Great news! The price of '{productToUpdate.Name}' has dropped from {oldPrice:C} to {newPrice:C}. Grab it before stocks run out!",
+                        NotificationType = "Discount", 
+                        RelatedUrl = $"/Product/ProductDetails/{productToUpdate.Id}" 
+                    };
+
+                    await _notificationService.TAddAsync(notificationDto);
+                }
+            }
+
             await _uow.SaveAsync();
         }
 
