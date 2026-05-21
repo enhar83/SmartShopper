@@ -42,6 +42,7 @@ namespace Business_Layer.Managers
             var notifications = await _notificationRepository.GetAll()
                 .Where(x => x.AppUserId == userId && !x.IsDeleted)
                 .OrderByDescending(x => x.CreatedDate)
+                .Take(5)
                 .ToListAsync();
 
             return _mapper.Map<List<NotificationListDto>>(notifications);

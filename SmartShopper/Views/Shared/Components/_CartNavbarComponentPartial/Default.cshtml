@@ -49,11 +49,13 @@
                 <ul class="d-flex pb-20 border-b-light-gray mb-20" style="list-style:none; padding:0;">
                     <li class="h-shop-cart-img pl-0">
                         <a class="d-block" href="/Product/ProductDetails/@item.ProductId">
-                            @if (!string.IsNullOrEmpty(item.ProductImageUrl) && item.ProductImageUrl != "NO_IMAGE" && item.ProductImageUrl != "/img/no-image.png")
+                            @if (!string.IsNullOrEmpty(item.ProductImageUrl) &&
+                                                item.ProductImageUrl != "NO_IMAGE" &&
+                                                item.ProductImageUrl != "/img/no-image.png")
                             {
                                 <img src="@item.ProductImageUrl"
                                      alt="@item.ProductName"
-                                     style="width: 60px; height: 75px; object-fit: cover; border-radius: 4px;">
+                                     style="width:60px; height:75px; object-fit:cover; border-radius:4px;">
                             }
                             else
                             {
@@ -63,26 +65,45 @@
                             }
                         </a>
                     </li>
-                    <li class="pl-3" style="flex-grow: 1;">
+
+                    <li class="pl-3" style="flex-grow:1;">
                         <h6 class="single-product-name" style="font-size:14px; margin-bottom:5px;">
-                            <a href="/Product/ProductDetails/@item.ProductId">@item.ProductName</a>
+                            <a href="/Product/ProductDetails/@item.ProductId">
+                                @item.ProductName
+                            </a>
                         </h6>
-                        <span class="primary-color" style="font-size:13px;">@item.Quantity x $@item.Price.ToString("F2")</span>
+
+                        <span class="primary-color" style="font-size:13px;">
+                            @item.Quantity x $@item.Price.ToString("F2")
+                        </span>
                     </li>
+
                     <li class="s-p-remove px-1 pl-0">
-                        <a href="javascript:void(0)" onclick="removeNavbarItem(event, '@item.Id')" class="text-danger">
+                        <a href="javascript:void(0)"
+                           onclick="removeNavbarItem(event, '@item.Id')"
+                           class="text-danger">
                             <i class="fas fa-times"></i>
                         </a>
                     </li>
                 </ul>
             }
         </div>
+
         <div class="s-sub-t mt-3 mb-20 d-flex justify-content-between">
             <span class="theme-color font-weight-bold">Subtotal:</span>
-            <span class="theme-color font-weight-bold"> $@Model.GrandTotal.ToString("F2")</span>
+            <span class="theme-color font-weight-bold">
+                $@Model.GrandTotal.ToString("F2")
+            </span>
         </div>
-        <a class="btn btn-outline-dark btn-block mb-2" href="/Cart/Index">VIEW CART</a>
-        <a href="/Checkout/Index" class="btn btn-warning btn-block text-white font-weight-bold">CHECKOUT</a>
+
+        <a class="btn btn-outline-dark btn-block mb-2" href="/Cart/Index">
+            VIEW CART
+        </a>
+
+        <a href="/Checkout/Index"
+           class="btn btn-warning btn-block text-white font-weight-bold">
+            CHECKOUT
+        </a>
     }
     else
     {
@@ -93,7 +114,7 @@
 </div>
 
 <script>
-    window.toggleMyCart = function(event) {
+    window.toggleMyCart = function (event) {
         event.preventDefault();
         event.stopPropagation();
 
@@ -101,33 +122,53 @@
         details.classList.toggle('cart-visible');
     };
 
-    document.addEventListener('click', function(event) {
+    document.addEventListener('click', function (event) {
         const details = document.getElementById('miniCartDetails');
         const trigger = document.getElementById('miniCartTrigger');
 
-        if (details && trigger && !details.contains(event.target) && !trigger.contains(event.target)) {
+        if (
+            details &&
+            trigger &&
+            !details.contains(event.target) &&
+            !trigger.contains(event.target)
+        ) {
             details.classList.remove('cart-visible');
         }
     });
 
     async function removeNavbarItem(event, itemId) {
         event.stopPropagation();
-        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+        const token = document.querySelector(
+            'input[name="__RequestVerificationToken"]'
+        )?.value;
 
         try {
-            const response = await fetch(`/Cart/RemoveCartItem?id=${itemId}`, {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'RequestVerificationToken': token }
-            });
+            const response = await fetch(
+                `/Cart/RemoveCartItem?id=${itemId}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'RequestVerificationToken': token
+                    }
+                }
+            );
 
             if ((await response.json()).success) {
-                if (window.location.pathname.toLowerCase().includes('/cart')) {
+                if (
+                    window.location.pathname
+                        .toLowerCase()
+                        .includes('/cart')
+                ) {
                     location.reload();
-                } else {
+                }
+                else {
                     refreshMiniCart();
                 }
             }
-        } catch (error) {
+        }
+        catch (error) {
             console.error("Remove error:", error);
         }
     }

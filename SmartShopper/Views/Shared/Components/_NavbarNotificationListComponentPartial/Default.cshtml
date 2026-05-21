@@ -31,7 +31,7 @@
     }
 
         .notification-item-link:hover h6 {
-            color: #ff3366; /* Temanın link hover rengi */
+            color: #ff3366;
         }
 </style>
 
@@ -58,7 +58,7 @@
 
                 <ul class="d-flex pb-15 border-b-light-gray mb-15 notification-container-ul" style="list-style:none; padding:10px; background-color: @bgStyle; border-radius:4px;">
                     <li class="pl-0" style="flex-grow: 1;">
-                        <a href="@item.RelatedUrl" class="notification-item-link notification-item" data-id="@item.Id">
+                        <a href="/@item.RelatedUrl?.TrimStart('/')" class="notification-item-link notification-item" data-id="@item.Id">
                             <h6 style="font-size:14px; margin-bottom:5px; font-weight: 600; color: #333;">
                                 @item.Title
                             </h6>
@@ -73,7 +73,9 @@
                 </ul>
             }
         </div>
-        <div class="mt-3 text-center">
+
+        <div class="mt-3 d-flex justify-content-between px-2">
+            <a href="/Notification/Index" class="text-muted font-weight-bold" style="font-size:13px; text-decoration:underline;">View All</a>
             <a href="#" id="markAllReadBtn" class="theme-color font-weight-bold" style="font-size:13px; text-decoration:underline;">Mark All as Read</a>
         </div>
     }
@@ -81,12 +83,14 @@
     {
         <div class="text-center py-4">
             <p class="mb-0 text-muted" style="font-size: 14px;">You have no notifications.</p>
+            <div class="mt-3">
+                <a href="/Notification/Index" class="text-muted" style="font-size:13px; text-decoration:underline;">View All</a>
+            </div>
         </div>
     }
 </div>
 
 <script>
-    // 1. Kutuyu Açıp Kapatma İşlemi (Sepetteki ile birebir aynı logic)
     window.toggleMyNotification = function(event) {
         event.preventDefault();
         event.stopPropagation();
@@ -94,14 +98,12 @@
         const details = document.getElementById('miniNotificationDetails');
         details.classList.toggle('notification-visible');
 
-        // UX Ekstrası: Eğer bildirimleri açarsan, sepet açıksa onu kapat ki üst üste binmesinler
         const cartDetails = document.getElementById('miniCartDetails');
         if(cartDetails && cartDetails.classList.contains('cart-visible')){
             cartDetails.classList.remove('cart-visible');
         }
     };
 
-    // 2. Dışarı tıklayınca kutuyu kapatma
     document.addEventListener('click', function(event) {
         const details = document.getElementById('miniNotificationDetails');
         const trigger = document.getElementById('miniNotificationTrigger');
@@ -111,7 +113,6 @@
         }
     });
 
-    // 3. Okundu İşaretleme (AJAX)
     document.addEventListener("DOMContentLoaded", function() {
         const notificationItems = document.querySelectorAll('.notification-item');
 
@@ -120,7 +121,6 @@
                 const notificationId = this.getAttribute('data-id');
                 const parentUl = this.closest('ul');
 
-                // Eğer okunmamış ise (arkaplan griyse)
                 if (parentUl.style.backgroundColor === 'rgb(252, 252, 252)' || parentUl.style.backgroundColor === '#fcfcfc') {
                     fetch('/Notification/MarkAsRead?id=' + notificationId, { method: 'POST' })
                     .then(response => response.json())
@@ -147,7 +147,6 @@
             });
         });
 
-        // Tümünü Okundu İşaretle
         const markAllBtn = document.getElementById('markAllReadBtn');
         if (markAllBtn) {
             markAllBtn.addEventListener('click', function(e) {
