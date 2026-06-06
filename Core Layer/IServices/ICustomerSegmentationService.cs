@@ -13,5 +13,6 @@ namespace Core_Layer.IServices
         Task TProcessBatchSegmentationAsync();
         Task<List<CustomerSegmentResultDto>> TGetSegmentationResultsAsync();
         Task<CustomerSegmentDto> TGetUserSegmentAsync(Guid userId);
+        Task<ClusterEvaluationReportDto> TGetModelMetricsAsync();
     }
 }

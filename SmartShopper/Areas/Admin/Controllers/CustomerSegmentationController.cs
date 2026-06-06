@@ -16,6 +16,8 @@ namespace SmartShopper.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var results = await _customerSegmentationService.TGetSegmentationResultsAsync();
+            var metrics = await _customerSegmentationService.TGetModelMetricsAsync();
+            ViewBag.ModelMetrics = metrics;
             return View(results);
         }
 
@@ -23,7 +25,7 @@ namespace SmartShopper.Areas.Admin.Controllers
         public async Task<IActionResult> TrainModel()
         {
             var result = await _customerSegmentationService.TTrainModelAsync();
-            if (result) return Json(new { success = true }); 
+            if (result) return Json(new { success = true });
             return Json(new { success = false, message = "Yeterli veri yok." });
         }
 

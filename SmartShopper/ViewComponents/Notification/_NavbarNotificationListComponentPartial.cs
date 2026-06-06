@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Core_Layer.Dtos.NotificationDtos;
 using Core_Layer.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +18,7 @@ namespace SmartShopper.ViewComponents.Notification
             var userIdString = HttpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
 
             if (string.IsNullOrEmpty(userIdString))
-                return View(); 
+                return View(new List<NotificationListDto>()); 
 
             Guid userId = Guid.Parse(userIdString);
 
