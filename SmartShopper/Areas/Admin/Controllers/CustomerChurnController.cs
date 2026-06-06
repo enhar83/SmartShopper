@@ -18,6 +18,9 @@ namespace SmartShopper.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var data = await _churnService.TGetAllChurnResultsAsync();
+            var metrics = await _churnService.TGetChurnModelMetricsAsync();
+            ViewBag.ModelMetrics = metrics;
+
             return View(data);
         }
 

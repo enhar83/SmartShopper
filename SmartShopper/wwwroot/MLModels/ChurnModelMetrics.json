@@ -1,0 +1,8 @@
+{
+  "Accuracy": 90.52,
+  "F1Score": 81.97,
+  "Precision": 86.21,
+  "Recall": 78.12,
+  "AreaUnderCurve": 95.72,
+  "EvaluatedAt": "2026-05-11T00:00:00"
+}

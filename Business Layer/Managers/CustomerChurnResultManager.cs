@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
 using Business_Layer.MLModels.ChurnPredictionModels;
@@ -14,7 +15,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.ML;
 using Microsoft.ML.Data;
 
-namespace Business_Layer.Managers 
+namespace Business_Layer.Managers
 {
     public class CustomerChurnResultManager : ICustomerChurnResultService
     {
@@ -25,7 +26,9 @@ namespace Business_Layer.Managers
         private readonly IMapper _mapper;
         private readonly MLContext _mlContext;
         private readonly string _modelPath;
+        private readonly string _metricPath; // Metrik kayıt yolu
 
+        // Sistemin baz aldığı sabit referans tarih
         private readonly DateTime _referenceDate = new DateTime(2026, 5, 11);
 
         public CustomerChurnResultManager(
@@ -40,12 +43,12 @@ namespace Business_Layer.Managers
             _churnRepo = churnRepo;
             _uow = uow;
             _mapper = mapper;
-
             _mlContext = new MLContext(seed: 42);
 
             _modelPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "MLModels", "ChurnModel.zip");
-            var directory = Path.GetDirectoryName(_modelPath);
+            _metricPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "MLModels", "ChurnModelMetrics.json");
 
+            var directory = Path.GetDirectoryName(_modelPath);
             if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
             {
                 Directory.CreateDirectory(directory);
@@ -56,7 +59,8 @@ namespace Business_Layer.Managers
         {
             var churnResults = await _churnRepo.GetAll()
                 .Include(x => x.AppUser)
-                .OrderByDescending(x => x.ChurnProbability) 
+                .AsNoTracking()
+                .OrderByDescending(x => x.ChurnProbability)
                 .ToListAsync();
 
             var resultList = new List<ChurnPredictionResultDto>();
@@ -76,9 +80,12 @@ namespace Business_Layer.Managers
             var lastOrder = userOrders.OrderByDescending(x => x.CreatedDate).FirstOrDefault();
 
             float recency = lastOrder != null ? (float)(_referenceDate - lastOrder.CreatedDate).TotalDays : 365f;
+            if (recency < 0) recency = 0f;
+
             float frequency = userOrders.Count;
             float monetary = (float)userOrders.Sum(x => (double)x.TotalPrice);
             float averageOrderValue = frequency > 0 ? monetary / frequency : 0f;
+
             bool label = recency > 120;
 
             return new ChurnPredictionModelInput
@@ -94,16 +101,12 @@ namespace Business_Layer.Managers
         public async Task<bool> TTrainChurnModelAsync()
         {
             var users = await _userManager.Users.ToListAsync();
-
-            var allOrders = await _orderRepository.GetAll()
-                .Where(x => !x.IsDeleted)
-                .ToListAsync();
-
+            var allOrders = await _orderRepository.GetAll().Where(x => !x.IsDeleted).ToListAsync();
             var userOrdersDict = allOrders.GroupBy(x => x.AppUserId).ToDictionary(g => g.Key, g => g.ToList());
 
             var trainingData = users.Select(user => GetInputData(user, userOrdersDict.ContainsKey(user.Id) ? userOrdersDict[user.Id] : new List<Order>())).ToList();
 
-            if (trainingData.Count < 5) return false;
+            if (trainingData.Count < 10) return false;
 
             int churnedCount = trainingData.Count(x => x.Label == true);
             if (churnedCount == 0 || churnedCount == trainingData.Count)
@@ -113,6 +116,8 @@ namespace Business_Layer.Managers
 
             IDataView dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
 
+            var trainTestData = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2, seed: 42);
+
             var pipeline = _mlContext.Transforms.Concatenate("Features",
                     nameof(ChurnPredictionModelInput.TotalSpend),
                     nameof(ChurnPredictionModelInput.OrderCount),
@@ -120,9 +125,24 @@ namespace Business_Layer.Managers
                 .Append(_mlContext.Transforms.NormalizeMinMax("Features"))
                 .Append(_mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(labelColumnName: "Label", featureColumnName: "Features"));
 
-            var model = pipeline.Fit(dataView);
+            var trainedModel = pipeline.Fit(trainTestData.TrainSet);
 
-            _mlContext.Model.Save(model, dataView.Schema, _modelPath);
+            var predictions = trainedModel.Transform(trainTestData.TestSet);
+            var metrics = _mlContext.BinaryClassification.Evaluate(data: predictions, labelColumnName: "Label", scoreColumnName: "Score");
+
+            var evaluationReport = new ChurnEvaluationReportDto
+            {
+                Accuracy = Math.Round(metrics.Accuracy * 100, 2),
+                F1Score = Math.Round(metrics.F1Score * 100, 2),
+                Precision = Math.Round(metrics.PositivePrecision * 100, 2),
+                Recall = Math.Round(metrics.PositiveRecall * 100, 2),
+                AreaUnderCurve = Math.Round(metrics.AreaUnderRocCurve * 100, 2),
+                EvaluatedAt = _referenceDate
+            };
+
+            await File.WriteAllTextAsync(_metricPath, JsonSerializer.Serialize(evaluationReport, new JsonSerializerOptions { WriteIndented = true }));
+
+            _mlContext.Model.Save(trainedModel, dataView.Schema, _modelPath);
             return true;
         }
 
@@ -140,11 +160,7 @@ namespace Business_Layer.Managers
             var predictionEngine = _mlContext.Model.CreatePredictionEngine<ChurnPredictionModelInput, ChurnPredictionModelOutput>(trainedModel);
 
             var usersWithOrders = await _userManager.Users.Include(x => x.CustomerChurnResult).ToListAsync();
-
-            var allOrders = await _orderRepository.GetAll()
-                .Where(x => !x.IsDeleted)
-                .ToListAsync();
-
+            var allOrders = await _orderRepository.GetAll().Where(x => !x.IsDeleted).ToListAsync();
             var userOrdersDict = allOrders.GroupBy(x => x.AppUserId).ToDictionary(g => g.Key, g => g.ToList());
 
             var resultList = new List<ChurnPredictionResultDto>();
@@ -157,33 +173,30 @@ namespace Business_Layer.Managers
                 var churnEntity = user.CustomerChurnResult ?? new CustomerChurnResult
                 {
                     AppUserId = user.Id,
-                    CreatedDate = DateTime.UtcNow,
+                    CreatedDate = _referenceDate,
                     IsDeleted = false
                 };
 
                 var prediction = predictionEngine.Predict(input);
 
                 decimal timeRisk = Math.Min((decimal)(input.DaysSinceLastOrder / 120f) * 100m, 100m);
-
                 decimal behaviorRisk = (decimal)(prediction.Probability * 100);
 
                 decimal finalRisk = (timeRisk * 0.6m) + (behaviorRisk * 0.4m);
                 finalRisk = Math.Clamp(finalRisk, 1.0m, 99.0m);
 
                 churnEntity.IsChurn = finalRisk > 50m;
-
                 churnEntity.ChurnProbability = Math.Round(finalRisk, 1);
-
                 churnEntity.Recency = input.DaysSinceLastOrder;
                 churnEntity.Frequency = input.OrderCount;
                 churnEntity.Monetary = (decimal)input.TotalSpend;
-                churnEntity.LastUpdated = DateTime.Now;
+                churnEntity.LastUpdated = _referenceDate;
 
                 if (user.CustomerChurnResult == null)
                     await _churnRepo.AddAsync(churnEntity);
                 else
                 {
-                    churnEntity.UpdatedDate = DateTime.UtcNow;
+                    churnEntity.UpdatedDate = _referenceDate;
                     _churnRepo.Update(churnEntity);
                 }
 
@@ -195,6 +208,25 @@ namespace Business_Layer.Managers
 
             await _uow.SaveAsync();
             return resultList.OrderByDescending(x => x.ChurnProbability).ToList();
+        }
+
+        public async Task<ChurnEvaluationReportDto> TGetChurnModelMetricsAsync()
+        {
+            if (!File.Exists(_metricPath))
+            {
+                return new ChurnEvaluationReportDto
+                {
+                    Accuracy = 0,
+                    F1Score = 0,
+                    Precision = 0,
+                    Recall = 0,
+                    AreaUnderCurve = 0,
+                    EvaluatedAt = _referenceDate
+                };
+            }
+
+            var jsonContent = await File.ReadAllTextAsync(_metricPath);
+            return JsonSerializer.Deserialize<ChurnEvaluationReportDto>(jsonContent) ?? new ChurnEvaluationReportDto();
         }
     }
 }

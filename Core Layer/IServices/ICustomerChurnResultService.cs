@@ -12,5 +12,6 @@ namespace Core_Layer.IServices
         Task<List<ChurnPredictionResultDto>> TProcessAllCustomersChurnAsync();
         Task<List<ChurnPredictionResultDto>> TGetAllChurnResultsAsync();
         Task<bool> TTrainChurnModelAsync();
+        Task<ChurnEvaluationReportDto> TGetChurnModelMetricsAsync();
     }
 }
