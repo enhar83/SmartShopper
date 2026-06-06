@@ -1,5 +1,7 @@
 ﻿using Core_Layer.IServices;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace SmartShopper.Areas.Admin.Controllers
 {
@@ -16,6 +18,9 @@ namespace SmartShopper.Areas.Admin.Controllers
         public async Task<IActionResult> Index()
         {
             var data = await _orderAnomalyService.TGetAllAnomaliesAsync();
+            var metrics = await _orderAnomalyService.TGetAnomalyMetricsAsync();
+            ViewBag.ModelMetrics = metrics;
+
             return View(data);
         }
 

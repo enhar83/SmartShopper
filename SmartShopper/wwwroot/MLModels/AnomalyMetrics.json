@@ -1,0 +1,7 @@
+{
+  "ConfidenceLevel": 98,
+  "TotalAnalyzedOrders": 4889,
+  "TotalAnomaliesFound": 129,
+  "AnomalyDetectionRate": 2.64,
+  "EvaluatedAt": "2026-05-11T00:00:00Z"
+}
