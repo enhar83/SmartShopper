@@ -44,13 +44,10 @@ namespace SmartShopper.Areas.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> TrainModel()
         {
-
             var resultMessage = await _commentModelTrainingService.TTrainAndSaveModelAsync();
 
-            if (resultMessage.StartsWith("Success"))
-            {
+            if (!string.IsNullOrEmpty(resultMessage) && resultMessage.Contains("Success", StringComparison.OrdinalIgnoreCase))
                 return Json(new { success = true, message = resultMessage });
-            }
 
             return Json(new { success = false, message = resultMessage });
         }

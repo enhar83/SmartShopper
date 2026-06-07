@@ -47,25 +47,42 @@ namespace Business_Layer.Managers
                 int cleanCount = dataList.Count(x => !x.Label);
 
                 if (dataList.Count == 0)
-                    return Task.FromResult("Error: Hiçbir veri okunamadı! Dosya boş olabilir.");
+                    return Task.FromResult("Error: No data could be read! The file may be empty.");
 
                 MLContext mlContext = new MLContext(seed: 0);
                 IDataView dataView = mlContext.Data.LoadFromEnumerable(dataList);
+
+                // DEĞİŞİKLİK 1: Veriyi Eğitim (%80) ve Test (%20) olarak ikiye bölüyoruz
+                var trainTestData = mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2, seed: 0);
 
                 var pipeline = mlContext.Transforms.Text.FeaturizeText("Features", nameof(ToxicityModelInput.Text))
                     .Append(mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(
                         labelColumnName: nameof(ToxicityModelInput.Label),
                         featureColumnName: "Features"));
 
-                ITransformer trainedModel = pipeline.Fit(dataView);
+                // DEĞİŞİKLİK 2: Modeli SADECE Eğitim (TrainSet) verisiyle eğitiyoruz
+                ITransformer trainedModel = pipeline.Fit(trainTestData.TrainSet);
+
+                // DEĞİŞİKLİK 3: Modeli Test (TestSet) verisiyle değerlendiriyoruz
+                IDataView predictions = trainedModel.Transform(trainTestData.TestSet);
+                var metrics = mlContext.BinaryClassification.Evaluate(
+                    data: predictions,
+                    labelColumnName: nameof(ToxicityModelInput.Label));
 
                 var modelDir = Path.GetDirectoryName(modelPath);
                 if (!Directory.Exists(modelDir))
                     Directory.CreateDirectory(modelDir!);
 
-                mlContext.Model.Save(trainedModel, dataView.Schema, modelPath);
+                // Modeli kaydederken TrainSet şemasını baz alıyoruz
+                mlContext.Model.Save(trainedModel, trainTestData.TrainSet.Schema, modelPath);
 
-                return Task.FromResult($"Success: AI Model başarıyla eğitildi! ({cleanCount} Temiz, {toxicCount} Toksik yorum ezberlendi.)");
+                // DEĞİŞİKLİK 4: Çıktı mesajına Accuracy ve F1 Score değerlerini ekliyoruz.
+                string successMessage = $"\r\nSuccess: AI Model trained! Total: {cleanCount + toxicCount} data. " +
+                                        $"| Accuracy: {metrics.Accuracy:P2} " +
+                                        $"| F1 Score: {metrics.F1Score:P2} " +
+                                        $"| AUC: {metrics.AreaUnderRocCurve:P2}";
+
+                return Task.FromResult(successMessage);
             }
             catch (Exception ex)
             {

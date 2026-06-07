@@ -13,7 +13,6 @@ namespace Core_Layer.Dtos.CommentDtos
         public string Text { get; set; } = null!;
         public byte Rating { get; set; }
         public DateTime CreatedDate { get; set; }
-
         public string UserName { get; set; } = null!;
         public string UserSurname { get; set; } = null!;
     }

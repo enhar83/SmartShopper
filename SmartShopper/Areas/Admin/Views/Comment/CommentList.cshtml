@@ -182,13 +182,12 @@
             var table = $('#commentDataTable').DataTable({
                 pageLength: 10,
                 language: { emptyTable: "No comments found." },
-                order: [[5, 'desc']], // DİKKAT: Tarih sütunu artık 5. sırada olduğu için indeksi 5 yaptık.
+                order: [[5, 'desc']],
                 columnDefs: [
                     { searchable: false, orderable: false, targets: 0 },
-                    { orderable: false, targets: 7 } // DİKKAT: Actions sütunu artık 7. sırada
+                    { orderable: false, targets: 7 }
                 ]
             });
-
             table.on('order.dt search.dt', function () {
                 let i = 1;
                 table.cells(null, 0, { search: 'applied', order: 'applied' }).every(function (cell) {
@@ -241,6 +240,7 @@
             });
         }
 
+        // AI Model Eğitimi (Güncellenmiş Kısım)
         function startAiTraining() {
             Swal.fire({
                 title: 'AI Model is Training...',
@@ -257,10 +257,13 @@
                 type: 'POST',
                 success: function (res) {
                     if (res.success) {
+                        // Manager'dan dönen içindeki '|' işaretlerini HTML tag'lerine çevirerek şıklaştırıyoruz.
+                        let formattedHtmlMessage = res.message.split('|').join('<br><br><i class="bx bx-check-shield text-success fs-5 align-middle me-1"></i>');
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Training Complete!',
-                            text: res.message,
+                            html: '<div style="font-size: 15px; text-align: left; background-color: #f8f9fa; padding: 15px; border-radius: 8px;">' + formattedHtmlMessage + '</div>',
                             confirmButtonColor: '#15ca20'
                         });
                     } else {

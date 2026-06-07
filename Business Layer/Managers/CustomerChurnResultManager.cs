@@ -26,9 +26,8 @@ namespace Business_Layer.Managers
         private readonly IMapper _mapper;
         private readonly MLContext _mlContext;
         private readonly string _modelPath;
-        private readonly string _metricPath; // Metrik kayıt yolu
+        private readonly string _metricPath; 
 
-        // Sistemin baz aldığı sabit referans tarih
         private readonly DateTime _referenceDate = new DateTime(2026, 5, 11);
 
         public CustomerChurnResultManager(
@@ -111,7 +110,7 @@ namespace Business_Layer.Managers
             int churnedCount = trainingData.Count(x => x.Label == true);
             if (churnedCount == 0 || churnedCount == trainingData.Count)
             {
-                throw new Exception("Modelin öğrenebilmesi için veritabanında hem inaktif (120 günden eski) hem de aktif müşteriler birlikte bulunmalıdır.");
+                throw new Exception("For the model to learn, the database must contain both inactive (older than 120 days) and active customers.");
             }
 
             IDataView dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
@@ -149,7 +148,7 @@ namespace Business_Layer.Managers
         public async Task<List<ChurnPredictionResultDto>> TProcessAllCustomersChurnAsync()
         {
             bool isTrained = await TTrainChurnModelAsync();
-            if (!isTrained) throw new Exception("Yeterli veri olmadığı için analiz gerçekleştirilemedi.");
+            if (!isTrained) throw new Exception("The analysis could not be performed due to insufficient data.");
 
             ITransformer trainedModel;
             using (var stream = new FileStream(_modelPath, FileMode.Open, FileAccess.Read, FileShare.Read))
