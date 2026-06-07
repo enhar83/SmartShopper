@@ -11,5 +11,6 @@ namespace Core_Layer.IServices
     {
         Task<List<SubCategoryDemandForecastDto>> TGetAllForecastsAsync();
         Task<bool> TTrainAndGenerateForecastsAsync();
+        Task<DemandForecastEvaluationReportDto> TGetForecastMetricsAsync();
     }
 }

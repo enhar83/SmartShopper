@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 using AutoMapper;
 using Business_Layer.MLModels.DemandForecastModels;
@@ -22,6 +23,7 @@ namespace Business_Layer.Managers
         private readonly IMapper _mapper;
         private readonly MLContext _mlContext;
         private readonly string _modelPath;
+        private readonly string _metricPath; 
 
         public SubCategoryDemandForecastManager(
             IOrderItemRepository orderItemRepository,
@@ -35,13 +37,12 @@ namespace Business_Layer.Managers
             _mapper = mapper;
 
             _mlContext = new MLContext(seed: 42);
+
             _modelPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "MLModels", "SubCategoryDemandForecastModel.zip");
+            _metricPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "MLModels", "DemandForecastMetrics.json");
 
             var dir = Path.GetDirectoryName(_modelPath);
-            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
+            if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir)) Directory.CreateDirectory(dir);
         }
 
         public async Task<List<SubCategoryDemandForecastDto>> TGetAllForecastsAsync()
@@ -49,6 +50,7 @@ namespace Business_Layer.Managers
             var data = await _forecastRepo.GetAll()
                 .Include(x => x.SubCategory)
                     .ThenInclude(sc => sc.Category)
+                .AsNoTracking() 
                 .OrderByDescending(x => x.PredictedRevenue)
                 .ToListAsync();
 
@@ -86,14 +88,15 @@ namespace Business_Layer.Managers
                     Year = (float)g.Key.Year,
                     Month = (float)g.Key.Month,
                     SubCategoryAOV = subCategoryAovDict.ContainsKey(g.Key.SubCategoryId) ? subCategoryAovDict[g.Key.SubCategoryId] : 50f,
-                    Label = (float)g.Count()
+                    Label = (float)g.Count() 
                 }).ToList();
 
-            if (historicalData.Count < 20) throw new Exception("Yetersiz eğitim verisi. Modelin örüntü yakalayabilmesi için daha fazla sipariş verisi gerekiyor.");
+            if (historicalData.Count < 20)
+                throw new Exception("Insufficient training data. The model needs more order data to detect patterns.");
 
-            // 4. ML.NET Pipeline ve Eğitim
             var dataView = _mlContext.Data.LoadFromEnumerable(historicalData);
-            var trainTestSplit = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2);
+
+            var trainTestSplit = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2, seed: 42);
 
             var pipeline = _mlContext.Transforms.Categorical.OneHotEncoding("CategoryEncoded", nameof(SubCategoryDemandForecastModelInput.CategoryName))
                 .Append(_mlContext.Transforms.Categorical.OneHotEncoding("SubCategoryEncoded", nameof(SubCategoryDemandForecastModelInput.SubCategoryName)))
@@ -103,39 +106,35 @@ namespace Business_Layer.Managers
             var model = pipeline.Fit(trainTestSplit.TrainSet);
 
             var metrics = _mlContext.Regression.Evaluate(model.Transform(trainTestSplit.TestSet), labelColumnName: "Label");
-            double actualAccuracy = Math.Max(0.5, metrics.RSquared);
+            double rSquared = Math.Max(0, metrics.RSquared);
+
+            var report = new DemandForecastEvaluationReportDto
+            {
+                RSquaredPercentage = Math.Round(rSquared * 100, 2),
+                MeanAbsoluteError = Math.Round(metrics.MeanAbsoluteError, 2),
+                RootMeanSquaredError = Math.Round(metrics.RootMeanSquaredError, 2),
+                EvaluatedAt = DateTime.Now
+            };
+
+            await File.WriteAllTextAsync(_metricPath, JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
 
             _mlContext.Model.Save(model, dataView.Schema, _modelPath);
-
             var predictionEngine = _mlContext.Model.CreatePredictionEngine<SubCategoryDemandForecastModelInput, SubCategoryDemandForecastModelOutput>(model);
 
-            // 5. Hedef Tarih Belirleme
             var lastDate = allOrderItems.Max(x => x.Order.CreatedDate);
             var targetMonth = lastDate.AddMonths(1).Month;
             var targetYear = lastDate.AddMonths(1).Year;
 
-            // 6. Tahmin Edilecek Kategorileri Filtreleme (Threshold)
-            // Sadece tek tük, hatalı/test amaçlı olan verileri eledik (TotalSales >= 2)
             var activeSubCategories = allOrderItems
-                .GroupBy(oi => new {
-                    oi.Product.SubCategoryId,
-                    SubCategoryName = oi.Product.SubCategory!.Name,
-                    CategoryName = oi.Product.SubCategory.Category.Name
-                })
-                .Select(g => new {
-                    Info = g.Key,
-                    TotalSales = g.Count(),
-                    LastMonthSales = g.Count(oi => oi.Order.CreatedDate.Year == lastDate.Year && oi.Order.CreatedDate.Month == lastDate.Month)
-                })
-                .Where(x => x.TotalSales >= 2) // Filtreyi esnettik
+                .GroupBy(oi => new { oi.Product.SubCategoryId, SubCategoryName = oi.Product.SubCategory!.Name, CategoryName = oi.Product.SubCategory.Category.Name })
+                .Select(g => new { Info = g.Key, TotalSales = g.Count() })
+                .Where(x => x.TotalSales >= 2)
                 .Select(x => x.Info)
                 .ToList();
 
-            // 7. Eski verileri temizle
             var oldForecasts = await _forecastRepo.GetAll().ToListAsync();
             _forecastRepo.RemoveRange(oldForecasts);
 
-            // 8. Gelecek Ay Tahminlerini Üretme ve Kaydetme
             foreach (var sc in activeSubCategories)
             {
                 var input = new SubCategoryDemandForecastModelInput
@@ -148,28 +147,34 @@ namespace Business_Layer.Managers
                 };
 
                 var prediction = predictionEngine.Predict(input);
+
                 int predictedSalesCount = (int)Math.Max(0, Math.Round(prediction.PredictedCount));
                 decimal predictedRevenue = (decimal)(predictedSalesCount * input.SubCategoryAOV);
 
-                // DÜZELTME: Sıfır (0) çıkan tahminleri de sisteme kaydediyoruz
-                if (predictedSalesCount >= 0)
+                await _forecastRepo.AddAsync(new SubCategoryDemandForecast
                 {
-                    await _forecastRepo.AddAsync(new SubCategoryDemandForecast
-                    {
-                        SubCategoryId = sc.SubCategoryId,
-                        TargetYear = targetYear,
-                        TargetMonth = targetMonth,
-                        PredictedSalesCount = predictedSalesCount,
-                        PredictedRevenue = predictedRevenue,
-                        ModelAccuracyScore = actualAccuracy,
-                        CreatedDate = DateTime.UtcNow,
-                        IsDeleted = false
-                    });
-                }
+                    SubCategoryId = sc.SubCategoryId,
+                    TargetYear = targetYear,
+                    TargetMonth = targetMonth,
+                    PredictedSalesCount = predictedSalesCount,
+                    PredictedRevenue = predictedRevenue,
+                    ModelAccuracyScore = Math.Round(rSquared * 100, 2), 
+                    CreatedDate = DateTime.UtcNow,
+                    IsDeleted = false
+                });
             }
 
             await _uow.SaveAsync();
             return true;
+        }
+
+        public async Task<DemandForecastEvaluationReportDto> TGetForecastMetricsAsync()
+        {
+            if (!File.Exists(_metricPath))
+                return new DemandForecastEvaluationReportDto { RSquaredPercentage = 0, MeanAbsoluteError = 0, RootMeanSquaredError = 0, EvaluatedAt = DateTime.Now };
+
+            var json = await File.ReadAllTextAsync(_metricPath);
+            return JsonSerializer.Deserialize<DemandForecastEvaluationReportDto>(json) ?? new DemandForecastEvaluationReportDto();
         }
     }
 }

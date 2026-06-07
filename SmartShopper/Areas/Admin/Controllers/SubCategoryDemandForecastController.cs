@@ -21,6 +21,9 @@ namespace SmartShopper.Areas.Admin.Controllers
             var data = await _forecastService.TGetAllForecastsAsync();
             ViewBag.Categories = data.Select(x => x.CategoryName).Distinct().OrderBy(x => x).ToList();
 
+            var metrics = await _forecastService.TGetForecastMetricsAsync();
+            ViewBag.ModelMetrics = metrics;
+
             return View(data);
         }
 
@@ -34,16 +37,16 @@ namespace SmartShopper.Areas.Admin.Controllers
 
                 if (success)
                 {
-                    return Json(new { success = true, message = "AI SubCategory Demand Forecasting completed successfully!" });
+                    return Json(new { success = true, message = "AI Demand Forecasting has been successfully completed and metrics have been updated!" });
                 }
                 else
                 {
-                    return Json(new { success = false, message = "Not enough historical data to train the AI model. At least 20 order items required." });
+                    return Json(new { success = false, message = "Insufficient historical order data was found to train the artificial intelligence." });
                 }
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "An error occurred during analysis: " + ex.Message });
+                return Json(new { success = false, message = "An error occurred during the analysis: " + ex.Message });
             }
         }
     }
