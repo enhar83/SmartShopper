@@ -11,6 +11,8 @@ namespace Core_Layer.Dtos.SalesForecastDtos
         public string Period { get; set; } = null!; 
         public double ActualAmount { get; set; }
         public double ForecastAmount { get; set; }
+        public double LowerBound { get; set; }
+        public double UpperBound { get; set; }
         public bool IsForecast { get; set; }
     }
 }

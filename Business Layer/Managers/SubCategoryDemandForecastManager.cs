@@ -34,7 +34,6 @@ namespace Business_Layer.Managers
             _uow = uow;
             _mapper = mapper;
 
-            // Her eğitimde tutarlı sonuçlar için seed değeri
             _mlContext = new MLContext(seed: 42);
             _modelPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "MLModels", "SubCategoryDemandForecastModel.zip");
 
@@ -58,7 +57,6 @@ namespace Business_Layer.Managers
 
         public async Task<bool> TTrainAndGenerateForecastsAsync()
         {
-            // 1. Veri Çekimi: Silinmemiş siparişlere ait kalemleri getir
             var allOrderItems = await _orderItemRepository.GetAll()
                 .Include(oi => oi.Order)
                 .Include(oi => oi.Product)
@@ -69,12 +67,10 @@ namespace Business_Layer.Managers
 
             if (!allOrderItems.Any()) return false;
 
-            // 2. AOV (Ortalama Sipariş Tutarı) Hesaplama
             var subCategoryAovDict = allOrderItems
                 .GroupBy(x => x.Product.SubCategoryId)
                 .ToDictionary(g => g.Key, g => (float)g.Average(x => (double)x.PriceAtPurchase));
 
-            // 3. Eğitim Verisi Hazırlığı (Historical Data)
             var historicalData = allOrderItems
                 .GroupBy(oi => new {
                     oi.Product.SubCategoryId,

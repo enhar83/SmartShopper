@@ -11,5 +11,6 @@ namespace Core_Layer.IServices
     {
         Task<List<SalesForecastResultDto>> TGetSalesForecastAsync(int horizonMonths = 12);
         Task<bool> TTrainForecastModelAsync();
+        Task<ForecastEvaluationReportDto> TGetForecastMetricsAsync();
     }
 }

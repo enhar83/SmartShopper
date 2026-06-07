@@ -1,6 +1,10 @@
-﻿@{
+﻿@using Core_Layer.Dtos.SalesForecastDtos
+@{
     ViewData["Title"] = "Sales Forecasting Analysis";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    // Controller'dan gelen hata karnesini karşılıyoruz
+    var metrics = ViewBag.ModelMetrics as ForecastEvaluationReportDto;
 }
 
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
@@ -15,34 +19,73 @@
     </div>
 </div>
 
-<div class="row row-cols-1 row-cols-md-2 row-cols-xl-2 mb-4">
+<div class="row row-cols-1 row-cols-md-3 row-cols-xl-3 mb-4">
     <div class="col">
-        <div class="card radius-10 border-start border-0 border-3 border-primary">
+        <div class="card radius-10 border-start border-0 border-3 border-primary h-100 shadow-sm">
             <div class="card-body">
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center mb-3">
                     <div>
                         <p class="mb-0 text-secondary">AI Forecasting Engine</p>
-                        <h4 class="my-1 text-primary">Singular Spectrum Analysis (SSA)</h4>
-                        <p class="mb-0 font-13 text-success"><i class='bx bxs-zap'></i> Real-time time series analysis active.</p>
+                        <h5 class="my-1 text-primary">Singular Spectrum Analysis</h5>
+                        <p class="mb-0 font-13 text-success"><i class='bx bxs-zap'></i> Time Series Core Active</p>
                     </div>
                     <div class="widgets-icons-2 rounded-circle bg-light-primary text-primary ms-auto">
                         <i class='bx bx-trending-up'></i>
                     </div>
                 </div>
+                <button onclick="trainForecastModel()" class="btn btn-primary btn-sm w-100 radius-30 shadow-sm">
+                    <i class='bx bx-refresh'></i> Retrain Forecast Model
+                </button>
             </div>
         </div>
     </div>
+
     <div class="col">
-        <div class="card radius-10 border-start border-0 border-3 border-warning">
+        <div class="card radius-10 border-start border-0 border-3 border-success h-100 shadow-sm">
             <div class="card-body">
                 <div class="d-flex align-items-center">
                     <div>
-                        <p class="mb-0 text-secondary">Simulation Horizon</p>
-                        <h4 class="my-1 text-warning" id="horizonTitle">Next 6 Months</h4>
-                        <p class="mb-0 font-13">Reference Date: <b>May 01, 2026</b></p>
+                        <p class="mb-0 text-secondary">AI Precision (Hata Payı)</p>
+                        @if (metrics != null && metrics.MeanAbsolutePercentageError > 0)
+                        {
+                            <h4 class="my-1 text-success">% @metrics.MeanAbsolutePercentageError.ToString("0.00") Error</h4>
+                            <p class="mb-0 font-13 text-muted">
+                                Monthly Average Deviation: <b>$ @metrics.MeanAbsoluteError.ToString("N0")</b>
+                            </p>
+                        }
+                        else
+                        {
+                            <h4 class="my-1 text-danger">Not Trained</h4>
+                            <p class="mb-0 font-13 text-danger">Please retrain the model.</p>
+                        }
+                    </div>
+                    <div class="widgets-icons-2 rounded-circle bg-light-success text-success ms-auto">
+                        <i class='bx bx-target-lock'></i>
+                    </div>
+                </div>
+                @if (metrics != null && metrics.MeanAbsolutePercentageError > 0)
+                {
+                    <div class="mt-2">
+                        <small class="text-muted" style="font-size: 11px;"><i class='bx bx-time'></i> Last Evaluation: @metrics.EvaluatedAt.ToString("dd MMM yyyy HH:mm")</small>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col">
+        <div class="card radius-10 border-start border-0 border-3 border-warning h-100 shadow-sm">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div>
+                        <p class="mb-0 text-secondary">Root Mean Squared Error</p>
+                        <h4 class="my-1 text-warning">$ @(metrics?.RootMeanSquaredError.ToString("N0") ?? "0")</h4>
+                        <p class="mb-0 font-13 text-muted">
+                            Statistical Maximum Deviation Tolerance
+                        </p>
                     </div>
                     <div class="widgets-icons-2 rounded-circle bg-light-warning text-warning ms-auto">
-                        <i class='bx bx-calendar-event'></i>
+                        <i class='bx bx-error'></i>
                     </div>
                 </div>
             </div>
@@ -50,20 +93,18 @@
     </div>
 </div>
 
-<div class="card radius-10">
+<div class="card radius-10 shadow-sm border">
     <div class="card-header bg-transparent">
         <div class="d-flex align-items-center">
             <div>
                 <h6 class="mb-0 text-uppercase fw-bold"><i class='bx bx-chart me-1'></i>Sales Performance & AI Predictions</h6>
             </div>
             <div class="ms-auto">
-                <div class="btn-group shadow-0">
-                    <select class="form-select form-select-sm radius-30" id="monthSelector" onchange="loadForecast()">
-                        <option value="3">3 Months Prediction</option>
-                        <option value="6" selected>6 Months Prediction</option>
-                        <option value="12">12 Months Prediction</option>
-                    </select>
-                </div>
+                <select class="form-select form-select-sm radius-30" id="monthSelector" onchange="loadForecast()">
+                    <option value="3">3 Months Prediction</option>
+                    <option value="6" selected>6 Months Prediction</option>
+                    <option value="12">12 Months Prediction</option>
+                </select>
             </div>
         </div>
     </div>
@@ -76,14 +117,15 @@
         <div class="d-flex align-items-center justify-content-center gap-4 py-2">
             <div class="d-flex align-items-center"><i class='bx bxs-circle me-1 text-primary'></i> <span class="small">Historical Actuals</span></div>
             <div class="d-flex align-items-center"><i class='bx bxs-circle me-1 text-warning'></i> <span class="small">AI Predicted Revenue</span></div>
+            <div class="d-flex align-items-center"><i class='bx bxs-circle me-1' style="color: rgba(255, 193, 7, 0.15);"></i> <span class="small">95% Confidence Interval Corridor</span></div>
         </div>
     </div>
 </div>
 
-<div class="card radius-10">
+<div class="card radius-10 shadow-sm border">
     <div class="card-body">
         <div class="d-flex align-items-center mb-3">
-            <h6 class="mb-0 text-uppercase fw-bold">Monthly Projection Breakdown</h6>
+            <h6 class="mb-0 text-uppercase fw-bold">Monthly Simulation Breakdown</h6>
         </div>
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0" id="forecastTable">
@@ -93,7 +135,7 @@
                         <th>Type</th>
                         <th>Actual Revenue</th>
                         <th>AI Predicted Revenue</th>
-                        <th>Status</th>
+                        <th>Statistical Confidence Range (Low - High)</th>
                     </tr>
                 </thead>
                 <tbody id="forecastTableBody">
@@ -114,13 +156,32 @@
             loadForecast();
         });
 
+        function trainForecastModel() {
+            Swal.fire({
+                title: 'AI Machine Learning Initiated',
+                text: 'Analyzing multi-year seasonality trends and constructing SSA forecasting metrics...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+
+            $.post('/Admin/SalesForecasting/TrainModel', function(res) {
+                if(res.success) {
+                    Swal.fire({ icon: 'success', title: 'Success', text: res.message, timer: 1500, showConfirmButton: false })
+                    .then(() => location.reload());
+                } else {
+                    Swal.fire('Error', res.message, 'error');
+                }
+            }).fail(function() {
+                Swal.fire('Server Error', 'Failed to communicate with ML.NET pipeline.', 'error');
+            });
+        }
+
         function loadForecast() {
             const months = $('#monthSelector').val();
-            $('#horizonTitle').text(`Next ${months} Months`);
 
             Swal.fire({
-                title: 'AI is thinking...',
-                text: 'Analyzing historical patterns and training regression model.',
+                title: 'Generating Projections...',
+                text: 'Loading simulated future values...',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading(); }
             });
@@ -131,8 +192,11 @@
                     renderChart(res.data);
                     renderTable(res.data);
                 } else {
-                    Swal.fire('Error', res.message, 'error');
+                    Swal.fire('Model Notice', res.message + " Please click 'Retrain Model' to generate first file.", 'warning');
                 }
+            }).fail(function() {
+                Swal.close();
+                Swal.fire('Error', 'Failed to pull dataset from server.', 'error');
             });
         }
 
@@ -141,11 +205,10 @@
             if (forecastChart) forecastChart.destroy();
 
             const labels = data.map(x => x.period);
-            const actuals = data.map(x => x.actualAmount > 0 ? x.actualAmount : null);
-            const forecasts = data.map(x => x.forecastAmount > 0 ? x.forecastAmount : null);
-
-            // Verileri bağlamak için: Tahmin serisinin ilk verisi, gerçek serinin son verisi olmalı (çizgi kopmasın diye)
-            // Ama biz null kullanarak ayrımı netleştirdik.
+            const actuals = data.map(x => x.isForecast === false || x.forecastAmount === x.actualAmount ? x.actualAmount : null);
+            const forecasts = data.map(x => x.isForecast === true ? x.forecastAmount : null);
+            const upperBounds = data.map(x => x.isForecast === true ? x.upperBound : null);
+            const lowerBounds = data.map(x => x.isForecast === true ? x.lowerBound : null);
 
             forecastChart = new Chart(ctx, {
                 type: 'line',
@@ -156,38 +219,69 @@
                             label: 'Historical Actuals',
                             data: actuals,
                             borderColor: '#008cff',
-                            backgroundColor: 'rgba(0, 140, 255, 0.1)',
+                            backgroundColor: 'rgba(0, 140, 255, 0.08)',
                             fill: true,
-                            tension: 0.4,
-                            pointRadius: 6,
-                            pointBackgroundColor: '#008cff',
-                            borderWidth: 4
+                            tension: 0.35,
+                            pointRadius: 5,
+                            borderWidth: 3
                         },
                         {
                             label: 'AI Forecast',
                             data: forecasts,
                             borderColor: '#ffc107',
                             backgroundColor: 'transparent',
-                            borderDash: [8, 5], // Kesikli çizgi
+                            borderDash: [6, 4],
                             fill: false,
-                            tension: 0.4,
-                            pointRadius: 6,
-                            pointBackgroundColor: '#ffc107',
-                            borderWidth: 4
+                            tension: 0.35,
+                            pointRadius: 5,
+                            pointBackgroundColor: '#fff',
+                            borderWidth: 3
+                        },
+                        {
+                            label: 'Upper Boundary',
+                            data: upperBounds,
+                            borderColor: 'transparent',
+                            backgroundColor: 'transparent',
+                            pointRadius: 0,
+                            fill: false
+                        },
+                        {
+                            label: 'Confidence Interval Area',
+                            data: lowerBounds,
+                            borderColor: 'transparent',
+                            backgroundColor: 'rgba(255, 193, 7, 0.12)', // Şık şeffaf sarı koridor
+                            pointRadius: 0,
+                            fill: '-1' // Üst sınırla (dataset index -1) arasını kaplar
                         }
                     ]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label && label !== 'Upper Boundary' && label !== 'Confidence Interval Area') {
+                                        label += ': ';
+                                        if (context.parsed.y !== null) {
+                                            label += '$ ' + context.parsed.y.toLocaleString();
+                                        }
+                                        return label;
+                                    }
+                                    return null;
+                                }
+                            }
+                        }
+                    },
                     scales: {
                         y: {
                             beginAtZero: false,
-                            grid: { display: true, color: '#f0f0f0' },
-                            ticks: {
-                                callback: value => '$' + value.toLocaleString()
-                            }
+                            grid: { display: true, color: '#f5f5f5' },
+                            ticks: { callback: value => '$ ' + value.toLocaleString() }
                         },
                         x: { grid: { display: false } }
                     }
@@ -199,20 +293,23 @@
             let html = '';
             data.forEach(item => {
                 const isForecast = item.isForecast;
+                // Köprü noktasının tabloda çift görünmesini engellemek için temiz filtreleme yapıyoruz
+                let displayForecast = isForecast && item.actualAmount === 0;
+
                 html += `
                     <tr>
                         <td><span class="fw-bold">${item.period}</span></td>
                         <td>
-                            <span class="badge rounded-pill ${isForecast ? 'bg-light-warning text-warning' : 'bg-light-primary text-primary'} px-3">
-                                ${isForecast ? 'AI PREDICTION' : 'HISTORICAL'}
+                            <span class="badge rounded-pill ${displayForecast ? 'bg-light-warning text-warning' : 'bg-light-primary text-primary'} px-3">
+                                ${displayForecast ? 'AI PREDICTION' : 'HISTORICAL'}
                             </span>
                         </td>
                         <td><span class="text-primary fw-bold">${item.actualAmount > 0 ? '$ ' + item.actualAmount.toLocaleString() : '-'}</span></td>
-                        <td><span class="text-warning fw-bold">${item.forecastAmount > 0 ? '$ ' + item.forecastAmount.toLocaleString() : '-'}</span></td>
+                        <td><span class="text-warning fw-bold">${displayForecast ? '$ ' + item.forecastAmount.toLocaleString() : '-'}</span></td>
                         <td>
-                            ${isForecast
-                                ? '<i class="bx bx-bolt-circle text-warning fs-5"></i>'
-                                : '<i class="bx bxs-check-shield text-primary fs-5"></i>'}
+                            <span class="text-muted small">
+                                ${displayForecast ? `$ ${item.lowerBound.toLocaleString()} - $ ${item.upperBound.toLocaleString()}` : '-'}
+                            </span>
                         </td>
                     </tr>
                 `;

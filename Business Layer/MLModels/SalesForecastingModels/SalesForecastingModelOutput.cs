@@ -9,5 +9,7 @@ namespace Business_Layer.MLModels.SalesForecastingModels
     public class SalesForecastingModelOutput
     {
         public float[] Score { get; set; } = null!;
+        public float[] LowerBoundSales { get; set; } = null!;
+        public float[] UpperBoundSales { get; set; } = null!;
     }
 }

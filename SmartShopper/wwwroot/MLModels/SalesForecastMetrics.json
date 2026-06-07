@@ -1,0 +1,6 @@
+{
+  "MeanAbsoluteError": 2784769.33,
+  "RootMeanSquaredError": 3279510.94,
+  "EvaluatedAt": "2026-06-07T13:03:22.887458+03:00",
+  "MeanAbsolutePercentageError": 11.81
+}
