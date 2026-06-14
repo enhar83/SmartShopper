@@ -2,6 +2,7 @@
 using Core_Layer.Dtos.CommentDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Controllers
@@ -47,6 +48,7 @@ namespace SmartShopper.Controllers
             return RedirectToAction("ProductDetails", "Product", new { id = createCommentDto.ProductId });
         }
 
+        [Authorize(Roles = "Admin, Member")]
         [HttpGet]
         public async Task<IActionResult> Index()
         {

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace WebUI.Controllers 
 {
+    [Authorize(Roles = "Admin, Member")]
     public class NotificationController : Controller
     {
         private readonly INotificationService _notificationService;

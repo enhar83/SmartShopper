@@ -176,6 +176,7 @@
             </span>
         </div>
         <h2 class="mb-2 text-dark font-weight-bold">Matching Your Wishlist</h2>
+
         <p class="text-muted mx-auto" style="max-width: 600px;">We explored the items you've saved to find other products that reflect your unique style and taste.</p>
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb justify-content-center bg-transparent p-0 mt-3">
@@ -203,7 +204,7 @@
                     <div class="col-xl-3 col-md-4 col-sm-6 mb-4">
                         <div class="single-product shadow-sm">
                             <div class="ai-score-badge">
-                                <i class="fas fa-magic"></i> %@(Math.Round(item.MatchScore * 100)) Fit
+                                <i class="fas fa-magic"></i> %@item.MatchPercentage Fit
                             </div>
                             <div class="product-img-container">
                                 <div class="recommendation-reason-badge">
@@ -259,7 +260,6 @@
 
     async function addToCart(productId) {
         const token = '@tokens.RequestToken';
-
         try {
             const response = await fetch('/Cart/AddToCart', {
                 method: 'POST',
@@ -270,7 +270,6 @@
                 },
                 body: JSON.stringify({ ProductId: productId, Quantity: 1 })
             });
-
             const result = await response.json();
 
             if (response.ok && result.success) {
@@ -278,7 +277,6 @@
                     icon: 'success',
                     title: 'Added to your cart!'
                 });
-
                 if (typeof refreshMiniCart === "function") refreshMiniCart();
             } else {
                 Toast.fire({

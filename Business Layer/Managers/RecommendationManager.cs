@@ -67,6 +67,10 @@ namespace Business_Layer.Managers
             try
             {
                 var dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
+
+                // 1. DOKUNUŞ: Veriyi %80 Eğitim, %20 Test olarak ayırıyoruz
+                var trainTestData = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2, seed: 1);
+
                 var pipeline = _mlContext.Transforms.Conversion.MapValueToKey("UserIdEncoded", "UserId")
                     .Append(_mlContext.Transforms.Conversion.MapValueToKey("ProductIdEncoded", "ProductId"))
                     .Append(_mlContext.Recommendation().Trainers.MatrixFactorization(new MatrixFactorizationTrainer.Options
@@ -76,12 +80,22 @@ namespace Business_Layer.Managers
                         LabelColumnName = "Label",
                         LossFunction = MatrixFactorizationTrainer.LossFunctionType.SquareLossOneClass,
                         LearningRate = 0.01f,
-
                         NumberOfIterations = 50,
                         Quiet = true
                     }));
 
-                var model = pipeline.Fit(dataView);
+                // 2. DOKUNUŞ: Modeli tüm veriyle değil, SADECE TrainSet ile eğitiyoruz
+                var model = pipeline.Fit(trainTestData.TrainSet);
+
+                // 3. DOKUNUŞ: Modeli TestSet ile ölçüyoruz
+                var predictions = model.Transform(trainTestData.TestSet);
+                var metrics = _mlContext.Regression.Evaluate(predictions, labelColumnName: "Label", scoreColumnName: "Score");
+
+                // JÜRİ İÇİN KANIT: Metrikleri logluyoruz (Visual Studio Output ekranında görünecek)
+                System.Diagnostics.Debug.WriteLine($"\n[AI METRICS] Order Based Recommendation:");
+                System.Diagnostics.Debug.WriteLine($"-> RMSE (Kök Ortalama Kare Hatası): {metrics.RootMeanSquaredError}");
+                System.Diagnostics.Debug.WriteLine($"-> R-Squared (R Kare): {metrics.RSquared}\n");
+
                 var predictionEngine = _mlContext.Model.CreatePredictionEngine<RecommendationModelInput, RecommendationModelOutput>(model);
 
                 var rawResults = new List<(Product prod, float score)>();
@@ -147,6 +161,10 @@ namespace Business_Layer.Managers
             try
             {
                 var dataView = _mlContext.Data.LoadFromEnumerable(trainingData);
+
+                // 1. DOKUNUŞ: Eğitim ve Test ayrımı
+                var trainTestData = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2, seed: 1);
+
                 var pipeline = _mlContext.Transforms.Conversion.MapValueToKey("UserIdEncoded", "UserId")
                     .Append(_mlContext.Transforms.Conversion.MapValueToKey("ProductIdEncoded", "ProductId"))
                     .Append(_mlContext.Recommendation().Trainers.MatrixFactorization(new MatrixFactorizationTrainer.Options
@@ -155,17 +173,27 @@ namespace Business_Layer.Managers
                         MatrixRowIndexColumnName = "ProductIdEncoded",
                         LabelColumnName = "Label",
 
-                        // 1. DOKUNUŞ: Sadece olumlu verilerimiz olduğunu söylüyoruz!
+                        // Sadece olumlu verilerimiz olduğunu söylüyoruz
                         LossFunction = MatrixFactorizationTrainer.LossFunctionType.SquareLossOneClass,
 
-                        // 2. DOKUNUŞ: Öğrenme oranını 0.01'e düşürerek patlamayı engelliyoruz!
+                        // Öğrenme oranını 0.01'e düşürerek patlamayı engelliyoruz
                         LearningRate = 0.01f,
 
                         NumberOfIterations = 50,
                         Quiet = true
                     }));
 
-                var model = pipeline.Fit(dataView);
+                // 2. DOKUNUŞ: Fit işlemi
+                var model = pipeline.Fit(trainTestData.TrainSet);
+
+                // 3. DOKUNUŞ: Değerlendirme
+                var predictions = model.Transform(trainTestData.TestSet);
+                var metrics = _mlContext.Regression.Evaluate(predictions, labelColumnName: "Label", scoreColumnName: "Score");
+
+                System.Diagnostics.Debug.WriteLine($"\n[AI METRICS] Favorite Based Recommendation:");
+                System.Diagnostics.Debug.WriteLine($"-> RMSE: {metrics.RootMeanSquaredError}");
+                System.Diagnostics.Debug.WriteLine($"-> R-Squared: {metrics.RSquared}\n");
+
                 var predictionEngine = _mlContext.Model.CreatePredictionEngine<RecommendationModelInput, RecommendationModelOutput>(model);
 
                 var rawResults = new List<(Product prod, float score)>();

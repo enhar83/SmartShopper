@@ -1,5 +1,6 @@
 ﻿using Core_Layer.Exceptions;
 using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Controllers
@@ -13,6 +14,7 @@ namespace SmartShopper.Controllers
             _favoriteService = favoriteService;
         }
 
+        [Authorize(Roles = "Admin, Member")]
         public async Task<IActionResult> Index()
         {
             try

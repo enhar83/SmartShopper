@@ -1,12 +1,14 @@
-﻿using Core_Layer.IServices;
-using Microsoft.AspNetCore.Mvc;
-using System;
+﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class SubCategoryDemandForecastController : Controller
     {
         private readonly ISubCategoryDemandForecastService _forecastService;

@@ -78,7 +78,7 @@ namespace SmartShopper.Controllers
                 };
 
                 Response.Cookies.Append("JwtToken", userDto.Token, cookieOptions);
-                return RedirectToAction("AboutUs", "AboutUs");
+                return RedirectToAction("ProductList", "Product");
             }
             catch (LogicException ex)
             {

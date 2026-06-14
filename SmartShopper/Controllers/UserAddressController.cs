@@ -3,10 +3,12 @@ using Bogus.DataSets;
 using Core_Layer.Dtos.UserAddressDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Controllers
 {
+    [Authorize(Roles = "Admin, Member")]
     public class UserAddressController : Controller
     {
         private readonly IUserAddressService _userAddressService;

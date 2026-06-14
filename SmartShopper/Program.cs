@@ -163,6 +163,13 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseRouting();
 
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+app.UseStatusCodePagesWithReExecute("/Error/{0}");
+
 
 app.UseAuthentication();
 app.UseAuthorization();

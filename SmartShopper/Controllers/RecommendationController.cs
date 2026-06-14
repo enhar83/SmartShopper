@@ -1,9 +1,11 @@
 ﻿using System.Security.Claims;
 using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Controllers
 {
+    [Authorize(Roles = "Admin, Member")]
     public class RecommendationController : Controller
     {
         private readonly IRecommendationService _recommendationService;

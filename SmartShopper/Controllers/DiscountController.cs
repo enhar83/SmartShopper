@@ -1,10 +1,12 @@
 ﻿using System.Security.Claims;
 using Core_Layer.IRepositories;
 using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Controllers
 {
+    [Authorize(Roles = "Admin, Member")]
     public class DiscountController : Controller
     {
         private readonly IDiscountService _discountService;

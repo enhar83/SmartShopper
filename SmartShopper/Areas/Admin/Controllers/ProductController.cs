@@ -3,11 +3,13 @@ using Core_Layer.Dtos.CategoryDtos;
 using Core_Layer.Dtos.ProductDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles = "Admin")]
     public class ProductController : Controller
     {
         private readonly IProductService _productService;

@@ -1,0 +1,13 @@
+﻿
+@{
+    ViewData["Title"] = "Page404";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container text-center mt-5">
+    <h1 class="display-1 text-danger">404</h1>
+    <h2>Oops! Page Not Found</h2>
+    <p class="lead">@ViewBag.ErrorMessage</p>
+    <a href="/Product/ProductList" class="btn btn-primary">Return to Product List Page</a>
+</div>
+

@@ -2,10 +2,12 @@
 using Core_Layer.Dtos.ProfileDtos;
 using Core_Layer.Exceptions;
 using Core_Layer.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace SmartShopper.Controllers
 {
+    [Authorize(Roles = "Admin, Member")]
     public class ProfileController : Controller
     {
         private readonly IProfileService _profileService;
