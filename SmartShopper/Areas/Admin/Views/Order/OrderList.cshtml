@@ -1,10 +1,11 @@
 ﻿@using Core_Layer.Dtos.OrderDtos
-@model List<OrderListDtoAdminPanel>
+@using Core_Layer.Dtos.CommonDtos
+@model PaginatedResultDto<OrderListDtoAdminPanel>
 
 @{
     ViewData["Title"] = "Order Management";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    int count = 1;
+    int count = (Model.PageNumber - 1) * Model.PageSize + 1;
 }
 
 <div class="page-breadcrumb d-none d-sm-flex align-items-center mb-3">
@@ -38,7 +39,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (var item in Model)
+                    @foreach (var item in Model.Items)
                     {
                         <tr>
                             <td>@count</td>
@@ -83,6 +84,53 @@
         </div>
     </div>
 </div>
+
+@if (Model.TotalPages > 1)
+{
+    <div class="d-flex justify-content-center mt-4 mb-4">
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item @(!Model.HasPreviousPage ? "disabled" : "")">
+                    <a class="page-link" href="/Admin/Order/OrderList?page=@(Model.PageNumber - 1)">Previous</a>
+                </li>
+
+                @{
+                    int startPage = Math.Max(1, Model.PageNumber - 2);
+                    int endPage = Math.Min(Model.TotalPages, Model.PageNumber + 2);
+
+                    if (startPage > 1)
+                    {
+                        <li class="page-item"><a class="page-link" href="/Admin/Order/OrderList?page=1">1</a></li>
+                        if (startPage > 2)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                    }
+
+                    for (int i = startPage; i <= endPage; i++)
+                    {
+                        <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                            <a class="page-link" href="/Admin/Order/OrderList?page=@i">@i</a>
+                        </li>
+                    }
+
+                    if (endPage < Model.TotalPages)
+                    {
+                        if (endPage < Model.TotalPages - 1)
+                        {
+                            <li class="page-item disabled"><span class="page-link">...</span></li>
+                        }
+                        <li class="page-item"><a class="page-link" href="/Admin/Order/OrderList?page=@Model.TotalPages">@Model.TotalPages</a></li>
+                    }
+                }
+
+                <li class="page-item @(!Model.HasNextPage ? "disabled" : "")">
+                    <a class="page-link" href="/Admin/Order/OrderList?page=@(Model.PageNumber + 1)">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+}
 
 <div class="modal fade" id="orderDetailsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -139,10 +187,12 @@
     <script>
         $(document).ready(function () {
             $('#orderDataTable').DataTable({
-                order: [[5, 'desc']] // Tarihe göre sıralı başlasın
+                order: [[5, 'desc']],
+                paging: false,      
+                info: false,        
+                searching: false     
             });
 
-            // Durum Güncelleme Form Submit
             $("#statusForm").on("submit", function (e) {
                 e.preventDefault();
                 const $btn = $("#btnUpdateStatus");
@@ -204,7 +254,7 @@
 
         function openStatusModal(orderId, currentStatus) {
             $("#statusOrderId").val(orderId);
-            $("#statusSelect").val(currentStatus); 
+            $("#statusSelect").val(currentStatus);
             $("#statusModal").modal('show');
         }
     </script>

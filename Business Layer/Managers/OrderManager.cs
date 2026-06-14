@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Core_Layer.Dtos.CommonDtos;
 using Core_Layer.Dtos.NotificationDtos;
 using Core_Layer.Dtos.OrderDtos;
 using Core_Layer.IRepositories;
@@ -52,17 +53,31 @@ namespace Business_Layer.Managers
             return _mapper.Map<List<OrderListDto>>(orders);
         }
 
-        public async Task<List<OrderListDtoAdminPanel>> TGetOrdersForAdminAsync()
+        public async Task<PaginatedResultDto<OrderListDtoAdminPanel>> TGetOrdersForAdminPaginatedAsync(int pageNumber = 1, int pageSize = 10)
         {
-            var orders = await _orderRepository.GetAll()
+            var query = _orderRepository.GetAll()
                 .AsNoTracking()
                 .Include(x => x.AppUser)
                 .Include(x => x.AppliedDiscount)
                 .Include(x => x.OrderItems)
-                .OrderByDescending(x => x.CreatedDate)
-                .ToListAsync();
+                .OrderByDescending(x => x.CreatedDate);
 
-            return _mapper.Map<List<OrderListDtoAdminPanel>>(orders);
+            var totalCount = await query.CountAsync();
+
+            var orders = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(); 
+
+            var mappedOrders = _mapper.Map<List<OrderListDtoAdminPanel>>(orders);
+
+            return new PaginatedResultDto<OrderListDtoAdminPanel>
+            {
+                Items = mappedOrders,
+                TotalCount = totalCount,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
         }
 
         public async Task<bool> TUpdateOrderStatusAsync(OrderStatusUpdateDto updateDto)

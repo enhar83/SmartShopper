@@ -16,10 +16,12 @@ namespace SmartShopper.Areas.Admin.Controllers
             _orderService = orderService;
         }
 
-        public async Task<IActionResult> OrderList()
+        public async Task<IActionResult> OrderList(int page = 1)
         {
-            var orders = await _orderService.TGetOrdersForAdminAsync();
-            return View(orders);
+            int pageSize = 10; 
+            var paginatedOrders = await _orderService.TGetOrdersForAdminPaginatedAsync(page, pageSize);
+
+            return View(paginatedOrders);
         }
 
         [HttpPost]

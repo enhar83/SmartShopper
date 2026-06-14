@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Core_Layer.Dtos.CommonDtos;
 using Core_Layer.Dtos.OrderDtos;
 
 namespace Core_Layer.IServices
@@ -11,7 +12,7 @@ namespace Core_Layer.IServices
     {
         Task<List<OrderListDto>> TGetOrdersByUserIdAsync(Guid userId);
         Task<OrderListDto?> TGetOrderDetailsAsync(Guid orderId);
-        Task<List<OrderListDtoAdminPanel>> TGetOrdersForAdminAsync();
+        Task<PaginatedResultDto<OrderListDtoAdminPanel>> TGetOrdersForAdminPaginatedAsync(int pageNumber = 1, int pageSize = 10);
         Task<bool> TUpdateOrderStatusAsync(OrderStatusUpdateDto updateDto);
     }
 }
