@@ -13,5 +13,6 @@ namespace Core_Layer.IServices
         Task<List<ChurnPredictionResultDto>> TGetAllChurnResultsAsync();
         Task<bool> TTrainChurnModelAsync();
         Task<ChurnEvaluationReportDto> TGetChurnModelMetricsAsync();
+        Task<List<Guid>> TGetUsersByChurnProbabilityRangeAsync(decimal minProbability, decimal maxProbability);
     }
 }

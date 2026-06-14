@@ -43,5 +43,9 @@ namespace Data_Access_Layer.Repositories
         {
             _context.Set<T>().RemoveRange(entities);
         }
+        public async Task AddRangeAsync(IEnumerable<T> entities)
+        {
+            await _dbSet.AddRangeAsync(entities);
+        }
     }
 }

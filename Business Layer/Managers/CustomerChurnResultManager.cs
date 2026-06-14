@@ -227,5 +227,16 @@ namespace Business_Layer.Managers
             var jsonContent = await File.ReadAllTextAsync(_metricPath);
             return JsonSerializer.Deserialize<ChurnEvaluationReportDto>(jsonContent) ?? new ChurnEvaluationReportDto();
         }
+
+        public async Task<List<Guid>> TGetUsersByChurnProbabilityRangeAsync(decimal minProbability, decimal maxProbability)
+        {
+            var userIds = await _churnRepo.GetAll()
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.ChurnProbability >= minProbability && x.ChurnProbability <= maxProbability)
+                .Select(x => x.AppUserId)
+                .ToListAsync();
+
+            return userIds;
+        }
     }
 }

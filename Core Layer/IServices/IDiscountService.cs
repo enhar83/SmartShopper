@@ -20,5 +20,6 @@ namespace Core_Layer.IServices
         Task<List<UserDiscountListDto>> TGetUserSpecificDiscountsAsync(Guid userId);
         Task TMarkDiscountAsUsedAsync(Guid userId, Guid discountId);
         Task<List<UserDiscountListDto>> TGetAvailableDiscountsForCheckoutAsync(Guid userId);
+        Task TAssignDiscountToMultipleUsersAsync(Guid discountId, List<Guid> userIds);
     }
 }

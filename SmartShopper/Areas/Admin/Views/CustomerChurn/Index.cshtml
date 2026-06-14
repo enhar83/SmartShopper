@@ -6,9 +6,7 @@
 @{
     ViewData["Title"] = "AI Churn Risk Center";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
-    int count = 1;
 
-    // Controller'dan gelen kalite metriklerini DTO olarak yakalıyoruz
     var metrics = ViewBag.ModelMetrics as ChurnEvaluationReportDto;
 }
 
@@ -126,8 +124,11 @@
 </div>
 
 <div class="card radius-10 shadow-none border">
-    <div class="card-header bg-transparent border-bottom">
+    <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
         <h6 class="mb-0 fw-bold">Retention Risk Management Table</h6>
+        <button type="button" class="btn btn-sm btn-primary px-3 radius-30" onclick="openBulkAssignModal()">
+            <i class="bx bx-layer me-1"></i> Bulk Assign Discount
+        </button>
     </div>
     <div class="card-body">
         <div class="table-responsive">
@@ -222,6 +223,43 @@
     </div>
 </div>
 
+<div class="modal fade" id="bulkAssignModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-top border-0 border-4 border-primary">
+            <div class="modal-header">
+                <h5 class="modal-title text-primary"><i class='bx bx-layer me-1'></i> Bulk Retention Offer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="bulkAssignForm">
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-3">Define a discount for users within a specific churn probability range. Users who already possess this discount will be automatically skipped.</p>
+
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">Min Risk (%)</label>
+                            <input type="number" name="minProbability" id="minProbability" class="form-control" min="0" max="100" required placeholder="e.g. 80">
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Max Risk (%)</label>
+                            <input type="number" name="maxProbability" id="maxProbability" class="form-control" min="0" max="100" required placeholder="e.g. 100">
+                        </div>
+                        <div class="col-12 mt-3">
+                            <label class="form-label">Select Campaign</label>
+                            <select name="discountId" id="bulkDiscountSelect" class="form-select" required>
+                                <option value="">-- Loading Campaigns... --</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" id="btnBulkAssignSave" class="btn btn-primary px-4">Assign to Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script src="~/adminassets/plugins/datatable/js/jquery.dataTables.min.js"></script>
     <script src="~/adminassets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
@@ -286,6 +324,61 @@
                 },
                 complete: function() {
                     $btn.prop("disabled", false).text("Assign Discount");
+                }
+            });
+        });
+
+        function openBulkAssignModal() {
+            $("#bulkDiscountSelect").html('<option value="">Loading...</option>');
+            $("#bulkAssignModal").modal('show');
+
+            $.get('/Admin/Discount/GetActiveDiscounts', function (data) {
+                let html = '<option value="">-- Select a Campaign --</option>';
+                if(data && data.length > 0) {
+                    data.forEach(item => {
+                        let typeInfo = item.type === 1 ? '%' + item.value : item.value + ' TL';
+                        html += `<option value="${item.id}">${item.name} (${typeInfo})</option>`;
+                    });
+                } else {
+                    html = '<option value="">No active campaigns found</option>';
+                }
+                $("#bulkDiscountSelect").html(html);
+            }).fail(function() {
+                $("#bulkDiscountSelect").html('<option value="">Error loading campaigns</option>');
+            });
+        }
+
+        $("#bulkAssignForm").on("submit", function (e) {
+            e.preventDefault();
+            const $btn = $("#btnBulkAssignSave");
+            $btn.prop("disabled", true).html('<span class="spinner-border spinner-border-sm"></span> Processing...');
+
+            var token = $('input[name="__RequestVerificationToken"]').val();
+            var formData = $(this).serialize() + "&__RequestVerificationToken=" + token;
+
+            $.ajax({
+                url: '/Admin/CustomerChurn/AssignBulkDiscount',
+                type: 'POST',
+                data: formData,
+                success: function (res) {
+                    if (res.success) {
+                        $("#bulkAssignModal").modal('hide');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: res.message,
+                            timer: 3500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        Swal.fire('Warning', res.message, 'warning');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'An unexpected error occurred during bulk assignment.', 'error');
+                },
+                complete: function() {
+                    $btn.prop("disabled", false).text("Assign to Group");
                 }
             });
         });

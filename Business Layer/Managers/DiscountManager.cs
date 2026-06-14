@@ -194,5 +194,49 @@ namespace Business_Layer.Managers
             _discountCustomerRepository.Update(existingAssignment);
             await _uow.SaveAsync();
         }
+
+        public async Task TAssignDiscountToMultipleUsersAsync(Guid discountId, List<Guid> userIds)
+        {
+            if (userIds == null || !userIds.Any()) return;
+
+            var existingAssignments = await _discountCustomerRepository.GetAll()
+                .Where(x => x.DiscountId == discountId && !x.IsUsed && !x.IsDeleted && userIds.Contains(x.AppUserId))
+                .Select(x => x.AppUserId)
+                .ToListAsync();
+
+            var targetUserIds = userIds.Except(existingAssignments).ToList();
+
+            if (!targetUserIds.Any()) return; 
+
+            var newAssignments = targetUserIds.Select(userId => new DiscountCustomer
+            {
+                AppUserId = userId,
+                DiscountId = discountId,
+                IsUsed = false,
+                CreatedDate = DateTime.Now
+            }).ToList();
+
+            await _discountCustomerRepository.AddRangeAsync(newAssignments);
+
+            var discountDetails = await _discountRepository.GetByIdAsync(discountId);
+            if (discountDetails != null)
+            {
+                foreach (var userId in targetUserIds)
+                {
+                    var notificationDto = new CreateNotificationDto
+                    {
+                        AppUserId = userId,
+                        Title = "You've earned a special discount!",
+                        Message = $"Congratulations! A special discount of '{discountDetails.Name}' has been added to your account. Don't miss out on the opportunity!",
+                        NotificationType = "Discount",
+                        RelatedUrl = "Discount/Index"
+                    };
+
+                    await _notificationService.TAddAsync(notificationDto);
+                }
+            }
+
+            await _uow.SaveAsync();
+        }
     }
 }
