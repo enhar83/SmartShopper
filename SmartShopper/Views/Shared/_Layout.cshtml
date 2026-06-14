@@ -69,7 +69,24 @@
 						<div class="col-xl-5 col-lg-5 col-md-4 col-sm-4 col-4">
 							<div class="header-right d-flex justify-content-end align-items-center">
 								<ul class="header-login d-none d-lg-block">
-									<li><a href="/Account/Login"><span class="icon-users"></span><span class="logo-register ml-2">Login / Register</span></a></li>
+									@if (Context.Request.Cookies.ContainsKey("JwtToken"))
+									{
+										<li>
+											<a href="/Account/Logout" class="text-danger">
+												<span class="icon-users"></span>
+												<span class="logo-register ml-2 font-weight-bold">Logout</span>
+											</a>
+										</li>
+									}
+									else
+									{
+										<li>
+											<a href="/Account/Login">
+												<span class="icon-users"></span>
+												<span class="logo-register ml-2">Login / Register</span>
+											</a>
+										</li>
+									}
 								</ul>
 								<ul class="header-search d-none d-lg-block">
 									<li><span class="icon-search"></span></li>
@@ -89,21 +106,7 @@
 										@await Component.InvokeAsync("_CartNavbarComponentPartial")
 									</li>
 								</ul>
-								<ul class="d-none d-lg-block">
-									<li class="position-relative">
-										<div class="header-setting"><span class="icon-settings"></span></div>
-										<div class="header-setting-content position-absolute pt-30 pl-30 pr-30 pb-30">
-											<h5>Language</h5>
-											<ul class="mb-20 pt-1">
-												<li><a href="#">English</a></li>
-											</ul>
-											<h5>Currencies</h5>
-											<ul class="pt-1">
-												<li><a href="#">USD – US Dollar</a></li>
-											</ul>
-										</div>
-									</li>
-								</ul>
+								
 							</div>
 						</div>
 					</div>

@@ -147,5 +147,14 @@ namespace SmartShopper.Controllers
                 return Json(new { success = false, message = "An unexpected error occurred." });
             }
         }
+
+        public IActionResult Logout()
+        {
+            if (Request.Cookies["JwtToken"] != null)
+                Response.Cookies.Delete("JwtToken");
+
+            TempData["SuccessLogoutMessage"] = "Successfully logged out.";
+            return RedirectToAction("Login", "Account");
+        }
     }
 }
