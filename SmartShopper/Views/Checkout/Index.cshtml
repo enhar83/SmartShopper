@@ -37,6 +37,9 @@
         }
 
         <form asp-controller="Checkout" asp-action="PlaceOrder" method="post" id="checkoutForm">
+
+            @Html.ValidationSummary(true, "", new { @class = "alert alert-danger mb-30" })
+
             <div class="row">
                 <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 col-12">
                     <div class="checkbox-form">
@@ -50,7 +53,7 @@
                                     <div class="col-12 mb-20">
                                         <div class="card border-gray p-3" style="cursor:pointer;">
                                             <div class="custom-control custom-radio">
-                                                <input type="radio" id="addr-@addr.Id" name="selectedAddressId" value="@addr.Id" class="custom-control-input" required>
+                                                <input type="radio" id="addr-@addr.Id" name="AddressId" value="@addr.Id" class="custom-control-input">
                                                 <label class="custom-control-label w-100" for="addr-@addr.Id">
                                                     <span class="d-block font-weight-bold primary-color">@addr.Title</span>
                                                     <small class="text-muted">@addr.FullAddress</small>
@@ -60,6 +63,9 @@
                                     </div>
                                 }
                             </div>
+
+                            @Html.ValidationMessage("AddressId", "", new { @class = "text-danger small d-block mb-3" })
+
                             <div class="mt-10 mb-30">
                                 <a href="/Profile/ViewProfile" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center py-2">
                                     <i class="fa fa-plus-circle mr-2"></i> Add or Manage Addresses
@@ -76,6 +82,33 @@
                                 </a>
                             </div>
                         }
+
+                        <div class="payment-details mt-40">
+                            <h4 class="pb-10 mb-20 border-b-light-gray"><i class="fas fa-credit-card text-primary mr-2"></i> Payment Details</h4>
+                            <div class="row">
+                                <div class="col-md-6 mb-20">
+                                    <label>First Name <span class="text-danger">*</span></label>
+                                    @Html.TextBox("FirstName", null, new { @class = "form-control", placeholder = "Enhar" })
+                                    @Html.ValidationMessage("FirstName", "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="col-md-6 mb-20">
+                                    <label>Last Name <span class="text-danger">*</span></label>
+                                    @Html.TextBox("LastName", null, new { @class = "form-control", placeholder = "Yorulmaz" })
+                                    @Html.ValidationMessage("LastName", "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="col-12 mb-20">
+                                    <label>Card Number <span class="text-danger">*</span></label>
+                                    @Html.TextBox("CardNumber", null, new { @class = "form-control", placeholder = "1111111111111111", maxlength = "16" })
+                                    @Html.ValidationMessage("CardNumber", "", new { @class = "text-danger small" })
+                                </div>
+                                <div class="col-md-6 mb-20">
+                                    <label>CVV <span class="text-danger">*</span></label>
+                                    @Html.TextBox("Cvv", null, new { @class = "form-control", placeholder = "000", maxlength = "3" })
+                                    @Html.ValidationMessage("Cvv", "", new { @class = "text-danger small" })
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -86,7 +119,7 @@
                             <h4 class="pb-10 mb-20 border-b-light-gray"><i class="fas fa-ticket-alt text-warning mr-2"></i> Apply Coupon</h4>
 
                             <div class="form-group mb-0">
-                                <select name="selectedDiscountId" id="checkoutDiscountSelect" class="form-control rounded-0 border-gray" style="height: 45px;">
+                                <select name="DiscountId" id="checkoutDiscountSelect" class="form-control rounded-0 border-gray" style="height: 45px;">
                                     <option value="" data-is-valid="empty">-- Select a Coupon --</option>
 
                                     @if (coupons != null && coupons.Any())
@@ -112,7 +145,6 @@
                                             else
                                             {
                                                 string disableReason = "";
-
                                                 if (isUsed) disableReason = "Already Used";
                                                 else if (coupon.EndDate < now) disableReason = "Expired";
                                                 else if (coupon.StartDate > now) disableReason = $"Starts on {coupon.StartDate:dd MMM}";
@@ -189,11 +221,11 @@
 
                         <div class="payment-method mt-40">
                             <p class="mb-20 text-muted small">
-                                * Your order will be prepared as soon as you complete the checkout. Cash on delivery or Bank Transfer details will be provided in the next step.
+                                * This is a secure payment simulation. Your credit card information is processed securely.
                             </p>
                             <div class="order-button-payment mt-20">
                                 <button type="submit" class="sub-btn d-inline-block text-white theme-bg border-0 width100 py-3 font-weight-bold">
-                                    PLACE ORDER
+                                    COMPLETE PAYMENT & PLACE ORDER
                                 </button>
                             </div>
                         </div>
@@ -244,10 +276,10 @@
                 let savedAmount = 0;
                 let newTotal = originalTotal;
 
-                if (discountType === 1) { 
+                if (discountType === 1) {
                     savedAmount = (originalTotal * discountValue) / 100;
                     newTotal = originalTotal - savedAmount;
-                } else if (discountType === 2) { 
+                } else if (discountType === 2) {
                     savedAmount = discountValue;
                     newTotal = originalTotal - savedAmount;
                     if (newTotal < 0) newTotal = 0;

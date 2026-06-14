@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using Core_Layer.Dtos.OrderDtos;
 using Core_Layer.IServices;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +21,7 @@ namespace SmartShopper.Controllers
             _discountService = discountService;
         }
 
+        [HttpGet]
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -46,33 +48,41 @@ namespace SmartShopper.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> PlaceOrder(Guid selectedAddressId, Guid? selectedDiscountId)
+        public async Task<IActionResult> PlaceOrder(CheckoutPaymentDto paymentDto)
         {
-            if (selectedAddressId == Guid.Empty)
-            {
-                TempData["ErrorMessage"] = "Please select a delivery address.";
-                return RedirectToAction("Index");
-            }
-
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (userId == null)
                 return RedirectToAction("Index", "Cart");
 
             var userIdString = Guid.Parse(userId);
 
-            var result = await _checkoutService.TPlaceOrderAsync(userIdString, selectedAddressId, selectedDiscountId);
+            if (!ModelState.IsValid)
+            {
+                var summary = await _checkoutService.TGetCheckoutSummaryAsync(userIdString);
+                ViewBag.Addresses = await _userAddressService.TGetUserAddressListCheckoutAsync(userIdString);
+                ViewBag.Coupons = await _discountService.TGetAvailableDiscountsForCheckoutAsync(userIdString);
+
+                return View("Index", summary);
+            }
+
+            var result = await _checkoutService.TPlaceOrderAsync(userIdString, paymentDto.AddressId, paymentDto.DiscountId);
 
             if (result)
             {
-                if (selectedDiscountId.HasValue && selectedDiscountId.Value != Guid.Empty)
-                    await _discountService.TMarkDiscountAsUsedAsync(userIdString, selectedDiscountId.Value);
+                if (paymentDto.DiscountId.HasValue && paymentDto.DiscountId.Value != Guid.Empty)
+                    await _discountService.TMarkDiscountAsUsedAsync(userIdString, paymentDto.DiscountId.Value);
 
-                TempData["SuccessMessage"] = "Your order has been successfully received!";
+                TempData["SuccessMessage"] = "Your payment has been successfully processed and your order is received!";
                 return RedirectToAction("OrderSuccess");
             }
 
             TempData["ErrorMessage"] = "An error occurred while creating the order. Please check the stock and try again.";
-            return RedirectToAction("Index");
+
+            var currentSummary = await _checkoutService.TGetCheckoutSummaryAsync(userIdString);
+            ViewBag.Addresses = await _userAddressService.TGetUserAddressListCheckoutAsync(userIdString);
+            ViewBag.Coupons = await _discountService.TGetAvailableDiscountsForCheckoutAsync(userIdString);
+
+            return View("Index", currentSummary);
         }
 
         [HttpGet]
