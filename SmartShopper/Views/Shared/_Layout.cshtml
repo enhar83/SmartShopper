@@ -21,6 +21,15 @@
 	<link rel="stylesheet" href="~/assets/css/default.css">
 	<link rel="stylesheet" href="~/assets/css/style.css">
 	<link rel="stylesheet" href="~/assets/css/responsive.css">
+
+	<style>
+		/* Temanın gereksiz yerlere otomatik ok atmasını engellemek için */
+		.main-menu nav > ul > li.no-arrow > a::after,
+		.main-menu nav > ul > li.no-arrow > a::before {
+			display: none !important;
+			content: "" !important;
+		}
+	</style>
 </head>
 <body>
 
@@ -29,45 +38,100 @@
 			<div class="header pl-30 pr-30 pt-15 pb-15">
 				<div class="container-fluid">
 					<div class="row align-items-center justify-content-lg-between position-relative">
+
 						<div class="col-xl-5 col-lg-5 col-md-4 col-sm-4 col-4 pr-0 d-lg-flex align-items-lg-center position-static">
 							<div class="d-block d-lg-none">
 								<a class="mobile-menubar" href="javascript:void(0);"><span class="icon-menu"></span></a>
 							</div>
+
 							<div class="main-menu">
 								<nav id="mobile-menu">
 									<ul class="d-block">
-										<li><a href="/Home/Index">Home</a></li>
-										<li class="full-mega-menu-position">
-											<a class="active" href="/Product/ProductList">Shop</a>
-											<ul class="mega-menu full-mega-menu pb-40 pl-50 pt-60 border-gray bg-white">
-												<li class="border-r-light-gray pl-10">
-													<a class="mega-title mb-20" href="#">Shop Layout</a>
-													<ul>
-														<li><a href="/Product/ProductList">Products</a></li>
-														<li><a href="/Profile/ViewProfile">My Profile </a></li>
-														<li><a href="/Cart/Index">Shopping cart</a></li>
-														<li><a href="/Favorite/Index">Wishlist</a></li>
-														<li><a href="/Order/Index">My Orders</a></li>
-														<li><a href="/Recommendation/GetOrderRecommendations">Order Recommendations </a></li>
-														<li><a href="/Recommendation/GetFavoriteRecommendations">Favorite Recommendations</a></li>
-														<li><a href="/Recommendation/GetCartRecommendations">Cart Recommendations</a></li>
-													</ul>
+
+										<li class="no-arrow"><a href="/Home/Index">Home</a></li>
+
+										<li class="no-arrow"><a href="/Product/ProductList">Shop</a></li>
+
+										<li>
+											<a href="javascript:void(0);">Smart Suggestions</a>
+											<ul class="mega-menu pt-20 pb-20 pl-20 pr-20 border-gray bg-white shadow-sm" style="min-width: 280px; border-radius: 5px;">
+												<li class="mb-3">
+													<a href="/Recommendation/GetOrderRecommendations" class="d-flex align-items-center">
+														<i class="fas fa-shopping-cart text-primary mr-3" style="font-size: 18px;"></i>
+														<span>Order Recommendations</span>
+													</a>
+												</li>
+												<li class="mb-3">
+													<a href="/Recommendation/GetFavoriteRecommendations" class="d-flex align-items-center">
+														<i class="fas fa-heart text-danger mr-3" style="font-size: 18px;"></i>
+														<span>Favorite Recommendations</span>
+													</a>
+												</li>
+												<li>
+													<a href="/Recommendation/GetCartRecommendations" class="d-flex align-items-center">
+														<i class="fas fa-shopping-cart text-warning mr-3" style="font-size: 18px;"></i>
+														<span>Cart Recommendations</span>
+													</a>
 												</li>
 											</ul>
 										</li>
-										<li><a href="#">Pages</a></li>
-										<li><a href="#">Portfolio</a></li>
+
+										<li>
+											<a href="javascript:void(0);">My Account</a>
+											<ul class="mega-menu pt-20 pb-20 pl-20 pr-20 border-gray bg-white shadow-sm" style="min-width: 220px; border-radius: 5px;">
+												<li class="mb-3">
+													<a href="/Profile/ViewProfile" class="d-flex align-items-center">
+														<i class="fas fa-user-circle text-info mr-3" style="font-size: 18px;"></i>
+														<span>My Profile</span>
+													</a>
+												</li>
+												<li class="mb-3">
+													<a href="/Order/Index" class="d-flex align-items-center">
+														<i class="fas fa-truck text-success mr-3" style="font-size: 18px;"></i>
+														<span>My Orders</span>
+													</a>
+												</li>
+												<li class="mb-3">
+													<a href="/Favorite/Index" class="d-flex align-items-center">
+														<i class="fas fa-star text-danger mr-3" style="font-size: 18px;"></i>
+														<span>Wishlist</span>
+													</a>
+												</li>
+												<li>
+													<a href="/Cart/Index" class="d-flex align-items-center">
+														<i class="fas fa-shopping-basket text-warning mr-3" style="font-size: 18px;"></i>
+														<span>Shopping Cart</span>
+													</a>
+												</li>
+												<li>
+													<a href="/Comment/Index" class="d-flex align-items-center">
+														<i class="fas fa-comments text-success mr-3" style="font-size: 18px;"></i>
+														<span>My Comments</span>
+													</a>
+												</li>
+												<li>
+													<a href="/Discount/Index" class="d-flex align-items-center">
+														<i class="fas fa-tags text-info mr-3" style="font-size: 18px;"></i>
+														<span>My Discounts</span>
+													</a>
+												</li>
+											</ul>
+										</li>
+
 									</ul>
 								</nav>
 							</div>
 						</div>
+
 						<div class="col-xl-2 col-lg-2 col-md-4 col-sm-4 col-4 d-flex align-items-center justify-content-center">
 							<div class="logo">
 								<a href="/" class="d-block"><img src="~/assets/images/logo/logo.png" alt="HOMESS"></a>
 							</div>
 						</div>
+
 						<div class="col-xl-5 col-lg-5 col-md-4 col-sm-4 col-4">
 							<div class="header-right d-flex justify-content-end align-items-center">
+
 								<ul class="header-login d-none d-lg-block">
 									@if (Context.Request.Cookies.ContainsKey("JwtToken"))
 									{
@@ -88,9 +152,11 @@
 										</li>
 									}
 								</ul>
+
 								<ul class="header-search d-none d-lg-block">
 									<li><span class="icon-search"></span></li>
 								</ul>
+
 								<ul class="header-heart d-none d-lg-block">
 									<li><a href="/Favorite/Index"><span class="icon-heart"></span></a></li>
 								</ul>
@@ -106,9 +172,10 @@
 										@await Component.InvokeAsync("_CartNavbarComponentPartial")
 									</li>
 								</ul>
-								
+
 							</div>
 						</div>
+
 					</div>
 				</div>
 			</div>
